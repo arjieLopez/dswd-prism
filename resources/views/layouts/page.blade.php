@@ -30,30 +30,7 @@
 
         <div class="flex min-h-screen">
             <!-- Sidebar -->
-            <aside
-                class="fixed top-16 left-0 w-80 h-[calc(100vh-4rem)] bg-gradient-to-t from-blue-100 to-white border-r border-white flex flex-col py-6">
-                <nav class="flex-1 space-y-2">
-                    @auth
-                    @if(Auth::user()->role === 'admin')
-                    <a href="{{ route('admin') }}" class="block px-4 py-2 rounded font-semibold hover:bg-blue-100">Admin
-                        Dashboard</a>
-                    <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">Reports</a>
-                    <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">User Management</a>
-                    <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">Audit Logs</a>
-
-                    @elseif(Auth::user()->role === 'staff')
-                    <a href="{{ route('dashboard') }}" class="block px-4 py-2 rounded hover:bg-blue-100">Staff
-                        Dashboard</a>
-                    <a href="{{ route('staff.tasks') }}" class="block px-4 py-2 rounded hover:bg-blue-100">My Tasks</a>
-                    <a href="{{ route('staff.reports') }}" class="block px-4 py-2 rounded hover:bg-blue-100">Submit
-                        Report</a>
-                    @else
-                    <a href="{{ route('admin') }}" class="block px-4 py-2 rounded hover:bg-blue-100">User
-                        Dashboard</a>
-                    @endif
-                    @endauth
-                </nav>
-            </aside>
+           @include('layouts.sidebar')
 
             <!-- Main Content -->
             <main class="pt-16 pl-80 w-full">

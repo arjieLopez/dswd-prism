@@ -46,61 +46,21 @@
         </div>
 
         <h2 class="pr-4 font-semibold text-base text-gray-800 leading-tight">
-            {{ __('Administrator') }}
+            <div>{{ Auth::user()->name }}</div>
         </h2>
     </x-slot>
 
+    <!-- Main Content -->
     <div class="py-8">
         <div class="w-full px-4 sm:px-6 lg:px-8 space-y-6">
             <div>
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    {{ __('Dashboard') }}
+                    {{ __('User Management') }}
                 </h2>
-            </div>
-            <div class="grid grid-cols-3 row-span-2 gap-6">
-                <div class="bg-white shadow-sm sm:rounded-lg col-span-2 row-span-2">
-                    <div class="px-6 pt-6 font-semibold text-lg text-gray-900 tracking-wide">
-                        {{ __("Monthly PRs and POs") }}
-                    </div>
-                    <div class="px-6 pb-6">
-                        <canvas id="bar-chart"></canvas>
-
-                        <script>
-                            window.chartLabels = {!! json_encode($labels) !!};
-                            window.chartPR = {!! json_encode($prData) !!};
-                            window.chartPO = {!! json_encode($poData) !!};
-                        </script>
-                    </div>
-
-                </div>
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="px-6 pt-6 font-semibold text-gray-400 tracking-wide">
-                        {{ __("Total PRs") }}
-                    </div>
-                    <div class="px-6 font-semibold text-2xl text-gray-700">
-                        128
-                    </div>
-                    <div class="px-6 pt-6 text-xs text-gray-400 tracking-wide">
-                        <p>{{ __("15% increase from") }}</p>
-                        <p>{{ __("last month") }}</p>
-                    </div>
-                </div>
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="px-6 pt-6 font-semibold text-gray-400 tracking-wide">
-                        {{ __("Total POs") }}
-                    </div>
-                    <div class="px-6 font-semibold text-2xl text-gray-700">
-                        97
-                    </div>
-                    <div class="px-6 pt-6 text-xs text-gray-400 tracking-wide">
-                        <p>{{ __("12% increase from") }}</p>
-                        <p>{{ __("last month") }}</p>
-                    </div>
-                </div>
             </div>
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="px-6 py-6 font-semibold text-lg text-gray-900 tracking-wide">
-                    {{ __("Recent Activity") }}
+                    {{ __("You are logged in!") }}
                 </div>
             </div>
         </div>

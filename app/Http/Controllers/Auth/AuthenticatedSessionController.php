@@ -29,14 +29,15 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(RouteServiceProvider::HOME)->with('success', 'awdawdwadaw');
- 
-        // if(auth()->user()->role == 'super') {
-        //     return redirect()->route('admin')->with('success', 'login naka');
-        // }
-        // else {
+        // return redirect()->intended(RouteServiceProvider::HOME)->with('success', 'awdawdwadaw');
 
-        // }
+        if (auth()->user()->role == 'admin') {
+            return redirect()->route('admin');
+        } else if (auth()->user()->role == 'staff') {
+            return redirect()->route('staff');
+        } else {
+            return redirect()->route('user');
+        }
     }
 
     /**

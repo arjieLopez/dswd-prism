@@ -3,7 +3,7 @@
         <a href="/admin">
             <img src="{{ asset('images/DSWD-Logo1.png') }}" alt="DSWD Logo" class="w-16">
         </a>
-        <h2 class="p-4 font-semibold text-xl text-gray-800 leading-tight tracking-wide">
+        <h2 class="p-4 font-bold text-xl text-gray-800 leading-tight tracking-wide">
             {{ __('DSWD-PRISM') }}
         </h2>
         <span class="flex-1"></span>
@@ -50,31 +50,19 @@
         </h2>
     </x-slot>
 
-    <!-- Main Content -->
     <div class="py-8">
         <div class="w-full px-4 sm:px-6 lg:px-8 space-y-6">
             <div>
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    {{ __('Profile') }}
+                    {{ __('Dashboard') }}
                 </h2>
             </div>
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="w-full">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="w-full">
-                    @include('profile.partials.update-password-form')
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="w-full">
-                    @include('profile.partials.delete-user-form')
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="px-6 py-6 font-semibold text-lg text-gray-900 tracking-wide">
+                    {{ __("You are logged in!") }}
                 </div>
             </div>
         </div>
     </div>
+
 </x-page-layout>
