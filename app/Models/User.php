@@ -21,6 +21,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'twofactor_code',
+        'twofactor_code_expires_at',
     ];
 
     /**
@@ -41,4 +44,22 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Regenerate the two-factor authentication code.
+     */
+    public function regenerateTwoFactorCode()
+    {
+        $this->timestamps = false;
+        $this->twofactor_code = rand(100000, 999999); 
+        $this->twofactor_code_expires_at = now()->addMinutes(10);
+        $this->save();
+    }
+
+    public function clearTwoFactorCode() {
+        $this->timestamps = false;
+        $this->twofactor_code = null; 
+        $this->twofactor_code_expires_at = null;
+        $this->save();
+    }
 }
