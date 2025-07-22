@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Notifications\TwoFactorCodeNotification;
 use App\Providers\RouteServiceProvider;
+use App\Services\RecaptchaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,24 +25,28 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request, RecaptchaService $recaptcha): RedirectResponse
     {
-        $request->authenticate();
+        // 1. Validate login fields (LoginRequest already does this)
+        $request->validate([
+            'recaptcha_token' => 'required',
+        ]);
 
+        // 2. reCAPTCHA check
+        if (!$recaptcha->verify($request->recaptcha_token, 'login')) {
+            return back()->withErrors(['recaptcha' => 'reCAPTCHA verification failed.']);
+        }
+
+        // 3. Authenticate user
+        $request->authenticate();
         $request->session()->regenerate();
 
+        // 4. Two-Factor Authentication
         $request->user()->regenerateTwoFactorCode();
         $request->user()->notify(new TwoFactorCodeNotification());
 
-        // return redirect()->intended(RouteServiceProvider::HOME)->with('success', 'awdawdwadaw');
-
-        if (auth()->user()->role == 'admin') {
-            return redirect()->route('admin');
-        } else if (auth()->user()->role == 'staff') {
-            return redirect()->route('staff');
-        } else {
-            return redirect()->route('user');
-        }
+        // 5. Redirect to verify page for 2FA
+        return redirect()->route('verify.show');
     }
 
     /**
