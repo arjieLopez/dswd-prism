@@ -43,3 +43,55 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const chartCanvas = document.getElementById("prLineChart");
+    if (chartCanvas) {
+        const labels = window.prChartLabels || [];
+        const approvePR = window.userApproveChartData || [];
+        const pendingPR = window.userPendingChartData || [];
+        const rejectPR = window.userRejectChartData || [];
+
+        new Chart(chartCanvas, {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: "Approved PRs",
+                        data: approvePR,
+                        borderColor: "rgba(67, 160, 71, 1)",
+                        backgroundColor: "rgba(67, 160, 71, 1)",
+                        // fill: true,
+                        // tension: 0.4,
+                    },
+                    {
+                        label: "Pending PRs",
+                        data: pendingPR,
+                        borderColor: "rgba(251, 192, 45, 1)",
+                        backgroundColor: "rgba(251, 192, 45, 1)",
+                        // fill: true,
+                        // tension: 0.4,
+                    },
+                    {
+                        label: "Rejected PRs",
+                        data: rejectPR,
+                        borderColor: "rgba(211, 47, 47, 1)",
+                        backgroundColor: "rgba(211, 47, 47, 1)",
+                        // fill: true,
+                        // tension: 0.4,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true, position: "bottom" },
+                },
+                scales: {
+                    y: { beginAtZero: true },
+                },
+            },
+        });
+    }
+});

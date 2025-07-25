@@ -3,7 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TwoFactorCodeController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminChartController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\UserDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,14 +18,15 @@ use App\Http\Controllers\AdminChartController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
+    // return view('welcome');
 });
 
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/admin', [AdminChartController::class, 'show'])->middleware(['auth', 'verified', 'twofactor'])->name('admin');
+Route::get('/admin', [AdminDashboardController::class, 'show'])->middleware(['auth', 'verified', 'twofactor'])->name('admin');
 Route::get('/admin/reports', function () {
     return view('admin.reports');
 })->middleware(['auth', 'verified'])->name('admin.reports');
@@ -48,9 +50,7 @@ Route::get('/staff/suppliers', function () {
     return view('staff.suppliers');
 })->middleware(['auth', 'verified'])->name('staff.suppliers');
 
-Route::get('/user', function () {
-    return view('user.requestingUnit_dashboard');
-})->middleware(['auth', 'verified', 'twofactor'])->name('user');
+Route::get('/user', [UserDashboardController::class, 'show'])->middleware(['auth', 'verified', 'twofactor'])->name('user');
 Route::get('/user/requests', function () {
     return view('user.requests');
 })->middleware(['auth', 'verified'])->name('user.requests');

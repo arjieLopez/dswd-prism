@@ -50,6 +50,7 @@
         </h2>
     </x-slot>
 
+    <!-- Main Body -->
     <div class="py-8">
         <div class="w-full px-4 sm:px-6 lg:px-8 space-y-6">
             <div>
@@ -57,11 +58,77 @@
                     {{ __('Dashboard') }}
                 </h2>
             </div>
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="px-6 py-6 font-semibold text-lg text-gray-900 tracking-wide">
-                    {{ __("You are logged in!") }}
+            <div class="grid grid-cols-4 gap-6">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="px-6 pt-6 font-semibold text-gray-400 tracking-wide">
+                        {{ __('Total PRs') }}
+                    </div>
+                    <div class="px-6 font-semibold text-2xl text-gray-700">
+                        147
+                    </div>
+                    <div class="px-6 py-6 text-xs text-gray-400 tracking-wide">
+                        <p>{{ __('15% increase from') }}</p>
+                        <p>{{ __('last month') }}</p>
+                    </div>
+                </div>
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="px-6 pt-6 font-semibold text-gray-400 tracking-wide">
+                        {{ __('Approved PRs') }}
+                    </div>
+                    <div class="px-6 font-semibold text-2xl text-gray-700">
+                        50
+                    </div>
+                    <div class="px-6 py-6 text-xs text-gray-400 tracking-wide">
+                        <p>{{ __('15% increase from') }}</p>
+                        <p>{{ __('last month') }}</p>
+                    </div>
+                </div>
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="px-6 pt-6 font-semibold text-gray-400 tracking-wide">
+                        {{ __('Pending PRs') }}
+                    </div>
+                    <div class="px-6 font-semibold text-2xl text-gray-700">
+                        20
+                    </div>
+                    <div class="px-6 py-6 text-xs text-gray-400 tracking-wide">
+                        <p>{{ __('15% increase from') }}</p>
+                        <p>{{ __('last month') }}</p>
+                    </div>
+                </div>
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="px-6 pt-6 font-semibold text-gray-400 tracking-wide">
+                        {{ __('Rejected PRs') }}
+                    </div>
+                    <div class="px-6 font-semibold text-2xl text-gray-700">
+                        77
+                    </div>
+                    <div class="px-6 py-6 text-xs text-gray-400 tracking-wide">
+                        <p>{{ __('15% increase from') }}</p>
+                        <p>{{ __('last month') }}</p>
+                    </div>
                 </div>
             </div>
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="px-6 pt-6 font-semibold text-lg text-gray-900 tracking-wide text-center">
+                    {{ __('Monthly Purchase Request Status Overview') }}
+                </div>
+                <div class="px-6 py-6 font-semibold text-lg text-gray-900 tracking-wide">
+                    <canvas id="prLineChart"></canvas>
+
+                    <script>
+                        window.prChartLabels = @json($labels);
+                        window.userApproveChartData = @json($approvePR);
+                        window.userPendingChartData = @json($pendingPR);
+                        window.userRejectChartData = @json($rejectPR);
+                    </script>
+                </div>
+            </div>
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="px-6 py-6 font-semibold text-lg text-gray-900 tracking-wide">
+                    {{ __('Recent Activity') }}
+                </div>
+            </div>
+
         </div>
     </div>
 
