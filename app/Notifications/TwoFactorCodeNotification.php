@@ -27,7 +27,7 @@ class TwoFactorCodeNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return [];
     }
 
     /**
@@ -36,9 +36,9 @@ class TwoFactorCodeNotification extends Notification
     public function toMail(User $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line("Your two-factor authentication code is: $notifiable->twofactor_code")
-                    ->action('Verify Here', route('verify.show'))
-                    ->line('The code will expire in 10 minutes.');
+            ->line("Your two-factor authentication code is: $notifiable->twofactor_code")
+            ->action('Verify Here', route('verify.show'))
+            ->line('The code will expire in 10 minutes.');
     }
 
     /**

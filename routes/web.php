@@ -17,6 +17,10 @@ use App\Http\Controllers\UserDashboardController;
 |
 */
 
+Route::get('/welcome', function () {
+    return view('welcome');
+});
+
 Route::get('/', function () {
     return view('auth.login');
     // return view('welcome');
@@ -30,9 +34,13 @@ Route::get('/admin', [AdminDashboardController::class, 'show'])->middleware(['au
 Route::get('/admin/reports', function () {
     return view('admin.reports');
 })->middleware(['auth', 'verified'])->name('admin.reports');
-Route::get('/admin/user-management', function () {
-    return view('admin.user_management');
-})->middleware(['auth', 'verified'])->name('admin.user_management');
+
+Route::get('/admin/user-management', [App\Http\Controllers\UserManagementController::class, 'index'])->middleware(['auth', 'verified'])->name('admin.user_management');
+Route::post('/admin/user-management', [App\Http\Controllers\UserManagementController::class, 'store'])->middleware(['auth', 'verified'])->name('admin.user_management.store');
+Route::put('/admin/user-management/{user}', [App\Http\Controllers\UserManagementController::class, 'update'])->middleware(['auth', 'verified'])->name('admin.user_management.update');
+Route::delete('/admin/user-management/{user}', [App\Http\Controllers\UserManagementController::class, 'destroy'])->middleware(['auth', 'verified'])->name('admin.user_management.destroy');
+Route::patch('/admin/user-management/{user}/toggle-status', [App\Http\Controllers\UserManagementController::class, 'toggleStatus'])->middleware(['auth', 'verified'])->name('admin.user_management.toggle-status');
+
 Route::get('/admin/audit-logs', function () {
     return view('admin.audit_logs');
 })->middleware(['auth', 'verified'])->name('admin.audit_logs');

@@ -51,15 +51,32 @@ class User extends Authenticatable
     public function regenerateTwoFactorCode()
     {
         $this->timestamps = false;
-        $this->twofactor_code = rand(100000, 999999); 
+        $this->twofactor_code = rand(100000, 999999);
         $this->twofactor_code_expires_at = now()->addMinutes(10);
         $this->save();
     }
 
-    public function clearTwoFactorCode() {
+    public function clearTwoFactorCode()
+    {
         $this->timestamps = false;
-        $this->twofactor_code = null; 
+        $this->twofactor_code = null;
         $this->twofactor_code_expires_at = null;
         $this->save();
+    }
+
+    /**
+     * Check if user is active
+     */
+    public function isActive()
+    {
+        return !is_null($this->email_verified_at);
+    }
+
+    /**
+     * Get user status
+     */
+    public function getStatusAttribute()
+    {
+        return $this->isActive() ? 'Active' : 'Inactive';
     }
 }

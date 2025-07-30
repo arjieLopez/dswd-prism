@@ -42,10 +42,19 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         // 4. Two-Factor Authentication
+        $user = Auth::user();
+        if ($user) {
+            $user->regenerateTwoFactorCode();
+            $user->notify(new TwoFactorCodeNotification());
+        } else {
+            return back()->withErrors(['email' => 'Authentication failed. Please try again.']);
+        }
+
+        // 5. Two-Factor Authentication
         $request->user()->regenerateTwoFactorCode();
         $request->user()->notify(new TwoFactorCodeNotification());
 
-        // 5. Redirect to verify page for 2FA
+        // 6. Redirect to verify page for 2FA
         return redirect()->route('verify.show');
     }
 
