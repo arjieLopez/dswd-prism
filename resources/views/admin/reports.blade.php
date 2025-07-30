@@ -58,11 +58,95 @@
                     {{ __('Reports') }}
                 </h2>
             </div>
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="px-6 py-6 font-semibold text-lg text-gray-900 tracking-wide">
-                    {{ __("You are logged in!") }}
+
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <!-- Search, Filter, Export Controls -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
+                    <div class="flex items-center gap-2 w-full md:w-auto">
+                        <input type="text" placeholder="Search"
+                            class="w-full md:w-64 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <button
+                            class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Search</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6h18M4 14h16M4 18h16">
+                                </path>
+                            </svg>
+                            Filter
+                        </button>
+                        <button
+                            class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Document
+                                    Number</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Created
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Edited
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <!-- Example static rows, replace with foreach for dynamic data -->
+                            <tr>
+                                <td class="px-4 py-2">PR</td>
+                                <td class="px-4 py-2">PR 2025-0001</td>
+                                <td class="px-4 py-2">ICTMS</td>
+                                <td class="px-4 py-2">
+                                    <span
+                                        class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold">Failed</span>
+                                </td>
+                                <td class="px-4 py-2">₱ 676,352.16</td>
+                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
+                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
+                                <td class="px-4 py-2">
+                                    <button
+                                        class="bg-blue-500 text-white px-4 py-1 rounded-full font-semibold hover:bg-blue-600 transition">View</button>
+                                </td>
+                            </tr>
+                            <!-- Add more rows as needed -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination and Results Count -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mt-4">
+                    <div class="text-gray-500 text-sm mb-2 md:mb-0">
+                        Showing 10 of 388 results
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="px-2 py-1 text-gray-400" disabled>&lt;&lt;</button>
+                        <button class="px-2 py-1 text-gray-400" disabled>&lt;</button>
+                        <button class="px-3 py-1 bg-blue-600 text-white rounded font-semibold">1</button>
+                        <button class="px-2 py-1 text-gray-600">2</button>
+                        <button class="px-2 py-1 text-gray-600">3</button>
+                        <button class="px-2 py-1 text-gray-400" disabled>&gt;</button>
+                        <button class="px-2 py-1 text-gray-400" disabled>&gt;&gt;</button>
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
 

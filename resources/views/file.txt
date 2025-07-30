@@ -1,0 +1,80 @@
+I'll review all your files to understand your current project structure and implementation. Let me go through the key files systematically.
+
+Ran tool
+Read file: composer.json
+Read file: package.json
+Read file: routes/web.php
+Read file: app/Models/User.php
+Read file: resources/views/layouts/app.blade.php
+Read file: resources/views/layouts/navigation.blade.php
+Read file: resources/views/layouts/page.blade.php
+Read file: resources/views/layouts/sidebar.blade.php
+Read file: app/Http/Controllers/AdminDashboardController.php
+Read file: app/Http/Controllers/UserDashboardController.php
+Read file: resources/js/app.js
+Read file: tailwind.config.js
+Ran tool
+Read file: database/migrations/2014_10_12_000000_create_users_table.php
+Read file: database/migrations/2025_07_20_053328_add_twofactorcode_columns_to_users_table.php
+## Project Review Summary
+
+Based on my comprehensive review of your DSWD-PRISM project, here's what I've found:
+
+### **Project Overview**
+- **Framework**: Laravel 10.x with PHP 8.1+
+- **Frontend**: Tailwind CSS 3.1.0 + Alpine.js + Chart.js
+- **Authentication**: Laravel Breeze with custom 2FA implementation
+- **Icons**: Iconify (already included in page.blade.php)
+- **UI Components**: Flowbite + Blade UI Kit Heroicons
+
+### **Current Architecture**
+
+#### **User Roles & Authentication**
+- **3 User Roles**: `admin`, `staff`, `user` (default)
+- **2FA Implementation**: Custom two-factor authentication with 6-digit codes
+- **User Model**: Extended with `role`, `twofactor_code`, `twofactor_code_expires_at`
+
+#### **Layout Structure**
+- **Main Layout**: `page.blade.php` (with sidebar)
+- **Sidebar**: `sidebar.blade.php` (role-based navigation)
+- **Navigation**: `navigation.blade.php` (top header)
+- **Iconify**: Already integrated for icon support
+
+#### **Routes & Controllers**
+- **Admin Routes**: `/admin`, `/admin/reports`, `/admin/user-management`, `/admin/audit-logs`
+- **Staff Routes**: `/staff`, `/staff/pr-review`, `/staff/po-generation`, `/staff/suppliers`
+- **User Routes**: `/user`, `/user/requests`
+- **Controllers**: `AdminDashboardController`, `UserDashboardController`
+
+#### **Current Features**
+- **Charts**: Chart.js integration for PR/PO data visualization
+- **Responsive Design**: Tailwind CSS with mobile support
+- **Role-based Access**: Different dashboards per user role
+- **2FA Middleware**: `twofactor` middleware for secure access
+
+### **Issues Found**
+
+1. **Sidebar Syntax Error**: There's a stray `i` character at the beginning of `sidebar.blade.php` (line 1)
+2. **Route Names**: Some route names don't match the sidebar links (e.g., `admin.user_management` vs `admin.user-management`)
+3. **Missing Controllers**: Most routes use closure functions instead of dedicated controllers
+4. **No Database Models**: Only User model exists, no PR/PO/Activity models yet
+
+### **Recommendations**
+
+1. **Fix Sidebar**: Remove the stray `i` character
+2. **Standardize Routes**: Make route names consistent
+3. **Add Missing Models**: Create models for PR, PO, Activity tracking
+4. **Controller Organization**: Move route logic to dedicated controllers
+5. **Database Structure**: Add tables for PR, PO, and audit logs
+
+### **Current Status**
+Your project has a solid foundation with:
+- ✅ Modern Laravel setup
+- ✅ Tailwind CSS + Alpine.js
+- ✅ Role-based authentication
+- ✅ 2FA implementation
+- ✅ Chart.js integration
+- ✅ Iconify support
+- ✅ Responsive layouts
+
+The main areas for improvement are database structure, model creation, and code organization. Would you like me to help you implement any specific features or fix the identified issues?

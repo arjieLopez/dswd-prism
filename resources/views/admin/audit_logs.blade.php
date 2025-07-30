@@ -58,9 +58,105 @@
                     {{ __('Audit Trail') }}
                 </h2>
             </div>
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="px-6 py-6 font-semibold text-lg text-gray-900 tracking-wide">
-                    {{ __("You are logged in!") }}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <!-- Search, Filter, Export Controls -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
+                    <div class="flex items-center gap-2 w-full md:w-auto">
+                        <div class="relative">
+                            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <input type="text" placeholder="Search..."
+                                class="pl-10 w-full md:w-64 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        </div>
+                        <button
+                            class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Search</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6h18M4 14h16M4 18h16">
+                                </path>
+                            </svg>
+                            Filter
+                        </button>
+                        <button
+                            class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Audit Logs Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Timestamp
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <!-- Example static rows, replace with foreach for dynamic data -->
+                            <tr>
+                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
+                                <td class="px-4 py-2">Christian Arjie P Lopez</td>
+                                <td class="px-4 py-2">Admin</td>
+                                <td class="px-4 py-2">Assigned Stephen T. Jones as GSO</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
+                                <td class="px-4 py-2">Stephen T. Jones</td>
+                                <td class="px-4 py-2">GSO</td>
+                                <td class="px-4 py-2">Approved PR 2025-0002</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
+                                <td class="px-4 py-2">Ronald D. Humiston</td>
+                                <td class="px-4 py-2">GSO</td>
+                                <td class="px-4 py-2">Generated PO for PR 2025-0002</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
+                                <td class="px-4 py-2">Lorenzo A. Carter</td>
+                                <td class="px-4 py-2">ICTMS</td>
+                                <td class="px-4 py-2">Created PR for ICT supplies</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
+                                <td class="px-4 py-2">Roy C. Lemmon</td>
+                                <td class="px-4 py-2">ICTMS</td>
+                                <td class="px-4 py-2">Submitted PR 2025-0003</td>
+                            </tr>
+                            <!-- Add more rows as needed -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination and Results Count -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mt-4">
+                    <div class="text-gray-500 text-sm mb-2 md:mb-0">
+                        Showing 10 of 388 results
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="px-2 py-1 text-gray-400" disabled>&lt;&lt;</button>
+                        <button class="px-2 py-1 text-gray-400" disabled>&lt;</button>
+                        <button class="px-3 py-1 bg-blue-600 text-white rounded font-semibold">1</button>
+                        <button class="px-2 py-1 text-gray-600">2</button>
+                        <button class="px-2 py-1 text-gray-600">3</button>
+                        <button class="px-2 py-1 text-gray-400" disabled>&gt;</button>
+                        <button class="px-2 py-1 text-gray-400" disabled>&gt;&gt;</button>
+                    </div>
                 </div>
             </div>
         </div>
