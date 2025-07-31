@@ -5,6 +5,7 @@ use App\Http\Controllers\TwoFactorCodeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\UserDashboardController;
+use App\Http\Controllers\PurchaseRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,9 +60,16 @@ Route::get('/staff/suppliers', function () {
 })->middleware(['auth', 'verified'])->name('staff.suppliers');
 
 Route::get('/user', [UserDashboardController::class, 'show'])->middleware(['auth', 'verified', 'twofactor'])->name('user');
-Route::get('/user/requests', function () {
-    return view('user.requests');
-})->middleware(['auth', 'verified'])->name('user.requests');
+Route::get('/user/requests', [PurchaseRequestController::class, 'index'])->middleware(['auth', 'verified'])->name('user.requests');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/purchase-requests/create', [PurchaseRequestController::class, 'create'])->name('purchase-requests.create');
+    Route::post('/purchase-requests', [PurchaseRequestController::class, 'store'])->name('purchase-requests.store');
+    Route::get('/purchase-requests/{purchaseRequest}', [PurchaseRequestController::class, 'show'])->name('purchase-requests.show');
+    Route::get('/purchase-requests/{purchaseRequest}/edit', [PurchaseRequestController::class, 'edit'])->name('purchase-requests.edit');
+    Route::put('/purchase-requests/{purchaseRequest}', [PurchaseRequestController::class, 'update'])->name('purchase-requests.update');
+    Route::delete('/purchase-requests/{purchaseRequest}', [PurchaseRequestController::class, 'destroy'])->name('purchase-requests.destroy');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

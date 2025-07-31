@@ -79,4 +79,9 @@ class User extends Authenticatable
     {
         return $this->isActive() ? 'Active' : 'Inactive';
     }
+
+    public function purchaseRequests()
+    {
+        return $this->hasMany(PurchaseRequest::class);
+    }
 }

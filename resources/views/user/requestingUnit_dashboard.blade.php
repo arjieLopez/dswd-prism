@@ -1,6 +1,6 @@
 <x-page-layout>
     <x-slot name="header">
-        <a href="/admin">
+        <a href="/user">
             <img src="{{ asset('images/DSWD-Logo1.png') }}" alt="DSWD Logo" class="w-16">
         </a>
         <h2 class="p-4 font-bold text-xl text-gray-800 leading-tight tracking-wide">
