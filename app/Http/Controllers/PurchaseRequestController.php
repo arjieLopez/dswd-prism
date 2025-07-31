@@ -88,55 +88,89 @@ class PurchaseRequestController extends Controller
         return redirect()->route('user.requests')->with('success', 'Purchase Request created successfully!');
     }
 
-    public function show(PurchaseRequest $purchaseRequest)
+    public function getData(PurchaseRequest $purchaseRequest)
     {
-        // Redirect to requests page since we use modals
-        return redirect()->route('user.requests');
-    }
+        // Check if user can access this purchase request
+        if ($purchaseRequest->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
 
-    public function edit(PurchaseRequest $purchaseRequest)
-    {
-        // Redirect to requests page since we use modals
-        return redirect()->route('user.requests');
+        return response()->json([
+            'id' => $purchaseRequest->id,
+            'pr_number' => $purchaseRequest->pr_number,
+            'entity_name' => $purchaseRequest->entity_name,
+            'fund_cluster' => $purchaseRequest->fund_cluster,
+            'office_section' => $purchaseRequest->office_section,
+            'date' => $purchaseRequest->date,
+            'unit' => $purchaseRequest->unit,
+            'quantity' => $purchaseRequest->quantity,
+            'unit_cost' => $purchaseRequest->unit_cost,
+            'total_cost' => $purchaseRequest->total_cost,
+            'item_description' => $purchaseRequest->item_description,
+            'delivery_address' => $purchaseRequest->delivery_address,
+            'purpose' => $purchaseRequest->purpose,
+            'requested_by_name' => $purchaseRequest->requested_by_name,
+            'delivery_period' => $purchaseRequest->delivery_period,
+            'status' => $purchaseRequest->status,
+            'status_color' => $purchaseRequest->status_color,
+        ]);
     }
 
     public function update(Request $request, PurchaseRequest $purchaseRequest)
     {
-        $request->validate([
-            'entity_name' => 'required|string|max:255',
-            'fund_cluster' => 'required|string|max:255',
-            'office_section' => 'required|string|max:255',
-            'date' => 'required|date',
-            'unit' => 'required|string|max:255',
-            'item_description' => 'required|string',
-            'quantity' => 'required|integer|min:1',
-            'unit_cost' => 'required|numeric|min:0',
-            'delivery_period' => 'required|string|max:255',
-            'delivery_address' => 'required|string',
-            'purpose' => 'required|string',
-        ]);
+        // Check if user can edit this purchase request
+        if ($purchaseRequest->user_id !== auth()->id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
 
-        // Calculate totals
-        $totalCost = $request->quantity * $request->unit_cost;
-        $total = $totalCost;
+        try {
+            $validated = $request->validate([
+                'entity_name' => 'required|string|max:255',
+                'fund_cluster' => 'required|string|max:255',
+                'office_section' => 'required|string|max:255',
+                'date' => 'required|date',
+                'unit' => 'required|string|max:255',
+                'item_description' => 'required|string',
+                'quantity' => 'required|integer|min:1',
+                'unit_cost' => 'required|numeric|min:0',
+                'delivery_period' => 'required|string|max:255',
+                'delivery_address' => 'required|string',
+                'purpose' => 'required|string',
+            ]);
 
-        $purchaseRequest->update([
-            'entity_name' => $request->entity_name,
-            'fund_cluster' => $request->fund_cluster,
-            'office_section' => $request->office_section,
-            'date' => $request->date,
-            'unit' => $request->unit,
-            'item_description' => $request->item_description,
-            'quantity' => $request->quantity,
-            'unit_cost' => $request->unit_cost,
-            'total_cost' => $totalCost,
-            'total' => $total,
-            'delivery_period' => $request->delivery_period,
-            'delivery_address' => $request->delivery_address,
-            'purpose' => $request->purpose,
-        ]);
+            // Calculate totals
+            $totalCost = $request->quantity * $request->unit_cost;
+            $total = $totalCost;
 
-        return redirect()->route('user.requests')->with('success', 'Purchase Request updated successfully!');
+            $purchaseRequest->update([
+                'entity_name' => $request->entity_name,
+                'fund_cluster' => $request->fund_cluster,
+                'office_section' => $request->office_section,
+                'date' => $request->date,
+                'unit' => $request->unit,
+                'item_description' => $request->item_description,
+                'quantity' => $request->quantity,
+                'unit_cost' => $request->unit_cost,
+                'total_cost' => $totalCost,
+                'total' => $total,
+                'delivery_period' => $request->delivery_period,
+                'delivery_address' => $request->delivery_address,
+                'purpose' => $request->purpose,
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Purchase Request updated successfully!']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating purchase request: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy(PurchaseRequest $purchaseRequest)

@@ -154,10 +154,10 @@
                                             ₱ {{ number_format($pr->total, 2) }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                            <a href="{{ route('purchase-requests.show', $pr) }}"
-                                                class="text-blue-600 hover:text-blue-900">View</a>
-                                            <a href="{{ route('purchase-requests.edit', $pr) }}"
-                                                class="text-blue-600 hover:text-blue-900">Edit</a>
+                                            <button onclick="openViewModal({{ $pr->id }})"
+                                                class="text-blue-600 hover:text-blue-900">View</button>
+                                            <button onclick="openEditModal({{ $pr->id }})"
+                                                class="text-blue-600 hover:text-blue-900">Edit</button>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -187,5 +187,475 @@
         </div>
     </div>
 
+    <!-- View Purchase Request Modal -->
+    <x-modal name="view-pr-modal" maxWidth="2xl">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Purchase Request Details</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600" onclick="closeViewModal()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">PR Number</label>
+                    <p id="view-pr-number" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date</label>
+                    <p id="view-pr-date" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Entity Name</label>
+                    <p id="view-entity-name" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Fund Cluster</label>
+                    <p id="view-fund-cluster" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Office Section</label>
+                    <p id="view-office-section" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Status</label>
+                    <span id="view-status"
+                        class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full"></span>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Unit</label>
+                    <p id="view-unit" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Quantity</label>
+                    <p id="view-quantity" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Unit Cost</label>
+                    <p id="view-unit-cost" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Total Cost</label>
+                    <p id="view-total-cost" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Item Description</label>
+                    <p id="view-item-description" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Delivery Address</label>
+                    <p id="view-delivery-address" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Purpose</label>
+                    <p id="view-purpose" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Requested By</label>
+                    <p id="view-requested-by" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Delivery Period</label>
+                    <p id="view-delivery-period" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg"
+                    onclick="closeViewModal()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </x-modal>
+
+    <!-- Edit Purchase Request Modal -->
+    <x-modal name="edit-pr-modal" maxWidth="2xl">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Edit Purchase Request</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600" onclick="closeEditModal()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="edit-pr-form" method="POST">
+                @csrf
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="edit-entity-name" class="block text-sm font-medium text-gray-700">Entity
+                            Name <span class="text-red-500">*</span></label>
+                        <input type="text" name="entity_name" id="edit-entity-name"
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="edit-fund-cluster" class="block text-sm font-medium text-gray-700">Fund
+                            Cluster <span class="text-red-500">*</span></label>
+                        <input type="text" name="fund_cluster" id="edit-fund-cluster"
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="edit-office-section" class="block text-sm font-medium text-gray-700">Office
+                            Section <span class="text-red-500">*</span></label>
+                        <input type="text" name="office_section" id="edit-office-section"
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="edit-date" class="block text-sm font-medium text-gray-700">Date <span
+                                class="text-red-500">*</span></label>
+                        <input type="date" name="date" id="edit-date"
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="edit-unit" class="block text-sm font-medium text-gray-700">Unit <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" name="unit" id="edit-unit"
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="edit-quantity" class="block text-sm font-medium text-gray-700">Quantity <span
+                                class="text-red-500">*</span></label>
+                        <input type="number" name="quantity" id="edit-quantity" min="1"
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="edit-unit-cost" class="block text-sm font-medium text-gray-700">Unit Cost <span
+                                class="text-red-500">*</span></label>
+                        <input type="number" name="unit_cost" id="edit-unit-cost" step="0.01" min="0"
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </div>
+                    <div>
+                        <label for="edit-delivery-period" class="block text-sm font-medium text-gray-700">Delivery
+                            Period <span class="text-red-500">*</span></label>
+                        <input type="text" name="delivery_period" id="edit-delivery-period"
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="edit-item-description" class="block text-sm font-medium text-gray-700">Item
+                            Description <span class="text-red-500">*</span></label>
+                        <textarea name="item_description" id="edit-item-description" rows="3"
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"></textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="edit-delivery-address" class="block text-sm font-medium text-gray-700">Delivery
+                            Address <span class="text-red-500">*</span></label>
+                        <textarea name="delivery_address" id="edit-delivery-address" rows="3"
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"></textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="edit-purpose" class="block text-sm font-medium text-gray-700">Purpose <span
+                                class="text-red-500">*</span></label>
+                        <textarea name="purpose" id="edit-purpose" rows="3"
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end space-x-2">
+                    <button type="button"
+                        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg"
+                        onclick="closeEditModal()">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </x-modal>
+
+    <script>
+        function openViewModal(prId) {
+            // Fetch purchase request data
+            fetch(`/purchase-requests/${prId}/data`)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate modal fields
+                    document.getElementById('view-pr-number').textContent = data.pr_number;
+                    document.getElementById('view-pr-date').textContent = data.date;
+                    document.getElementById('view-entity-name').textContent = data.entity_name;
+                    document.getElementById('view-fund-cluster').textContent = data.fund_cluster;
+                    document.getElementById('view-office-section').textContent = data.office_section;
+                    document.getElementById('view-unit').textContent = data.unit;
+                    document.getElementById('view-quantity').textContent = data.quantity;
+                    document.getElementById('view-unit-cost').textContent = '₱' + parseFloat(data.unit_cost)
+                        .toLocaleString('en-US', {
+                            minimumFractionDigits: 2
+                        });
+                    document.getElementById('view-total-cost').textContent = '₱' + parseFloat(data.total_cost)
+                        .toLocaleString('en-US', {
+                            minimumFractionDigits: 2
+                        });
+                    document.getElementById('view-item-description').textContent = data.item_description;
+                    document.getElementById('view-delivery-address').textContent = data.delivery_address;
+                    document.getElementById('view-purpose').textContent = data.purpose;
+                    document.getElementById('view-requested-by').textContent = data.requested_by_name;
+                    document.getElementById('view-delivery-period').textContent = data.delivery_period;
+
+                    // Set status with color
+                    const statusElement = document.getElementById('view-status');
+                    statusElement.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                    statusElement.className =
+                        `mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-${data.status_color}-100 text-${data.status_color}-800`;
+
+                    // Open modal
+                    window.dispatchEvent(new CustomEvent('open-modal', {
+                        detail: 'view-pr-modal'
+                    }));
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading purchase request data');
+                });
+        }
+
+        function closeViewModal() {
+            window.dispatchEvent(new CustomEvent('close-modal', {
+                detail: 'view-pr-modal'
+            }));
+        }
+
+        function openEditModal(prId) {
+            // Fetch purchase request data
+            fetch(`/purchase-requests/${prId}/data`)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate form fields
+                    document.getElementById('edit-entity-name').value = data.entity_name;
+                    document.getElementById('edit-fund-cluster').value = data.fund_cluster;
+                    document.getElementById('edit-office-section').value = data.office_section;
+                    document.getElementById('edit-date').value = data.date;
+                    document.getElementById('edit-unit').value = data.unit;
+                    document.getElementById('edit-quantity').value = data.quantity;
+                    document.getElementById('edit-unit-cost').value = data.unit_cost;
+                    document.getElementById('edit-delivery-period').value = data.delivery_period;
+                    document.getElementById('edit-item-description').value = data.item_description;
+                    document.getElementById('edit-delivery-address').value = data.delivery_address;
+                    document.getElementById('edit-purpose').value = data.purpose;
+
+                    // Set form action
+                    document.getElementById('edit-pr-form').action = `/purchase-requests/${prId}/update`;
+
+                    // Open modal
+                    window.dispatchEvent(new CustomEvent('open-modal', {
+                        detail: 'edit-pr-modal'
+                    }));
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading purchase request data');
+                });
+        }
+
+        function closeEditModal() {
+            window.dispatchEvent(new CustomEvent('close-modal', {
+                detail: 'edit-pr-modal'
+            }));
+        }
+
+        // Handle form submission - only for edit form
+        document.addEventListener('DOMContentLoaded', function() {
+            const editForm = document.getElementById('edit-pr-form');
+            if (editForm) {
+                editForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    // Clear previous error messages
+                    clearValidationErrors();
+
+                    const formData = new FormData(this);
+
+                    fetch(this.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                    .getAttribute('content')
+                            }
+                        })
+                        .then(response => {
+                            return response.text().then(text => {
+                                try {
+                                    const jsonData = JSON.parse(text);
+                                    return {
+                                        success: true,
+                                        data: jsonData
+                                    };
+                                } catch (e) {
+                                    return {
+                                        success: false,
+                                        html: text
+                                    };
+                                }
+                            });
+                        })
+                        .then(result => {
+                            if (result.success) {
+                                if (result.data.success) {
+                                    closeEditModal();
+                                    alert('Purchase request updated successfully!');
+                                    window.location.reload();
+                                } else {
+                                    // Handle validation errors
+                                    if (result.data.errors) {
+                                        displayValidationErrors(result.data.errors);
+                                    } else {
+                                        alert('Error updating purchase request: ' + (result.data
+                                            .message || 'Unknown error'));
+                                    }
+                                }
+                            } else {
+                                // Parse HTML response for validation errors
+                                const errors = parseHtmlForErrors(result.html);
+                                if (errors) {
+                                    displayValidationErrors(errors);
+                                } else {
+                                    alert(
+                                        'Server returned HTML instead of JSON. Check console for details.'
+                                    );
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Detailed error:', error);
+                            alert('Error updating purchase request: ' + error.message);
+                        });
+                });
+            }
+        });
+
+        // Function to clear all validation error messages
+        function clearValidationErrors() {
+            const errorElements = document.querySelectorAll('.validation-error');
+            errorElements.forEach(element => element.remove());
+
+            // Remove error styling from inputs
+            const inputs = document.querySelectorAll('#edit-pr-form input, #edit-pr-form textarea');
+            inputs.forEach(input => {
+                input.classList.remove('border-red-500');
+                input.classList.add('border-gray-300');
+            });
+        }
+
+        // Function to display validation errors
+        function displayValidationErrors(errors) {
+            Object.keys(errors).forEach(fieldName => {
+                const field = document.querySelector(`[name="${fieldName}"]`);
+                if (field) {
+                    // Add red border to the field
+                    field.classList.remove('border-gray-300');
+                    field.classList.add('border-red-500');
+
+                    // Create error message element
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'validation-error text-red-600 text-sm mt-1';
+                    errorDiv.textContent = errors[fieldName][0]; // Get first error message
+
+                    // Insert error message after the field
+                    field.parentNode.appendChild(errorDiv);
+                }
+            });
+        }
+
+        // Function to parse HTML response for validation errors
+        function parseHtmlForErrors(html) {
+            // Look for common Laravel validation error patterns
+            const errorMatches = html.match(/<li[^>]*>([^<]+)<\/li>/g);
+            if (errorMatches) {
+                const errors = {};
+                errorMatches.forEach(match => {
+                    const errorText = match.replace(/<[^>]*>/g, '');
+                    // Try to extract field name from error message
+                    const fieldMatch = errorText.match(/The (\w+)/i);
+                    if (fieldMatch) {
+                        const fieldName = fieldMatch[1].toLowerCase().replace(/\s+/g, '_');
+                        if (!errors[fieldName]) {
+                            errors[fieldName] = [];
+                        }
+                        errors[fieldName].push(errorText);
+                    }
+                });
+                return Object.keys(errors).length > 0 ? errors : null;
+            }
+            return null;
+        }
+        // // Global error handling for edit form submission
+        // // Uncomment this section if you want to handle the edit form submission with JavaScript
+        // // This is an alternative to the inline form submission handler above.
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     const editForm = document.getElementById('edit-pr-form');
+        //     if (editForm) {
+        //         editForm.addEventListener('submit', function(e) {
+        //             e.preventDefault();
+
+        //             const formData = new FormData(this);
+
+        //             // Debug: Log the form action
+        //             console.log('Form action:', this.action);
+        //             console.log('Form data:', Object.fromEntries(formData));
+
+        //             fetch(this.action, {
+        //                     method: 'POST',
+        //                     body: formData,
+        //                     headers: {
+        //                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+        //                             .getAttribute('content')
+        //                     }
+        //                 })
+        //                 .then(response => {
+        //                     console.log('Response status:', response.status);
+        //                     console.log('Response URL:', response.url);
+
+        //                     // Check if response is JSON
+        //                     const contentType = response.headers.get('content-type');
+        //                     console.log('Content-Type:', contentType);
+
+        //                     if (!response.ok) {
+        //                         return response.text().then(text => {
+        //                             console.log('Error response body:', text.substring(0,
+        //                                 200)); // First 200 chars
+        //                             throw new Error(
+        //                                 `HTTP ${response.status}: ${text.substring(0, 100)}`
+        //                             );
+        //                         });
+        //                     }
+
+        //                     if (contentType && contentType.includes('application/json')) {
+        //                         return response.json();
+        //                     } else {
+        //                         return response.text().then(text => {
+        //                             console.log('Non-JSON response:', text.substring(0, 200));
+        //                             throw new Error('Server returned HTML instead of JSON');
+        //                         });
+        //                     }
+        //                 })
+        //                 .then(data => {
+        //                     console.log('Success response:', data);
+        //                     if (data.success) {
+        //                         closeEditModal();
+        //                         alert('Purchase request updated successfully!');
+        //                         window.location.reload();
+        //                     } else {
+        //                         alert('Error updating purchase request: ' + (data.message ||
+        //                             'Unknown error'));
+        //                     }
+        //                 })
+        //                 .catch(error => {
+        //                     console.error('Detailed error:', error);
+        //                     alert('Error updating purchase request: ' + error.message);
+        //                 });
+        //         });
+        //     }
+        // });
+    </script>
 
 </x-page-layout>
