@@ -196,33 +196,33 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($users as $user)
-                                <tr>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <tr>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {{ $user->name }}
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $user->email }}
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ ucfirst($user->role) }}
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                        <span
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span
                                             class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $user->isActive() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
                                             {{ $user->status }}
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $user->created_at->format('Y-m-d H:i:s') }}
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div class="flex items-center space-x-2">
-                                            <button
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex items-center space-x-2">
+                                        <button
                                                 class="bg-blue-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-blue-600 transition"
                                                 onclick="openViewUserModal({{ $user->id }}, '{{ $user->name }}', '{{ $user->email }}', '{{ $user->role }}', '{{ $user->status }}', '{{ $user->created_at }}', '{{ $user->updated_at }}')">
                                                 View
                                             </button>
-                                            <button
+                                        <button
                                                 class="bg-gray-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-gray-600 transition"
                                                 onclick="openEditUserModal({{ $user->id }}, '{{ $user->name }}', '{{ $user->email }}', '{{ $user->role }}')">
                                                 Edit
@@ -248,15 +248,15 @@
                                                         class="bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-red-600 transition">Delete</button>
                                                 </form>
                                             @endif
-                                        </div>
-                                    </td>
-                                </tr>
+                                    </div>
+                                </td>
+                            </tr>
                             @empty
                                 <tr>
                                     <td colspan="6" class="px-4 py-4 text-center text-gray-500">
                                         No users found.
-                                    </td>
-                                </tr>
+                                </td>
+                            </tr>
                             @endforelse
                         </tbody>
                     </table>

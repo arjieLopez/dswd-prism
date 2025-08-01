@@ -158,23 +158,23 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     PR Number
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Date Created
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Amount
                                 </th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Action
                                 </th>
                             </tr>
@@ -183,26 +183,33 @@
                             @if ($purchaseRequests->count() > 0)
                                 @foreach ($purchaseRequests as $pr)
                                     <tr>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        <td
+                                            class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                                             {{ $pr->pr_number }}
                                         </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                             {{ $pr->created_at->format('M d, Y H:i') }}
                                         </td>
-                                        <td class="px-4 py-4 whitespace-nowrap">
+                                        <td class="px-4 py-4 whitespace-nowrap text-center">
                                             <span
                                                 class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-{{ $pr->status_color }}-100 text-{{ $pr->status_color }}-800">
                                                 {{ ucfirst($pr->status) }}
                                             </span>
                                         </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                             ₱ {{ number_format($pr->total, 2) }}
                                         </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                            <button onclick="openViewModal({{ $pr->id }})"
-                                                class="text-blue-600 hover:text-blue-900">View</button>
-                                            <button onclick="openEditModal({{ $pr->id }})"
-                                                class="text-blue-600 hover:text-blue-900">Edit</button>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
+                                            <div class="flex space-x-2 justify-center">
+                                                <button onclick="openViewModal({{ $pr->id }})"
+                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium">
+                                                    View
+                                                </button>
+                                                <button onclick="openEditModal({{ $pr->id }})"
+                                                    class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-3 py-1 rounded text-sm font-medium">
+                                                    Edit
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -283,27 +290,27 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         PR Number
                                     </th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         File Name
                                     </th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         File Type
                                     </th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         File Size
                                     </th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Upload Date
                                     </th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
@@ -311,28 +318,29 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach ($uploadedDocuments as $document)
                                     <tr>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        <td
+                                            class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                                             {{ $document->pr_number }}
                                         </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                             {{ $document->original_filename }}
                                         </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                             <span
                                                 class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                                                 {{ strtoupper($document->file_type) }}
                                             </span>
                                         </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                             {{ $document->file_size_formatted }}
                                         </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                             {{ $document->created_at->format('M d, Y H:i') }}
                                         </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                                            <div class="flex space-x-2">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
+                                            <div class="flex space-x-2 justify-center">
                                                 <a href="{{ route('uploaded-documents.download', $document) }}"
-                                                    class="text-blue-600 hover:text-blue-900">
+                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium">
                                                     Download
                                                 </a>
                                                 <form method="POST"
@@ -341,7 +349,8 @@
                                                     onsubmit="return confirm('Are you sure you want to delete this document?')">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-900">
+                                                    <button type="submit"
+                                                        class="bg-white hover:bg-red-50 text-red-700 border border-red-300 px-3 py-1 rounded text-sm font-medium">
                                                         Delete
                                                     </button>
                                                 </form>
@@ -622,7 +631,7 @@
                     if (alertDiv.parentNode) {
                         alertDiv.remove();
                     }
-                }, 5000);
+                }, 3000);
             }
 
             function showErrorAlert(message) {
@@ -672,7 +681,7 @@
                     if (alertDiv.parentNode) {
                         alertDiv.remove();
                     }
-                }, 5000);
+                }, 3000);
             }
 
 

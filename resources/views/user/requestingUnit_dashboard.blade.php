@@ -59,52 +59,91 @@
                 </h2>
             </div>
             <div class="grid grid-cols-4 gap-6">
+                <!-- Total PRs Card -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="px-6 pt-6 font-semibold text-gray-400 tracking-wide">
-                        {{ __('Total PRs') }}
-                    </div>
-                    <div class="px-6 font-semibold text-2xl text-gray-700">
-                        147
-                    </div>
-                    <div class="px-6 py-6 text-xs text-gray-400 tracking-wide">
-                        <p>{{ __('15% increase from') }}</p>
-                        <p>{{ __('last month') }}</p>
+                    <div class="px-8 py-6 flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold text-gray-400 tracking-wide">
+                                {{ __('Total PRs') }}
+                            </div>
+                            <div class="font-semibold text-2xl text-gray-700">
+                                {{ $totalPRs }}
+                            </div>
+                            <div class="text-xs text-gray-400 tracking-wide">
+                                <p>{{ $totalPercentageChange >= 0 ? '+' : '' }}{{ $totalPercentageChange }}%
+                                    {{ __('from') }}</p>
+                                <p>{{ __('last month') }}</p>
+                            </div>
+                        </div>
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center ml-4">
+                            <i class="iconify w-8 h-8 text-blue-600" data-icon="mdi:file-document-outline"></i>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Approved PRs Card -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="px-6 pt-6 font-semibold text-gray-400 tracking-wide">
-                        {{ __('Approved PRs') }}
-                    </div>
-                    <div class="px-6 font-semibold text-2xl text-gray-700">
-                        50
-                    </div>
-                    <div class="px-6 py-6 text-xs text-gray-400 tracking-wide">
-                        <p>{{ __('15% increase from') }}</p>
-                        <p>{{ __('last month') }}</p>
+                    <div class="px-8 py-6 flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold text-gray-400 tracking-wide">
+                                {{ __('Approved PRs') }}
+                            </div>
+                            <div class="font-semibold text-2xl text-gray-700">
+                                {{ $approvedPRs }}
+                            </div>
+                            <div class="text-xs text-gray-400 tracking-wide">
+                                <p>{{ $approvedPercentageChange >= 0 ? '+' : '' }}{{ $approvedPercentageChange }}%
+                                    {{ __('from') }}</p>
+                                <p>{{ __('last month') }}</p>
+                            </div>
+                        </div>
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center ml-4">
+                            <i class="iconify w-8 h-8 text-green-600" data-icon="mdi:check-circle-outline"></i>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Pending PRs Card -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="px-6 pt-6 font-semibold text-gray-400 tracking-wide">
-                        {{ __('Pending PRs') }}
-                    </div>
-                    <div class="px-6 font-semibold text-2xl text-gray-700">
-                        20
-                    </div>
-                    <div class="px-6 py-6 text-xs text-gray-400 tracking-wide">
-                        <p>{{ __('15% increase from') }}</p>
-                        <p>{{ __('last month') }}</p>
+                    <div class="px-8 py-6 flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold text-gray-400 tracking-wide">
+                                {{ __('Pending PRs') }}
+                            </div>
+                            <div class="font-semibold text-2xl text-gray-700">
+                                {{ $pendingPRs }}
+                            </div>
+                            <div class="text-xs text-gray-400 tracking-wide">
+                                <p>{{ $pendingPercentageChange >= 0 ? '+' : '' }}{{ $pendingPercentageChange }}%
+                                    {{ __('from') }}</p>
+                                <p>{{ __('last month') }}</p>
+                            </div>
+                        </div>
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center ml-4">
+                            <i class="iconify w-8 h-8 text-yellow-600" data-icon="mdi:clock-outline"></i>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Rejected PRs Card -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="px-6 pt-6 font-semibold text-gray-400 tracking-wide">
-                        {{ __('Rejected PRs') }}
-                    </div>
-                    <div class="px-6 font-semibold text-2xl text-gray-700">
-                        77
-                    </div>
-                    <div class="px-6 py-6 text-xs text-gray-400 tracking-wide">
-                        <p>{{ __('15% increase from') }}</p>
-                        <p>{{ __('last month') }}</p>
+                    <div class="px-8 py-6 flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold text-gray-400 tracking-wide">
+                                {{ __('Rejected PRs') }}
+                            </div>
+                            <div class="font-semibold text-2xl text-gray-700">
+                                {{ $rejectedPRs }}
+                            </div>
+                            <div class="text-xs text-gray-400 tracking-wide">
+                                <p>{{ $rejectedPercentageChange >= 0 ? '+' : '' }}{{ $rejectedPercentageChange }}%
+                                    {{ __('from') }}</p>
+                                <p>{{ __('last month') }}</p>
+                            </div>
+                        </div>
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center ml-4">
+                            <i class="iconify w-8 h-8 text-red-600" data-icon="mdi:close-circle-outline"></i>
+                        </div>
                     </div>
                 </div>
             </div>
