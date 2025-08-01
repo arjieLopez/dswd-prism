@@ -11,8 +11,10 @@ class PurchaseRequestController extends Controller
 {
     public function index()
     {
-        $purchaseRequests = auth()->user()->purchaseRequests()->paginate(10);
-        return view('user.requests', compact('purchaseRequests'));
+        $purchaseRequests = auth()->user()->purchaseRequests()->orderBy('created_at', 'desc')->paginate(10);
+        $uploadedDocuments = auth()->user()->uploadedDocuments()->orderBy('created_at', 'desc')->paginate(10);
+
+        return view('user.requests', compact('purchaseRequests', 'uploadedDocuments'));
     }
 
     public function create()
@@ -39,7 +41,6 @@ class PurchaseRequestController extends Controller
             'requested_by_name' => 'required|string|max:255',
             'requested_by_designation' => 'required|string|max:255',
             'requested_by_signature' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'scanned_copy' => 'nullable|file|mimes:pdf,jpeg,png,jpg|max:10240',
         ]);
 
         // Calculate totals
@@ -101,7 +102,7 @@ class PurchaseRequestController extends Controller
             'entity_name' => $purchaseRequest->entity_name,
             'fund_cluster' => $purchaseRequest->fund_cluster,
             'office_section' => $purchaseRequest->office_section,
-            'date' => $purchaseRequest->date,
+            'date' => $purchaseRequest->date->toDateString(),
             'unit' => $purchaseRequest->unit,
             'quantity' => $purchaseRequest->quantity,
             'unit_cost' => $purchaseRequest->unit_cost,

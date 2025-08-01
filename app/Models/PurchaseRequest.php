@@ -33,9 +33,9 @@ class PurchaseRequest extends Model
         'approved_by_name',
         'approved_by_designation',
         'approved_by_signature',
-        'scanned_copy',
         'status',
         'remarks',
+        'notes',
     ];
 
     protected $casts = [

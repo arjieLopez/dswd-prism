@@ -208,20 +208,6 @@
                             </div>
                         </div>
 
-                        <!-- Scanned Copy Upload -->
-                        <div class="border-t pt-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Upload Scanned Copy (Optional)</h3>
-                            <div>
-                                <label for="scanned_copy" class="block text-sm font-medium text-gray-700">Upload
-                                    scanned copy of printed Purchase Request</label>
-                                <input type="file" name="scanned_copy" id="scanned_copy"
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                <p class="mt-1 text-sm text-gray-500">Accepted formats: PDF, JPG, JPEG, PNG (Max: 10MB)
-                                </p>
-                            </div>
-                        </div>
-
                         <!-- Submit Buttons -->
                         <div class="flex items-center justify-end space-x-3 pt-6">
                             <a href="{{ route('user.requests') }}"

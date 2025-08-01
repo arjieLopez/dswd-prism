@@ -70,6 +70,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/purchase-requests/{purchaseRequest}/update', [PurchaseRequestController::class, 'update'])->name('purchase-requests.update');
     Route::delete('/purchase-requests/{purchaseRequest}', [PurchaseRequestController::class, 'destroy'])->name('purchase-requests.destroy');
 });
+// Uploaded Documents Routes
+Route::get('/uploaded-documents/upload', [App\Http\Controllers\UploadedDocumentController::class, 'upload'])->middleware(['auth', 'verified'])->name('uploaded-documents.upload');
+Route::post('/uploaded-documents', [App\Http\Controllers\UploadedDocumentController::class, 'store'])->middleware(['auth', 'verified'])->name('uploaded-documents.store');
+Route::get('/uploaded-documents/{uploadedDocument}/download', [App\Http\Controllers\UploadedDocumentController::class, 'download'])->middleware(['auth', 'verified'])->name('uploaded-documents.download');
+Route::delete('/uploaded-documents/{uploadedDocument}', [App\Http\Controllers\UploadedDocumentController::class, 'destroy'])->middleware(['auth', 'verified'])->name('uploaded-documents.destroy');
 
 
 Route::middleware('auth')->group(function () {
