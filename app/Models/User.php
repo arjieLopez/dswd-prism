@@ -89,4 +89,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(UploadedDocument::class);
     }
+
+    public function activities()
+    {
+        return $this->hasMany(UserActivity::class);
+    }
 }

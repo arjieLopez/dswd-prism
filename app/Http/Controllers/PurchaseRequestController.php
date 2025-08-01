@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PurchaseRequest;
+use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -86,6 +87,8 @@ class PurchaseRequestController extends Controller
             'status' => 'draft',
         ]);
 
+        ActivityService::logPrCreated($purchaseRequest->pr_number, $purchaseRequest->entity_name);
+
         return redirect()->route('user.requests')->with('success', 'Purchase Request created successfully!');
     }
 
@@ -158,6 +161,8 @@ class PurchaseRequestController extends Controller
                 'delivery_address' => $request->delivery_address,
                 'purpose' => $request->purpose,
             ]);
+
+            ActivityService::logPrUpdated($purchaseRequest->pr_number, $purchaseRequest->entity_name);
 
             return response()->json(['success' => true, 'message' => 'Purchase Request updated successfully!']);
         } catch (\Illuminate\Validation\ValidationException $e) {

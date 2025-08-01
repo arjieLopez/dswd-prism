@@ -78,6 +78,12 @@ class UserDashboardController extends Controller
                 ->count();
         }
 
+        // Get recent activities (increase limit for notifications)
+        $recentActivities = $user->activities()
+            ->orderBy('created_at', 'desc')
+            ->limit(15) // Increased from 10 to 15
+            ->get();
+
         return view('user.requestingUnit_dashboard', compact(
             'totalPRs',
             'approvedPRs',
@@ -90,7 +96,8 @@ class UserDashboardController extends Controller
             'labels',
             'approvePR',
             'pendingPR',
-            'rejectPR'
+            'rejectPR',
+            'recentActivities'
         ));
     }
 

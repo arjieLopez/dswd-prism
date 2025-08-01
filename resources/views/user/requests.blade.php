@@ -153,46 +153,45 @@
                 </div>
 
                 <!-- Purchase Request Table -->
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    PR Number
-                                </th>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Date Created
-                                </th>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Amount
-                                </th>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Action
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @if ($purchaseRequests->count() > 0)
+                @if ($purchaseRequests->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        PR Number
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Date Created
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Amount
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Action
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach ($purchaseRequests as $pr)
                                     <tr>
-                                        <td
-                                            class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                             {{ $pr->pr_number }}
                                         </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                             {{ $pr->created_at->format('M d, Y H:i') }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-center">
                                             <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-{{ $pr->status_color }}-100 text-{{ $pr->status_color }}-800">
+                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $pr->status_color }}">
                                                 {{ ucfirst($pr->status) }}
                                             </span>
                                         </td>
@@ -213,38 +212,39 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="5" class="px-4 py-8 text-center">
-                                        <div class="flex flex-col items-center">
-                                            <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none"
-                                                stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                                </path>
-                                            </svg>
-                                            <p class="text-gray-500">No purchase requests found.</p>
-                                            <a href="{{ route('purchase-requests.create') }}"
-                                                class="text-blue-600 hover:text-blue-900 text-sm mt-1">Create your
-                                                first PR</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endif
-                        </tbody>
-                    </table>
-                </div>
+                            </tbody>
+                        </table>
+                    </div>
 
-                <!-- Pagination -->
-                <div class="flex items-center justify-between mt-4">
-                    <div class="text-sm text-gray-700">
-                        Showing {{ $purchaseRequests->firstItem() ?? 0 }} to {{ $purchaseRequests->lastItem() ?? 0 }}
-                        of {{ $purchaseRequests->total() }} results
+                    <!-- Pagination - Only show when there are items -->
+                    <div class="flex items-center justify-between mt-4">
+                        <div class="text-sm text-gray-700">
+                            Showing {{ $purchaseRequests->firstItem() ?? 0 }} to
+                            {{ $purchaseRequests->lastItem() ?? 0 }}
+                            of {{ $purchaseRequests->total() }} results
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            {{ $purchaseRequests->links() }}
+                        </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        {{ $purchaseRequests->links() }}
+                @else
+                    <div class="text-center py-8">
+                        <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No purchase requests found</h3>
+                        <p class="mt-1 text-sm text-gray-500">Get started by creating your first purchase request.</p>
+                        <div class="mt-4">
+                            <a href="{{ route('purchase-requests.create') }}"
+                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                                Create your first PR
+                            </a>
+                        </div>
                     </div>
-                </div>
+                @endif
             </div>
 
             <!-- Uploaded Documents Section -->

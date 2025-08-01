@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\UploadedDocument;
+use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -36,6 +37,8 @@ class UploadedDocumentController extends Controller
             'file_size' => $file->getSize(),
             'notes' => $request->notes,
         ]);
+
+        ActivityService::logDocumentUploaded($request->pr_number, $fileName);
 
         return redirect()->route('user.requests')
             ->with('success', 'Document uploaded successfully!');
