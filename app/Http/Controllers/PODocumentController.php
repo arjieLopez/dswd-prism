@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\PODocument;
+use App\Services\ActivityService;
 use Illuminate\Support\Facades\Storage;
 
 class PODocumentController extends Controller
@@ -38,6 +39,9 @@ class PODocumentController extends Controller
                 'notes' => $request->notes,
             ]);
 
+            // Add this line:
+            ActivityService::logPoDocumentUploaded($request->po_number, $fileName);
+
             return redirect()->route('staff.po_generation')->with('success', 'PO Document uploaded successfully!');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Error uploading document: ' . $e->getMessage()]);
@@ -60,6 +64,10 @@ class PODocumentController extends Controller
     public function destroy(PODocument $poDocument)
     {
         try {
+            // Store document info before deletion
+            $poNumber = $poDocument->po_number;
+            $fileName = $poDocument->file_name;
+
             // Delete file from storage
             if (Storage::disk('public')->exists($poDocument->file_path)) {
                 Storage::disk('public')->delete($poDocument->file_path);
@@ -67,6 +75,9 @@ class PODocumentController extends Controller
 
             // Delete record from database
             $poDocument->delete();
+
+            // Add this line:
+            ActivityService::logPoDocumentDeleted($poNumber, $fileName);
 
             return response()->json(['success' => true, 'message' => 'PO Document deleted successfully!']);
         } catch (\Exception $e) {

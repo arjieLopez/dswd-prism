@@ -87,6 +87,7 @@ class PurchaseRequestController extends Controller
             'status' => 'draft',
         ]);
 
+
         ActivityService::logPrCreated($purchaseRequest->pr_number, $purchaseRequest->entity_name);
 
         return redirect()->route('user.requests')->with('success', 'Purchase Request created successfully!');

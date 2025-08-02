@@ -108,24 +108,41 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Example static rows, replace with foreach for dynamic data -->
-                            <tr>
-                                <td class="px-4 py-2">PR</td>
-                                <td class="px-4 py-2">PR 2025-0001</td>
-                                <td class="px-4 py-2">ICTMS</td>
-                                <td class="px-4 py-2">
-                                    <span
-                                        class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold">Failed</span>
-                                </td>
-                                <td class="px-4 py-2">₱ 676,352.16</td>
-                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
-                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
-                                <td class="px-4 py-2">
-                                    <button
-                                        class="bg-blue-500 text-white px-4 py-1 rounded-full font-semibold hover:bg-blue-600 transition">View</button>
-                                </td>
-                            </tr>
-                            <!-- Add more rows as needed -->
+                            @forelse ($reports as $report)
+                                <tr>
+                                    <td class="px-4 py-2">{{ $report->type }}</td>
+                                    <td class="px-4 py-2">{{ $report->document_number }}</td>
+                                    <td class="px-4 py-2">{{ $report->department }}</td>
+                                    <td class="px-4 py-2">
+                                        @if ($report->type === 'PO')
+                                            <span
+                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                PO Generated
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $report->status_color }}">
+                                                {{ $report->status_display }}
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-2">₱ {{ number_format($report->amount, 2) }}</td>
+                                    <td class="px-4 py-2">{{ $report->created_at->format('Y-m-d H:i:s') }}</td>
+                                    <td class="px-4 py-2">{{ $report->updated_at->format('Y-m-d H:i:s') }}</td>
+                                    <td class="px-4 py-2">
+                                        <button onclick="viewReport({{ $report->id }})"
+                                            class="bg-blue-500 text-white px-4 py-1 rounded-full font-semibold hover:bg-blue-600 transition">
+                                            View
+                                        </button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                                        No reports found
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -133,21 +150,36 @@
                 <!-- Pagination and Results Count -->
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between mt-4">
                     <div class="text-gray-500 text-sm mb-2 md:mb-0">
-                        Showing 10 of 388 results
+                        Showing {{ $reports->firstItem() ?? 0 }} to {{ $reports->lastItem() ?? 0 }} of
+                        {{ $reports->total() }} results
                     </div>
                     <div class="flex items-center space-x-2">
-                        <button class="px-2 py-1 text-gray-400" disabled>&lt;&lt;</button>
-                        <button class="px-2 py-1 text-gray-400" disabled>&lt;</button>
-                        <button class="px-3 py-1 bg-blue-600 text-white rounded font-semibold">1</button>
-                        <button class="px-2 py-1 text-gray-600">2</button>
-                        <button class="px-2 py-1 text-gray-600">3</button>
-                        <button class="px-2 py-1 text-gray-400" disabled>&gt;</button>
-                        <button class="px-2 py-1 text-gray-400" disabled>&gt;&gt;</button>
+                        {{ $reports->links() }}
                     </div>
                 </div>
             </div>
 
         </div>
     </div>
+
+    <script>
+        function searchReports() {
+            const searchTerm = document.getElementById('search-input').value;
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('search', searchTerm);
+            window.location.href = currentUrl.toString();
+        }
+
+        function filterByStatus(status) {
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('status', status);
+            window.location.href = currentUrl.toString();
+        }
+
+        function viewReport(id) {
+            // Implement view functionality
+            console.log('Viewing report:', id);
+        }
+    </script>
 
 </x-page-layout>

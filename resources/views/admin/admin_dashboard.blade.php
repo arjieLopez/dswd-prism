@@ -81,50 +81,68 @@
                     </div>
 
                 </div>
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="px-6 pt-6 flex items-center justify-between">
-                        <div>
-                            <div class="font-semibold text-gray-400 tracking-wide">
-                                {{ __('Total PRs') }}
+
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-center h-64 p-6">
+                    <div class="p-4 flex flex-col justify-center h-full">
+                        <div class="flex items-start justify-between mb-6 h-full">
+                            <div class="flex flex-col items-start justify-center h-full">
+                                <div class="w-20 h-20 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                                    <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <span class="text-lg font-medium text-gray-400 mb-1">{{ __('Total PRs') }}</span>
+                                <span class="text-3xl font-extrabold text-gray-900 mb-1">{{ $totalPRs }}</span>
+                                <span class="text-base text-gray-400">{{ __('vs last month') }}</span>
                             </div>
-                            <div class="font-semibold text-2xl text-gray-700">
-                                127
+                            <div class="flex flex-col items-end justify-start h-full">
+                                <span
+                                    class="text-2xl font-bold {{ $prPercentageChange >= 0 ? 'text-green-600' : 'text-red-600' }} mb-2 mt-1">
+                                    {{ $prPercentageChange >= 0 ? '+' : '' }}{{ $prPercentageChange }}%
+                                </span>
+                                <svg class="w-6 h-6 {{ $prPercentageChange >= 0 ? 'text-green-600' : 'text-red-600' }}"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="{{ $prPercentageChange >= 0 ? 'M5 10l7-7m0 0l7 7m-7-7v18' : 'M19 14l-7 7m0 0l-7-7m7 7V3' }}">
+                                    </path>
+                                </svg>
                             </div>
-                            <div class="text-xs text-gray-400 tracking-wide">
-                                <p>{{ __('15% increase from') }}</p>
-                                <p>{{ __('last month') }}</p>
-                            </div>
-                        </div>
-                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center ml-4">
-                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                </path>
-                            </svg>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="px-6 pt-6 flex items-center justify-between">
-                        <div>
-                            <div class="font-semibold text-gray-400 tracking-wide">
-                                {{ __('Total POs') }}
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-center h-64 p-6">
+                    <div class="p-4 flex flex-col justify-center h-full">
+                        <div class="flex items-start justify-between mb-6 h-full">
+                            <div class="flex flex-col items-start justify-center h-full">
+                                <div class="w-20 h-20 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                                    <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                    </svg>
+                                </div>
+                                <span class="text-lg font-medium text-gray-400 mb-1">{{ __('Total POs') }}</span>
+                                <span class="text-3xl font-extrabold text-gray-900 mb-1">{{ $totalPOs }}</span>
+                                <span class="text-base text-gray-400">{{ __('vs last month') }}</span>
                             </div>
-                            <div class="font-semibold text-2xl text-gray-700">
-                                98
+                            <div class="flex flex-col items-end justify-start h-full">
+                                <span
+                                    class="text-2xl font-bold {{ $poPercentageChange >= 0 ? 'text-green-600' : 'text-red-600' }} mb-2 mt-1">
+                                    {{ $poPercentageChange >= 0 ? '+' : '' }}{{ $poPercentageChange }}%
+                                </span>
+                                <svg class="w-6 h-6 {{ $poPercentageChange >= 0 ? 'text-green-600' : 'text-red-600' }}"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="{{ $poPercentageChange >= 0 ? 'M5 10l7-7m0 0l7 7m-7-7v18' : 'M19 14l-7 7m0 0l-7-7m7 7V3' }}">
+                                    </path>
+                                </svg>
                             </div>
-                            <div class="text-xs text-gray-400 tracking-wide">
-                                <p>{{ __('12% increase from') }}</p>
-                                <p>{{ __('last month') }}</p>
-                            </div>
-                        </div>
-                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center ml-4">
-                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                            </svg>
                         </div>
                     </div>
                 </div>
@@ -163,152 +181,43 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
-                                    <!-- Sample PR/PO data -->
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            <div class="flex items-center">
+                                    @forelse($recentActivities as $activity)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                <div class="flex items-center">
+                                                    <span
+                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $activity['type'] === 'PR' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }} mr-2">
+                                                        {{ $activity['type'] }}
+                                                    </span>
+                                                    {{ $activity['document_number'] }}
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 <span
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2">
-                                                    PR
+                                                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                    {{ $activity['action'] }}
                                                 </span>
-                                                PR-2024-001
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                                Created
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">
-                                            Social Welfare and Development
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                Pending Review
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            2 minutes ago
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            <div class="flex items-center">
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-500">
+                                                {{ $activity['requesting_unit'] }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 <span
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mr-2">
-                                                    PO
+                                                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $activity['status_color'] }}">
+                                                    {{ ucfirst(str_replace('_', ' ', $activity['status'])) }}
                                                 </span>
-                                                PO-2024-005
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                Approved
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">
-                                            General Services Office
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                                Approved
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            15 minutes ago
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            <div class="flex items-center">
-                                                <span
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2">
-                                                    PR
-                                                </span>
-                                                PR-2024-002
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
-                                                Under Review
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">
-                                            Information Technology Division
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                Under Review
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            1 hour ago
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            <div class="flex items-center">
-                                                <span
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mr-2">
-                                                    PO
-                                                </span>
-                                                PO-2024-004
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                                Rejected
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">
-                                            Finance Division
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                                Rejected
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            2 hours ago
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            <div class="flex items-center">
-                                                <span
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2">
-                                                    PR
-                                                </span>
-                                                PR-2024-003
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                                Converted to PO
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">
-                                            Human Resource Division
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                                                Converted
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            3 hours ago
-                                        </td>
-                                    </tr>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {{ $activity['date']->diffForHumans() }}
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                                                {{ __('No recent activities') }}
+                                            </td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>

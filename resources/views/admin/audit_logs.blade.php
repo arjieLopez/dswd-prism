@@ -74,23 +74,31 @@
                         <button
                             class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Search</button>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6h18M4 14h16M4 18h16">
-                                </path>
-                            </svg>
-                            Filter
-                        </button>
-                        <button
-                            class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            Export
-                        </button>
+                    <!-- Add filter dropdowns -->
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <select id="action-filter"
+                            class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <option value="all">All Actions</option>
+                            @foreach ($actions as $action)
+                                <option value="{{ $action }}">{{ ucfirst(str_replace('_', ' ', $action)) }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        <select id="role-filter"
+                            class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <option value="all">All Roles</option>
+                            @foreach ($roles as $role)
+                                <option value="{{ $role }}">{{ ucfirst($role) }}</option>
+                            @endforeach
+                        </select>
+
+                        <input type="date" id="date-from"
+                            class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            placeholder="From Date">
+                        <input type="date" id="date-to"
+                            class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            placeholder="To Date">
                     </div>
                 </div>
 
@@ -106,60 +114,79 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
                             </tr>
                         </thead>
+                        <!-- Replace the static table body with: -->
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Example static rows, replace with foreach for dynamic data -->
-                            <tr>
-                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
-                                <td class="px-4 py-2">Christian Arjie P Lopez</td>
-                                <td class="px-4 py-2">Admin</td>
-                                <td class="px-4 py-2">Assigned Stephen T. Jones as GSO</td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
-                                <td class="px-4 py-2">Stephen T. Jones</td>
-                                <td class="px-4 py-2">GSO</td>
-                                <td class="px-4 py-2">Approved PR 2025-0002</td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
-                                <td class="px-4 py-2">Ronald D. Humiston</td>
-                                <td class="px-4 py-2">GSO</td>
-                                <td class="px-4 py-2">Generated PO for PR 2025-0002</td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
-                                <td class="px-4 py-2">Lorenzo A. Carter</td>
-                                <td class="px-4 py-2">ICTMS</td>
-                                <td class="px-4 py-2">Created PR for ICT supplies</td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-2">2025-06-10 09:15:32</td>
-                                <td class="px-4 py-2">Roy C. Lemmon</td>
-                                <td class="px-4 py-2">ICTMS</td>
-                                <td class="px-4 py-2">Submitted PR 2025-0003</td>
-                            </tr>
-                            <!-- Add more rows as needed -->
+                            @forelse ($auditLogs as $log)
+                                <tr>
+                                    <td class="px-4 py-2">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
+                                    <td class="px-4 py-2">{{ $log->user_name }}</td>
+                                    <td class="px-4 py-2">
+                                        <span
+                                            class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            {{ ucfirst($log->user_role) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <div class="flex items-center">
+                                            <i class="iconify w-4 h-4 mr-2 {{ $log->action_color }}"
+                                                data-icon="{{ $log->action_icon }}"></i>
+                                            {{ $log->description }}
+                                            @if ($log->pr_number)
+                                                <span class="ml-1 text-gray-500">({{ $log->pr_number }})</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+                                        No audit logs found
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Pagination and Results Count -->
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between mt-4">
                     <div class="text-gray-500 text-sm mb-2 md:mb-0">
-                        Showing 10 of 388 results
+                        Showing {{ $auditLogs->firstItem() ?? 0 }} to {{ $auditLogs->lastItem() ?? 0 }} of
+                        {{ $auditLogs->total() }} results
                     </div>
                     <div class="flex items-center space-x-2">
-                        <button class="px-2 py-1 text-gray-400" disabled>&lt;&lt;</button>
-                        <button class="px-2 py-1 text-gray-400" disabled>&lt;</button>
-                        <button class="px-3 py-1 bg-blue-600 text-white rounded font-semibold">1</button>
-                        <button class="px-2 py-1 text-gray-600">2</button>
-                        <button class="px-2 py-1 text-gray-600">3</button>
-                        <button class="px-2 py-1 text-gray-400" disabled>&gt;</button>
-                        <button class="px-2 py-1 text-gray-400" disabled>&gt;&gt;</button>
+                        {{ $auditLogs->links() }}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <script>
+        function applyFilters() {
+            const action = document.getElementById('action-filter').value;
+            const role = document.getElementById('role-filter').value;
+            const dateFrom = document.getElementById('date-from').value;
+            const dateTo = document.getElementById('date-to').value;
+            const search = document.querySelector('input[placeholder="Search..."]').value;
+
+            const params = new URLSearchParams();
+            if (action !== 'all') params.append('action', action);
+            if (role !== 'all') params.append('role', role);
+            if (dateFrom) params.append('date_from', dateFrom);
+            if (dateTo) params.append('date_to', dateTo);
+            if (search) params.append('search', search);
+
+            window.location.href = '{{ route('admin.audit_logs') }}?' + params.toString();
+        }
+
+        // Add event listeners
+        document.getElementById('action-filter').addEventListener('change', applyFilters);
+        document.getElementById('role-filter').addEventListener('change', applyFilters);
+        document.getElementById('date-from').addEventListener('change', applyFilters);
+        document.getElementById('date-to').addEventListener('change', applyFilters);
+
+        function searchLogs() {
+            applyFilters();
+        }
+    </script>
 </x-page-layout>

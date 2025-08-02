@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Notifications\TwoFactorCodeNotification;
 use App\Providers\RouteServiceProvider;
 use App\Services\RecaptchaService;
+use App\Services\ActivityService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +35,8 @@ class AuthenticatedSessionController extends Controller
 
         // 2. reCAPTCHA check
         if (!$recaptcha->verify($request->recaptcha_token, 'login')) {
+            // Log failed login attempt
+            ActivityService::logLoginFailed($request->email);
             return back()->withErrors(['recaptcha' => 'reCAPTCHA verification failed.']);
         }
 
@@ -46,7 +49,12 @@ class AuthenticatedSessionController extends Controller
         if ($user) {
             $user->regenerateTwoFactorCode();
             $user->notify(new TwoFactorCodeNotification());
+
+            // Log successful login
+            ActivityService::logUserLogin($user->id, $user->name);
         } else {
+            // Log failed login attempt
+            ActivityService::logLoginFailed($request->email);
             return back()->withErrors(['email' => 'Authentication failed. Please try again.']);
         }
 
@@ -63,6 +71,11 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // Log logout before destroying session
+        if (Auth::check()) {
+            ActivityService::logUserLogout(Auth::id(), Auth::user()->name);
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

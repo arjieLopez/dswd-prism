@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
 use App\Models\User;
 use App\Models\PODocument;
+use App\Services\ActivityService;
 
 class POGenerationController extends Controller
 {
@@ -129,6 +130,9 @@ class POGenerationController extends Controller
                 'payment_term' => $request->payment_term,
                 'date_of_delivery' => $request->date_of_delivery,
             ]);
+
+            // Add this line:
+            ActivityService::logPoGenerated($purchaseRequest->pr_number, $request->po_number);
 
             return redirect()->route('staff.po_generation')->with('success', 'Purchase Order generated successfully!');
         } catch (\Exception $e) {

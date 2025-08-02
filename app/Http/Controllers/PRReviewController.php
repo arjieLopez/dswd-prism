@@ -7,6 +7,7 @@ use App\Models\PurchaseRequest;
 use App\Models\User;
 use App\Services\ActivityService;
 
+
 class PRReviewController extends Controller
 {
     public function index()
@@ -63,6 +64,9 @@ class PRReviewController extends Controller
         try {
             $purchaseRequest->update(['status' => 'approved']);
 
+            // Add this line:
+            ActivityService::logPrApproved($purchaseRequest->pr_number, auth()->user()->name);
+
             return response()->json(['success' => true, 'message' => 'Purchase Request approved successfully!']);
         } catch (\Exception $e) {
             return response()->json([
@@ -76,6 +80,9 @@ class PRReviewController extends Controller
     {
         try {
             $purchaseRequest->update(['status' => 'rejected']);
+
+            // Add this line:
+            ActivityService::logPrRejected($purchaseRequest->pr_number, auth()->user()->name, request('reason'));
 
             return response()->json(['success' => true, 'message' => 'Purchase Request rejected successfully!']);
         } catch (\Exception $e) {

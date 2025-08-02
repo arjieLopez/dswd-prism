@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -56,12 +57,14 @@ class UserManagementController extends Controller
             'role' => ['required', 'string', 'in:admin,staff,user'],
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
+
+        ActivityService::logUserCreated($user->id, $user->name, $user->role);
 
         return redirect()->route('admin.user_management')->with('success', 'User created successfully.');
     }
@@ -74,23 +77,26 @@ class UserManagementController extends Controller
             'role' => ['required', 'string', 'in:admin,staff,user'],
         ]);
 
+        $oldRole = $user->role;
+        $changes = [
+            'name' => $request->name !== $user->name ? ['old' => $user->name, 'new' => $request->name] : null,
+            'email' => $request->email !== $user->email ? ['old' => $user->email, 'new' => $request->email] : null,
+            'role' => $request->role !== $user->role ? ['old' => $user->role, 'new' => $request->role] : null,
+        ];
+
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
         ]);
 
-        return redirect()->route('admin.user_management')->with('success', 'User updated successfully.');
-    }
+        ActivityService::logUserUpdated($user->id, $user->name, $changes);
 
-    public function destroy(User $user)
-    {
-        if ($user->id === auth()->id()) {
-            return redirect()->route('admin.user_management')->with('error', 'You cannot delete your own account.');
+        if ($oldRole !== $user->role) {
+            ActivityService::logUserRoleChanged($user->id, $user->name, $oldRole, $user->role);
         }
 
-        $user->delete();
-        return redirect()->route('admin.user_management')->with('success', 'User deleted successfully.');
+        return redirect()->route('admin.user_management')->with('success', 'User updated successfully.');
     }
 
     public function toggleStatus(User $user)
@@ -99,9 +105,15 @@ class UserManagementController extends Controller
             return redirect()->route('admin.user_management')->with('error', 'You cannot deactivate your own account.');
         }
 
+        $oldStatus = $user->email_verified_at ? 'active' : 'inactive';
+
         $user->update([
             'email_verified_at' => $user->email_verified_at ? null : now(),
         ]);
+
+        $newStatus = $user->email_verified_at ? 'active' : 'inactive';
+
+        ActivityService::logUserStatusChanged($user->id, $user->name, $oldStatus, $newStatus);
 
         $status = $user->email_verified_at ? 'activated' : 'deactivated';
         return redirect()->route('admin.user_management')->with('success', "User {$status} successfully.");
