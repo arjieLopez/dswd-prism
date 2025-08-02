@@ -1,6 +1,6 @@
 <x-page-layout>
     <x-slot name="header">
-        <a href="/admin">
+        <a href="/staff">
             <img src="{{ asset('images/DSWD-Logo1.png') }}" alt="DSWD Logo" class="w-16">
         </a>
         <h2 class="p-4 font-bold text-xl text-gray-800 leading-tight tracking-wide">
@@ -53,17 +53,496 @@
     <!-- Main Content -->
     <div class="py-8">
         <div class="w-full px-4 sm:px-6 lg:px-8 space-y-6">
-            <div>
+            <div class="flex items-center justify-between">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    {{ __('Generate Purchase Order') }}
+                    {{ __('Purchase Order Generation') }}
                 </h2>
+                <a href="{{ route('po-documents.upload') }}"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                        </path>
+                    </svg>
+                    <span>Upload PO Document</span>
+                </a>
             </div>
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="px-6 py-6 font-semibold text-lg text-gray-900 tracking-wide">
-                    {{ __("You are logged in!") }}
+            <!-- Approved PRs Table -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">
+                        {{ __('Approved Purchase Request') }}
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <button
+                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z">
+                                </path>
+                            </svg>
+                            <span>Filter</span>
+                        </button>
+                        <button
+                            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            <span>Export</span>
+                        </button>
+                    </div>
                 </div>
+                @if ($approvedPRs->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        PR Number
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Date Approved
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Requesting Unit
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Amount
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Action
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach ($approvedPRs as $pr)
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            {{ $pr->pr_number }}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            {{ $pr->updated_at->format('M d, Y H:i') }}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            {{ $pr->user->name }}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            ₱ {{ number_format($pr->total, 2) }}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-center">
+                                            <span
+                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $pr->status_color }}">
+                                                {{ $pr->status_display }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
+                                            <div class="flex space-x-2 justify-center">
+                                                <button onclick="openViewModal({{ $pr->id }})"
+                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium">
+                                                    View PR
+                                                </button>
+                                                @if ($pr->status === 'approved')
+                                                    <button onclick="generatePO({{ $pr->id }})"
+                                                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-medium">
+                                                        Generate PO
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="flex items-center justify-between mt-4">
+                        <div class="text-sm text-gray-700">
+                            Showing {{ $approvedPRs->firstItem() ?? 0 }} to
+                            {{ $approvedPRs->lastItem() ?? 0 }}
+                            of {{ $approvedPRs->total() }} results
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            {{ $approvedPRs->links() }}
+                        </div>
+                    </div>
+                @else
+                    <div class="text-center py-8">
+                        <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No approved PRs found</h3>
+                        <p class="mt-1 text-sm text-gray-500">No approved purchase requests are available for PO
+                            generation.</p>
+                    </div>
+                @endif
             </div>
+
+            <!-- PO Documents Section -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 mt-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">
+                        {{ __('PO Documents') }}
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <button
+                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z">
+                                </path>
+                            </svg>
+                            <span>Filter</span>
+                        </button>
+                        <button
+                            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            <span>Export</span>
+                        </button>
+                    </div>
+                </div>
+
+                @if ($poDocuments->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        PO Number
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        File Name
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        File Type
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        File Size
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Upload Date
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach ($poDocuments as $document)
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            {{ $document->po_number }}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            {{ $document->file_name }}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-center">
+                                            <span
+                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                {{ $document->file_type }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            {{ $document->file_size }}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            {{ $document->created_at->format('M d, Y H:i') }}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
+                                            <div class="flex space-x-2 justify-center">
+                                                <a href="{{ route('po-documents.download', $document) }}"
+                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium">
+                                                    Download
+                                                </a>
+                                                <button onclick="deletePODocument({{ $document->id }})"
+                                                    class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium">
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="flex items-center justify-between mt-4">
+                        <div class="text-sm text-gray-700">
+                            Showing {{ $poDocuments->firstItem() ?? 0 }} to
+                            {{ $poDocuments->lastItem() ?? 0 }}
+                            of {{ $poDocuments->total() }} results
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            {{ $poDocuments->links() }}
+                        </div>
+                    </div>
+                @else
+                    <div class="text-center py-8">
+                        <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No PO documents uploaded</h3>
+                        <p class="mt-1 text-sm text-gray-500">Get started by uploading your first PO document.</p>
+                        <div class="mt-4">
+                            <a href="{{ route('po-documents.upload') }}"
+                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                                Upload PO Document
+                            </a>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
         </div>
     </div>
+
+    <!-- View Purchase Request Modal -->
+    <x-modal name="view-pr-modal" maxWidth="2xl">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Purchase Request Details</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600" onclick="closeViewModal()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">PR Number</label>
+                    <p id="view-pr-number" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date</label>
+                    <p id="view-pr-date" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Requesting Unit</label>
+                    <p id="view-requesting-unit" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Entity Name</label>
+                    <p id="view-entity-name" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Fund Cluster</label>
+                    <p id="view-fund-cluster" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Office Section</label>
+                    <p id="view-office-section" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Status</label>
+                    <span id="view-status"
+                        class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full"></span>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Unit</label>
+                    <p id="view-unit" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Quantity</label>
+                    <p id="view-quantity" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Unit Cost</label>
+                    <p id="view-unit-cost" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Total Cost</label>
+                    <p id="view-total-cost" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Item Description</label>
+                    <p id="view-item-description" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Delivery Address</label>
+                    <p id="view-delivery-address" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Purpose</label>
+                    <p id="view-purpose" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Requested By</label>
+                    <p id="view-requested-by" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Delivery Period</label>
+                    <p id="view-delivery-period" class="mt-1 text-sm text-gray-900"></p>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg"
+                    onclick="closeViewModal()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </x-modal>
+
+    <script>
+        function openViewModal(prId) {
+            console.log('Opening modal for PR ID:', prId);
+
+            fetch(`/staff/po-generation/${prId}/data`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Received data:', data);
+
+                    document.getElementById('view-pr-number').textContent = data.pr_number;
+                    document.getElementById('view-pr-date').textContent = data.date;
+                    document.getElementById('view-requesting-unit').textContent = data.requesting_unit;
+                    document.getElementById('view-entity-name').textContent = data.entity_name;
+                    document.getElementById('view-fund-cluster').textContent = data.fund_cluster;
+                    document.getElementById('view-office-section').textContent = data.office_section;
+                    document.getElementById('view-unit').textContent = data.unit;
+                    document.getElementById('view-quantity').textContent = data.quantity;
+                    document.getElementById('view-unit-cost').textContent = '₱ ' + parseFloat(data.unit_cost)
+                        .toLocaleString('en-US', {
+                            minimumFractionDigits: 2
+                        });
+                    document.getElementById('view-total-cost').textContent = '₱ ' + parseFloat(data.total_cost)
+                        .toLocaleString('en-US', {
+                            minimumFractionDigits: 2
+                        });
+                    document.getElementById('view-item-description').textContent = data.item_description;
+                    document.getElementById('view-delivery-address').textContent = data.delivery_address;
+                    document.getElementById('view-purpose').textContent = data.purpose;
+                    document.getElementById('view-requested-by').textContent = data.requested_by_name;
+                    document.getElementById('view-delivery-period').textContent = data.delivery_period;
+
+                    const statusElement = document.getElementById('view-status');
+                    statusElement.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                    statusElement.className =
+                        `mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${data.status_color}`;
+
+                    // Show the modal
+                    window.dispatchEvent(new CustomEvent('open-modal', {
+                        detail: 'view-pr-modal'
+                    }));
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading purchase request details: ' + error.message);
+                });
+        }
+
+        function closeViewModal() {
+            window.dispatchEvent(new CustomEvent('close-modal', {
+                detail: 'view-pr-modal'
+            }));
+        }
+
+        function generatePO(prId) {
+            if (confirm('Are you sure you want to generate a Purchase Order for this PR?')) {
+                fetch(`/staff/po-generation/${prId}/generate-po`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (data.redirect) {
+                                window.location.href = data.redirect;
+                            } else {
+                                location.reload();
+                            }
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error generating PO');
+                    });
+            }
+        }
+
+        function deletePODocument(documentId) {
+            if (confirm('Are you sure you want to delete this PO document?')) {
+                console.log('Deleting PO document with ID:', documentId);
+
+                fetch(`/po-documents/${documentId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        console.log('Delete response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Delete response data:', data);
+                        if (data.success) {
+                            // Show success message
+                            alert('PO Document deleted successfully!');
+                            // Reload the page to update the table
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while deleting the document: ' + error.message);
+                    });
+            }
+        }
+    </script>
 
 </x-page-layout>

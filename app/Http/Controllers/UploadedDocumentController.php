@@ -38,7 +38,7 @@ class UploadedDocumentController extends Controller
             'notes' => $request->notes,
         ]);
 
-        ActivityService::logDocumentUploaded($request->pr_number, $fileName);
+        ActivityService::logDocumentUploaded($request->pr_number, $filename);
 
         return redirect()->route('user.requests')
             ->with('success', 'Document uploaded successfully!');

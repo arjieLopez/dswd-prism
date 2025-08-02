@@ -57,13 +57,13 @@
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                     {{ __('Dashboard') }}
                 </h2>
-                <button
+                {{-- <button
                     class="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg flex items-center transition">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     Generate Report
-                </button>
+                </button> --}}
             </div>
             <div class="grid grid-cols-3 row-span-2 gap-6">
                 <div class="bg-white shadow-sm sm:rounded-lg col-span-2 row-span-2">

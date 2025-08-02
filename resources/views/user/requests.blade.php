@@ -192,7 +192,7 @@
                                         <td class="px-4 py-4 whitespace-nowrap text-center">
                                             <span
                                                 class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $pr->status_color }}">
-                                                {{ ucfirst($pr->status) }}
+                                                {{ $pr->status_display }}
                                             </span>
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">

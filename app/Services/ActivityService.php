@@ -50,4 +50,26 @@ class ActivityService
             $documentName
         );
     }
+
+    public static function logPrApproved($prNumber, $approvedBy)
+    {
+        return self::log(
+            'approved_pr',
+            "Purchase Request approved",
+            $prNumber,
+            null,
+            ['approved_by' => $approvedBy]
+        );
+    }
+
+    public static function logPrRejected($prNumber, $rejectedBy)
+    {
+        return self::log(
+            'rejected_pr',
+            "Purchase Request rejected",
+            $prNumber,
+            null,
+            ['rejected_by' => $rejectedBy]
+        );
+    }
 }

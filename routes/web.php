@@ -46,18 +46,36 @@ Route::get('/admin/audit-logs', function () {
     return view('admin.audit_logs');
 })->middleware(['auth', 'verified'])->name('admin.audit_logs');
 
-Route::get('/staff', function () {
-    return view('staff.gso_dashboard');
-})->middleware(['auth', 'verified', 'twofactor'])->name('staff');
-Route::get('/staff/pr-review', function () {
-    return view('staff.pr_review');
-})->middleware(['auth', 'verified'])->name('staff.pr_review');
+Route::get('/staff', [App\Http\Controllers\GSODashboardController::class, 'show'])->middleware(['auth', 'verified', 'twofactor'])->name('staff');
 Route::get('/staff/po-generation', function () {
     return view('staff.po_generation');
 })->middleware(['auth', 'verified'])->name('staff.po_generation');
-Route::get('/staff/suppliers', function () {
-    return view('staff.suppliers');
-})->middleware(['auth', 'verified'])->name('staff.suppliers');
+Route::get('/staff/suppliers', [App\Http\Controllers\SupplierController::class, 'index'])->middleware(['auth', 'verified'])->name('staff.suppliers');
+// PR Review Routes
+Route::get('/staff/pr-review', [App\Http\Controllers\PRReviewController::class, 'index'])->middleware(['auth', 'verified'])->name('staff.pr_review');
+Route::get('/staff/pr-review/{purchaseRequest}/data', [App\Http\Controllers\PRReviewController::class, 'show'])->middleware(['auth', 'verified'])->name('staff.pr_review.data');
+Route::post('/staff/pr-review/{purchaseRequest}/approve', [App\Http\Controllers\PRReviewController::class, 'approve'])->middleware(['auth', 'verified'])->name('staff.pr_review.approve');
+Route::post('/staff/pr-review/{purchaseRequest}/reject', [App\Http\Controllers\PRReviewController::class, 'reject'])->middleware(['auth', 'verified'])->name('staff.pr_review.reject');
+// PO Generation Routes
+Route::get('/staff/po-generation', [App\Http\Controllers\POGenerationController::class, 'index'])->middleware(['auth', 'verified'])->name('staff.po_generation');
+Route::get('/staff/po-generation/{purchaseRequest}/data', [App\Http\Controllers\POGenerationController::class, 'show'])->middleware(['auth', 'verified'])->name('staff.po_generation.data');
+Route::post('/staff/po-generation/{purchaseRequest}/generate-po', [App\Http\Controllers\POGenerationController::class, 'generatePO'])->middleware(['auth', 'verified'])->name('staff.po_generation.generate');
+// PO Document Routes
+Route::get('/po-documents/upload', [App\Http\Controllers\PODocumentController::class, 'upload'])->middleware(['auth', 'verified'])->name('po-documents.upload');
+Route::post('/po-documents', [App\Http\Controllers\PODocumentController::class, 'store'])->middleware(['auth', 'verified'])->name('po-documents.store');
+Route::get('/po-documents/{poDocument}/download', [App\Http\Controllers\PODocumentController::class, 'download'])->middleware(['auth', 'verified'])->name('po-documents.download');
+Route::delete('/po-documents/{poDocument}', [App\Http\Controllers\PODocumentController::class, 'destroy'])->middleware(['auth', 'verified'])->name('po-documents.destroy');
+// PO Generation Form Routes
+Route::get('/staff/generate-po/{purchaseRequest}', [App\Http\Controllers\POGenerationController::class, 'showGenerateForm'])->middleware(['auth', 'verified'])->name('staff.generate_po.form');
+Route::post('/staff/generate-po/{purchaseRequest}', [App\Http\Controllers\POGenerationController::class, 'storeGeneratedPO'])->middleware(['auth', 'verified'])->name('staff.generate_po.store');
+// Supplier Management Routes
+Route::get('/suppliers', [App\Http\Controllers\SupplierController::class, 'index'])->middleware(['auth', 'verified'])->name('suppliers.index');
+Route::post('/suppliers', [App\Http\Controllers\SupplierController::class, 'store'])->middleware(['auth', 'verified'])->name('suppliers.store');
+Route::get('/suppliers/{supplier}', [App\Http\Controllers\SupplierController::class, 'show'])->middleware(['auth', 'verified'])->name('suppliers.show');
+Route::post('/suppliers/{supplier}', [App\Http\Controllers\SupplierController::class, 'update'])->middleware(['auth', 'verified'])->name('suppliers.update');
+Route::post('/suppliers/{supplier}/toggle-status', [App\Http\Controllers\SupplierController::class, 'toggleStatus'])->middleware(['auth', 'verified'])->name('suppliers.toggle-status');
+Route::delete('/suppliers/{supplier}', [App\Http\Controllers\SupplierController::class, 'destroy'])->middleware(['auth', 'verified'])->name('suppliers.destroy');
+
 
 Route::get('/user', [UserDashboardController::class, 'show'])->middleware(['auth', 'verified', 'twofactor'])->name('user');
 Route::get('/user/requests', [PurchaseRequestController::class, 'index'])->middleware(['auth', 'verified'])->name('user.requests');
