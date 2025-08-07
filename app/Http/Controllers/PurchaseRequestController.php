@@ -147,6 +147,10 @@ class PurchaseRequestController extends Controller
             $totalCost = $request->quantity * $request->unit_cost;
             $total = $totalCost;
 
+            if (!in_array($purchaseRequest->status, ['approved', 'po_generated'])) {
+                $purchaseRequest->status = 'draft';
+            }
+
             $purchaseRequest->update([
                 'entity_name' => $request->entity_name,
                 'fund_cluster' => $request->fund_cluster,
@@ -178,6 +182,26 @@ class PurchaseRequestController extends Controller
                 'message' => 'Error updating purchase request: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function submit(PurchaseRequest $purchaseRequest)
+    {
+        // Ensure only the owner can submit
+        if ($purchaseRequest->user_id !== auth()->id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Only allow submission if status is draft
+        if ($purchaseRequest->status !== 'draft') {
+            return response()->json(['success' => false, 'message' => 'Only draft PRs can be submitted.']);
+        }
+
+        $purchaseRequest->status = 'pending';
+        $purchaseRequest->save();
+
+        // Optionally log activity here
+
+        return response()->json(['success' => true, 'message' => 'Purchase Request submitted successfully!']);
     }
 
     public function destroy(PurchaseRequest $purchaseRequest)

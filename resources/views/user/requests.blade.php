@@ -200,14 +200,20 @@
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
                                             <div class="flex space-x-2 justify-center">
+                                                @php
+                                                    $showEdit = !in_array($pr->status, ['approved', 'po_generated']);
+                                                @endphp
                                                 <button onclick="openViewModal({{ $pr->id }})"
-                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium">
+                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium
+                {{ $showEdit ? '' : 'w-28' }}">
                                                     View
                                                 </button>
-                                                <button onclick="openEditModal({{ $pr->id }})"
-                                                    class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-3 py-1 rounded text-sm font-medium">
-                                                    Edit
-                                                </button>
+                                                @if ($showEdit)
+                                                    <button onclick="openEditModal({{ $pr->id }})"
+                                                        class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-3 py-1 rounded text-sm font-medium">
+                                                        Edit
+                                                    </button>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
@@ -471,7 +477,12 @@
                     </div>
                 </div>
 
-                <div class="mt-6 flex justify-end">
+                <div class="mt-6 flex justify-end space-x-2">
+                    <button id="submit-draft-btn" type="button"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg hidden"
+                        onclick="submitDraftPR()">
+                        Submit
+                    </button>
                     <button type="button"
                         class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg"
                         onclick="closeViewModal()">
@@ -718,6 +729,16 @@
                         statusElement.className =
                             `mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-${data.status_color}-100 text-${data.status_color}-800`;
 
+                        // Show or hide the submit button
+                        const submitBtn = document.getElementById('submit-draft-btn');
+                        if (data.status === 'draft') {
+                            submitBtn.classList.remove('hidden');
+                            submitBtn.setAttribute('data-pr-id', prId);
+                        } else {
+                            submitBtn.classList.add('hidden');
+                            submitBtn.removeAttribute('data-pr-id');
+                        }
+
                         // Open modal
                         window.dispatchEvent(new CustomEvent('open-modal', {
                             detail: 'view-pr-modal'
@@ -726,6 +747,37 @@
                     .catch(error => {
                         console.error('Error:', error);
                         showErrorAlert('Error loading purchase request data');
+                    });
+            }
+
+            function submitDraftPR() {
+                const btn = document.getElementById('submit-draft-btn');
+                const prId = btn.getAttribute('data-pr-id');
+                if (!prId) return;
+
+                if (!confirm('Submit this Purchase Request for review?')) return;
+
+                fetch(`/purchase-requests/${prId}/submit`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({}),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showSuccessAlert('Purchase Request submitted successfully!');
+                            closeViewModal();
+                            setTimeout(() => window.location.reload(), 1500);
+                        } else {
+                            showErrorAlert(data.message || 'Failed to submit Purchase Request.');
+                        }
+                    })
+                    .catch(error => {
+                        showErrorAlert('Error submitting Purchase Request.');
+                        console.error(error);
                     });
             }
 

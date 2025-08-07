@@ -14,6 +14,7 @@ class PRReviewController extends Controller
     {
         // Get all purchase requests for review (including draft for debugging)
         $purchaseRequests = PurchaseRequest::with('user')
+            ->where('status', '!=', 'draft')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
