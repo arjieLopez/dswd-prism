@@ -204,6 +204,16 @@ class PurchaseRequestController extends Controller
         return response()->json(['success' => true, 'message' => 'Purchase Request submitted successfully!']);
     }
 
+    public function print(PurchaseRequest $purchaseRequest)
+    {
+        // Optional: Only allow the owner to print
+        if ($purchaseRequest->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        return view('user.print_pr', compact('purchaseRequest'));
+    }
+
     public function destroy(PurchaseRequest $purchaseRequest)
     {
         // Delete associated files

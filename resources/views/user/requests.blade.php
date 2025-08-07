@@ -417,6 +417,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">PR Number</label>
                         <p id="view-pr-number" class="mt-1 text-sm text-gray-900"></p>
+                        <p id="view-pr-id" style="display:none;"></p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Date</label>
@@ -482,6 +483,11 @@
                         class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg hidden"
                         onclick="submitDraftPR()">
                         Submit
+                    </button>
+                    <button type="button"
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg"
+                        onclick="openPrintView()">
+                        Print
                     </button>
                     <button type="button"
                         class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg"
@@ -739,6 +745,8 @@
                             submitBtn.removeAttribute('data-pr-id');
                         }
 
+                        document.getElementById('view-pr-id').textContent = data.id;
+
                         // Open modal
                         window.dispatchEvent(new CustomEvent('open-modal', {
                             detail: 'view-pr-modal'
@@ -779,6 +787,16 @@
                         showErrorAlert('Error submitting Purchase Request.');
                         console.error(error);
                     });
+            }
+
+            // Function to open print view
+            function openPrintView() {
+                const prId = document.getElementById('view-pr-id').textContent.trim();
+                if (prId) {
+                    window.open(`/purchase-requests/${prId}/print`, '_blank');
+                } else {
+                    alert('PR ID not found.');
+                }
             }
 
             function closeViewModal() {
