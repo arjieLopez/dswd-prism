@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
 use App\Models\User;
 use App\Models\PODocument;
+use App\Models\Supplier;
 use App\Services\ActivityService;
 
 class POGenerationController extends Controller
@@ -18,18 +19,24 @@ class POGenerationController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
+        // Get all generated POs (PRs with status 'po_generated')
+        $generatedPOs = PurchaseRequest::with('supplier')
+            ->where('status', 'po_generated')
+            ->orderBy('po_generated_at', 'desc')
+            ->paginate(10);
+
         // Get PO documents
         $poDocuments = PODocument::orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('staff.po_generation', compact('approvedPRs', 'poDocuments'));
+        $suppliers = \App\Models\Supplier::where('status', 'active')->get();
+        return view('staff.po_generation', compact('approvedPRs', 'generatedPOs', 'poDocuments', 'suppliers'));
     }
 
     public function show(PurchaseRequest $purchaseRequest)
     {
-        // Check if PR is approved
-        if ($purchaseRequest->status !== 'approved') {
-            return response()->json(['error' => 'Only approved PRs can be viewed for PO generation.'], 403);
+        if (!in_array($purchaseRequest->status, ['approved', 'po_generated'])) {
+            return response()->json(['error' => 'Only approved PRs or generated POs can be viewed.'], 403);
         }
 
         return response()->json([
@@ -52,6 +59,17 @@ class POGenerationController extends Controller
             'status_color' => $this->getStatusColorClass($purchaseRequest->status),
             'requesting_unit' => $purchaseRequest->user->name,
             'created_at' => $purchaseRequest->created_at->format('M d, Y H:i'),
+            'po_number' => $purchaseRequest->po_number,
+            'supplier_id' => $purchaseRequest->supplier_id,
+            'supplier_name' => $purchaseRequest->supplier ? $purchaseRequest->supplier->supplier_name : null,
+            'supplier_address' => $purchaseRequest->supplier ? $purchaseRequest->supplier->address : '',
+            'supplier_tin' => $purchaseRequest->supplier ? $purchaseRequest->supplier->tin : '',
+            'po_generated_at' => $purchaseRequest->po_generated_at ? $purchaseRequest->po_generated_at->format('Y-m-d') : null,
+            'delivery_term' => $purchaseRequest->delivery_term,
+            'payment_term' => $purchaseRequest->payment_term,
+            'mode_of_procurement' => $purchaseRequest->mode_of_procurement,
+            'place_of_delivery' => $purchaseRequest->place_of_delivery ?? $purchaseRequest->delivery_address,
+            'date_of_delivery' => $purchaseRequest->date_of_delivery ? $purchaseRequest->date_of_delivery->format('Y-m-d') : '',
         ]);
     }
 
@@ -80,6 +98,43 @@ class POGenerationController extends Controller
             'failed' => 'bg-red-100 text-red-800',
             default => 'bg-gray-100 text-gray-800',
         };
+    }
+
+    public function showPO(PurchaseRequest $purchaseRequest)
+    {
+        // Add your logic to show the PO details
+        return view('staff.po_show', compact('purchaseRequest'));
+    }
+
+    public function editPO(PurchaseRequest $purchaseRequest)
+    {
+        // Add your logic to edit the PO
+        return view('staff.po_edit', compact('purchaseRequest'));
+    }
+
+    public function updatePO(Request $request, PurchaseRequest $purchaseRequest)
+    {
+        $request->validate([
+            'po_number' => 'required|string|max:255',
+            'delivery_term' => 'required|string|max:255',
+            'payment_term' => 'required|string|max:255',
+            'mode_of_procurement' => 'required|string|max:255',
+            'supplier_id' => 'required|exists:suppliers,id',
+            'place_of_delivery' => 'required|string|max:1000',
+            'date_of_delivery' => 'required|date',
+        ]);
+
+        $purchaseRequest->update([
+            'po_number' => $request->po_number,
+            'delivery_term' => $request->delivery_term,
+            'payment_term' => $request->payment_term,
+            'mode_of_procurement' => $request->mode_of_procurement,
+            'supplier_id' => $request->supplier_id,
+            'place_of_delivery' => $request->place_of_delivery,
+            'date_of_delivery' => $request->date_of_delivery,
+        ]);
+
+        return response()->json(['success' => true]);
     }
 
     public function showGenerateForm(PurchaseRequest $purchaseRequest)

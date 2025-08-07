@@ -58,6 +58,9 @@ Route::post('/staff/pr-review/{purchaseRequest}/reject', [App\Http\Controllers\P
 Route::get('/staff/po-generation', [App\Http\Controllers\POGenerationController::class, 'index'])->middleware(['auth', 'verified'])->name('staff.po_generation');
 Route::get('/staff/po-generation/{purchaseRequest}/data', [App\Http\Controllers\POGenerationController::class, 'show'])->middleware(['auth', 'verified'])->name('staff.po_generation.data');
 Route::post('/staff/po-generation/{purchaseRequest}/generate-po', [App\Http\Controllers\POGenerationController::class, 'generatePO'])->middleware(['auth', 'verified'])->name('staff.po_generation.generate');
+Route::get('/staff/po-generation/{purchaseRequest}/view', [App\Http\Controllers\POGenerationController::class, 'viewPO'])->middleware(['auth', 'verified'])->name('staff.po_generation.view');
+Route::get('/staff/po-generation/{purchaseRequest}/edit', [App\Http\Controllers\POGenerationController::class, 'editPO'])->middleware(['auth', 'verified'])->name('staff.po_generation.edit');
+Route::post('/staff/po-generation/{purchaseRequest}/edit', [App\Http\Controllers\POGenerationController::class, 'updatePO'])->middleware(['auth', 'verified'])->name('staff.po_generation.update');
 // PO Document Routes
 Route::get('/po-documents/upload', [App\Http\Controllers\PODocumentController::class, 'upload'])->middleware(['auth', 'verified'])->name('po-documents.upload');
 Route::post('/po-documents', [App\Http\Controllers\PODocumentController::class, 'store'])->middleware(['auth', 'verified'])->name('po-documents.store');

@@ -484,8 +484,8 @@
                         onclick="submitDraftPR()">
                         Submit
                     </button>
-                    <button type="button"
-                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg"
+                    <button id="print-btn" type="button"
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg hidden"
                         onclick="openPrintView()">
                         Print
                     </button>
@@ -743,6 +743,15 @@
                         } else {
                             submitBtn.classList.add('hidden');
                             submitBtn.removeAttribute('data-pr-id');
+                        }
+                        // Show or hide the print button
+                        const printBtn = document.getElementById('print-btn');
+                        if (printBtn) {
+                            if (data.status === 'approved' || data.status === 'po_generated') {
+                                printBtn.classList.remove('hidden');
+                            } else {
+                                printBtn.classList.add('hidden');
+                            }
                         }
 
                         document.getElementById('view-pr-id').textContent = data.id;
