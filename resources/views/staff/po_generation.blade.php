@@ -521,7 +521,12 @@
             <div id="view-po-content">
                 <!-- Content will be loaded by JS -->
             </div>
-            <div class="mt-6 flex justify-end">
+            <div class="mt-6 flex justify-end space-x-2">
+                <button id="print-po-btn" type="button"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg"
+                    onclick="openPrintPOView()">
+                    Print
+                </button>
                 <button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg"
                     onclick="closeViewPOModal()">
                     Close
@@ -756,6 +761,13 @@
         `;
 
                     document.getElementById('view-po-content').innerHTML = html;
+
+                    // Set the PO ID on the print button
+                    const printBtn = document.getElementById('print-po-btn');
+                    if (printBtn) {
+                        printBtn.setAttribute('data-po-id', poId);
+                    }
+
                     window.dispatchEvent(new CustomEvent('open-modal', {
                         detail: 'view-po-modal'
                     }));
@@ -763,6 +775,16 @@
                 .catch(error => {
                     alert('Error loading PO details: ' + error.message);
                 });
+        }
+
+        function openPrintPOView() {
+            const btn = document.getElementById('print-po-btn');
+            const poId = btn.getAttribute('data-po-id');
+            if (poId) {
+                window.open(`/staff/po-generation/${poId}/print`, '_blank');
+            } else {
+                alert('PO ID not found.');
+            }
         }
 
         function closeViewPOModal() {

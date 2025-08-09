@@ -106,6 +106,13 @@ class POGenerationController extends Controller
         return view('staff.po_show', compact('purchaseRequest'));
     }
 
+    public function printPO(\App\Models\PurchaseRequest $purchaseRequest)
+    {
+        // You can load relationships as needed
+        $purchaseRequest->load('supplier', 'user');
+        return view('staff.po_print', compact('purchaseRequest'));
+    }
+
     public function editPO(PurchaseRequest $purchaseRequest)
     {
         // Add your logic to edit the PO
