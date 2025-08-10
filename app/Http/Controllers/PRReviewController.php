@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
 use App\Models\User;
+use App\Models\UserActivity;
 use App\Services\ActivityService;
 
 
@@ -23,11 +24,6 @@ class PRReviewController extends Controller
 
     public function show(PurchaseRequest $purchaseRequest)
     {
-        // Check if user can view this PR (staff can view all)
-        // Temporarily removed role check for debugging
-        // if (!auth()->user()->hasRole('staff')) {
-        //     abort(403, 'Unauthorized access.');
-        // }
 
         try {
             $data = [
@@ -65,8 +61,15 @@ class PRReviewController extends Controller
         try {
             $purchaseRequest->update(['status' => 'approved']);
 
-            // Add this line:
+            // Log staff Activity:
             ActivityService::logPrApproved($purchaseRequest->pr_number, auth()->user()->name);
+
+            \App\Models\UserActivity::create([
+                'user_id' => $purchaseRequest->user_id,
+                'action' => 'approved_pr', // or 'approved_po' if you add that to your model
+                'description' => 'Your Purchase Request (PR No. ' . $purchaseRequest->pr_number . ') has been approved.',
+                'pr_number' => $purchaseRequest->pr_number,
+            ]);
 
             return response()->json(['success' => true, 'message' => 'Purchase Request approved successfully!']);
         } catch (\Exception $e) {
