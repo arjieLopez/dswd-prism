@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PurchaseRequest;
+use App\Models\UserActivity;
 use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -14,8 +15,12 @@ class PurchaseRequestController extends Controller
     {
         $purchaseRequests = auth()->user()->purchaseRequests()->orderBy('created_at', 'desc')->paginate(10);
         $uploadedDocuments = auth()->user()->uploadedDocuments()->orderBy('created_at', 'desc')->paginate(10);
+        $recentActivities = UserActivity::where('user_id', auth()->id())
+            ->latest()
+            ->take(10)
+            ->get();
 
-        return view('user.requests', compact('purchaseRequests', 'uploadedDocuments'));
+        return view('user.requests', compact('purchaseRequests', 'uploadedDocuments', 'recentActivities'));
     }
 
     public function create()

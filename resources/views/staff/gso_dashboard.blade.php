@@ -71,7 +71,8 @@
                                 {{ $pendingPRs }}
                             </div>
                             <div class="text-xs text-gray-400 tracking-wide">
-                                <p>{{ $pendingPercentageChange >= 0 ? '+' : '' }}{{ $pendingPercentageChange }}%
+                                <p><span
+                                        class="{{ $pendingPercentageChange >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $pendingPercentageChange >= 0 ? '+' : '' }}{{ $pendingPercentageChange }}%</span>
                                     {{ __('from') }}</p>
                                 <p>{{ __('last month') }}</p>
                             </div>
@@ -93,7 +94,8 @@
                                 {{ $approvedPRs }}
                             </div>
                             <div class="text-xs text-gray-400 tracking-wide">
-                                <p>{{ $approvedPercentageChange >= 0 ? '+' : '' }}{{ $approvedPercentageChange }}%
+                                <p><span
+                                        class="{{ $approvedPercentageChange >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $approvedPercentageChange >= 0 ? '+' : '' }}{{ $approvedPercentageChange }}%</span>
                                     {{ __('from') }}</p>
                                 <p>{{ __('last month') }}</p>
                             </div>
@@ -115,7 +117,8 @@
                                 {{ $poGenerated }}
                             </div>
                             <div class="text-xs text-gray-400 tracking-wide">
-                                <p>{{ $poGeneratedPercentageChange >= 0 ? '+' : '' }}{{ $poGeneratedPercentageChange }}%
+                                <p><span
+                                        class="{{ $poGeneratedPercentageChange >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $poGeneratedPercentageChange >= 0 ? '+' : '' }}{{ $poGeneratedPercentageChange }}%</span>
                                     {{ __('from') }}</p>
                                 <p>{{ __('last month') }}</p>
                             </div>
@@ -128,8 +131,8 @@
             </div>
 
             <!-- Generated Purchase Orders Table -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="px-6 pt-6 flex items-center justify-between">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-medium text-gray-900">
                         {{ __('Generated Purchase Orders') }}
                     </h3>

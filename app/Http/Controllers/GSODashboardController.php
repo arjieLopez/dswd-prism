@@ -16,9 +16,17 @@ class GSODashboardController extends Controller
         $lastMonth = Carbon::now()->subMonth();
 
         // Get PR statistics for current month
-        $pendingPRs = PurchaseRequest::where('status', 'pending')->count();
-        $approvedPRs = PurchaseRequest::where('status', 'approved')->count();
-        $poGenerated = PurchaseRequest::where('status', 'po_generated')->count();
+        $pendingPRs = PurchaseRequest::where('status', 'pending')
+            ->whereMonth('created_at', $currentMonth->month)
+            ->whereYear('created_at', $currentMonth->year)
+            ->count();
+        $approvedPRs = PurchaseRequest::where('status', 'approved')
+            ->whereMonth('created_at', $currentMonth->month)
+            ->whereYear('created_at', $currentMonth->year)
+            ->count();
+        $poGenerated = PurchaseRequest::whereMonth('po_generated_at', $currentMonth->month)
+            ->whereYear('po_generated_at', $currentMonth->year)
+            ->count();
 
         // Get PR statistics for last month
         $lastMonthPendingPRs = PurchaseRequest::where('status', 'pending')
@@ -31,8 +39,7 @@ class GSODashboardController extends Controller
             ->whereYear('created_at', $lastMonth->year)
             ->count();
 
-        $lastMonthPOGenerated = PurchaseRequest::where('status', 'po_generated')
-            ->whereMonth('po_generated_at', $lastMonth->month)
+        $lastMonthPOGenerated = PurchaseRequest::whereMonth('po_generated_at', $lastMonth->month)
             ->whereYear('po_generated_at', $lastMonth->year)
             ->count();
 
@@ -60,9 +67,14 @@ class GSODashboardController extends Controller
 
     private function calculatePercentageChange($current, $previous)
     {
-        if ($previous == 0) {
-            return $current > 0 ? 100 : 0;
+        if ($previous == 0 && $current > 0) {
+            return 100;
+        } elseif ($previous == 0 && $current == 0) {
+            return 0;
+        } elseif ($previous > 0 && $current == 0) {
+            return -100;
+        } else {
+            return round((($current - $previous) / $previous) * 100);
         }
-        return round((($current - $previous) / $previous) * 100, 1);
     }
 }

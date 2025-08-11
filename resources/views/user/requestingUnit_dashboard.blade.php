@@ -164,7 +164,8 @@
                                 {{ $totalPRs }}
                             </div>
                             <div class="text-xs text-gray-400 tracking-wide">
-                                <p>{{ $totalPercentageChange >= 0 ? '+' : '' }}{{ $totalPercentageChange }}%
+                                <p><span
+                                        class="{{ $totalPercentageChange >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $totalPercentageChange >= 0 ? '+' : '' }}{{ $totalPercentageChange }}%</span>
                                     {{ __('from') }}</p>
                                 <p>{{ __('last month') }}</p>
                             </div>
@@ -186,7 +187,8 @@
                                 {{ $approvedPRs }}
                             </div>
                             <div class="text-xs text-gray-400 tracking-wide">
-                                <p>{{ $approvedPercentageChange >= 0 ? '+' : '' }}{{ $approvedPercentageChange }}%
+                                <p><span
+                                        class="{{ $approvedPercentageChange >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $approvedPercentageChange >= 0 ? '+' : '' }}{{ $approvedPercentageChange }}%</span>
                                     {{ __('from') }}</p>
                                 <p>{{ __('last month') }}</p>
                             </div>
@@ -208,7 +210,8 @@
                                 {{ $pendingPRs }}
                             </div>
                             <div class="text-xs text-gray-400 tracking-wide">
-                                <p>{{ $pendingPercentageChange >= 0 ? '+' : '' }}{{ $pendingPercentageChange }}%
+                                <p><span
+                                        class="{{ $pendingPercentageChange >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $pendingPercentageChange >= 0 ? '+' : '' }}{{ $pendingPercentageChange }}%</span>
                                     {{ __('from') }}</p>
                                 <p>{{ __('last month') }}</p>
                             </div>
@@ -230,7 +233,8 @@
                                 {{ $rejectedPRs }}
                             </div>
                             <div class="text-xs text-gray-400 tracking-wide">
-                                <p>{{ $rejectedPercentageChange >= 0 ? '+' : '' }}{{ $rejectedPercentageChange }}%
+                                <p><span
+                                        class="{{ $rejectedPercentageChange >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $rejectedPercentageChange >= 0 ? '+' : '' }}{{ $rejectedPercentageChange }}%</span>
                                     {{ __('from') }}</p>
                                 <p>{{ __('last month') }}</p>
                             </div>

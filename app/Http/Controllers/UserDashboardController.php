@@ -11,13 +11,29 @@ class UserDashboardController extends Controller
     public function show()
     {
         $user = auth()->user();
+        $currentMonth = Carbon::now();
         $lastMonth = Carbon::now()->subMonth();
 
         // Get PR counts for the current user
-        $totalPRs = $user->purchaseRequests()->count();
-        $approvedPRs = $user->purchaseRequests()->where('status', 'approved')->count();
-        $pendingPRs = $user->purchaseRequests()->where('status', 'pending')->count();
-        $rejectedPRs = $user->purchaseRequests()->where('status', 'rejected')->count();
+        $totalPRs = $user->purchaseRequests()
+            ->whereMonth('created_at', $currentMonth->month)
+            ->whereYear('created_at', $currentMonth->year)
+            ->count();
+        $approvedPRs = $user->purchaseRequests()
+            ->whereIn('status', ['approved', 'po_generated'])
+            ->whereMonth('created_at', $currentMonth->month)
+            ->whereYear('created_at', $currentMonth->year)
+            ->count();
+        $pendingPRs = $user->purchaseRequests()
+            ->where('status', 'pending')
+            ->whereMonth('created_at', $currentMonth->month)
+            ->whereYear('created_at', $currentMonth->year)
+            ->count();
+        $rejectedPRs = $user->purchaseRequests()
+            ->where('status', 'rejected')
+            ->whereMonth('created_at', $currentMonth->month)
+            ->whereYear('created_at', $currentMonth->year)
+            ->count();
 
         // Get last month's data for each status
         $lastMonthTotal = $user->purchaseRequests()
@@ -26,7 +42,7 @@ class UserDashboardController extends Controller
             ->count();
 
         $lastMonthApproved = $user->purchaseRequests()
-            ->where('status', 'approved')
+            ->whereIn('status', ['approved', 'po_generated'])
             ->whereMonth('created_at', $lastMonth->month)
             ->whereYear('created_at', $lastMonth->year)
             ->count();
@@ -60,7 +76,7 @@ class UserDashboardController extends Controller
             $labels[] = $date->format('M');
 
             $approvePR[] = $user->purchaseRequests()
-                ->where('status', 'approved')
+                ->whereIn('status', ['approved', 'po_generated'])
                 ->whereMonth('created_at', $date->month)
                 ->whereYear('created_at', $date->year)
                 ->count();
@@ -103,9 +119,14 @@ class UserDashboardController extends Controller
 
     private function calculatePercentageChange($current, $previous)
     {
-        if ($previous == 0) {
-            return $current > 0 ? 100 : 0;
+        if ($previous == 0 && $current > 0) {
+            return 100;
+        } elseif ($previous == 0 && $current == 0) {
+            return 0;
+        } elseif ($previous > 0 && $current == 0) {
+            return -100;
+        } else {
+            return round((($current - $previous) / $previous) * 100);
         }
-        return round((($current - $previous) / $previous) * 100, 1);
     }
 }

@@ -38,7 +38,6 @@ class SupplierController extends Controller
                 'status' => 'active'
             ]);
 
-            // Add this line:
             ActivityService::logSupplierCreated($supplier->supplier_name);
 
             return response()->json(['success' => true, 'message' => 'Supplier added successfully!']);
@@ -83,7 +82,6 @@ class SupplierController extends Controller
                 'email' => $request->email,
             ]);
 
-            // Add this line:
             ActivityService::logSupplierUpdated($supplier->supplier_name, $changes);
 
             return response()->json(['success' => true, 'message' => 'Supplier updated successfully!']);
@@ -100,7 +98,6 @@ class SupplierController extends Controller
 
             $supplier->update(['status' => $newStatus]);
 
-            // Add this line:
             ActivityService::logSupplierStatusChanged($supplier->supplier_name, $oldStatus, $newStatus);
 
             $statusText = $newStatus === 'active' ? 'activated' : 'deactivated';

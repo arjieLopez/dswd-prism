@@ -32,35 +32,62 @@ class AdminDashboardController extends Controller
             $prData[] = $prCount;
 
             // Count POs for this month
-            $poCount = PODocument::whereYear('created_at', $date->year)
-                ->whereMonth('created_at', $date->month)
+            // $poCount = PurchaseRequest::whereYear('created_at', $date->year)
+            //     ->whereMonth('created_at', $date->month)
+            //     ->where('status', 'po_generated')
+            //     ->count();
+            // $poData[] = $poCount;
+
+            // Count POs Generated for this month
+            $poCount = PurchaseRequest::whereYear('po_generated_at', $date->year)
+                ->whereMonth('po_generated_at', $date->month)
                 ->count();
             $poData[] = $poCount;
         }
 
         // Get total counts
         $totalPRs = PurchaseRequest::count();
-        $totalPOs = PODocument::count();
+        $totalPOs = PurchaseRequest::where('status', 'po_generated')->count();
 
         // Get previous month counts for percentage calculation
         $lastMonth = Carbon::now()->subMonth();
         $lastMonthPRs = PurchaseRequest::whereYear('created_at', $lastMonth->year)
             ->whereMonth('created_at', $lastMonth->month)
             ->count();
-        $lastMonthPOs = PODocument::whereYear('created_at', $lastMonth->year)
-            ->whereMonth('created_at', $lastMonth->month)
+        $lastMonthPOs = PurchaseRequest::whereYear('po_generated_at', $lastMonth->year)
+            ->whereMonth('po_generated_at', $lastMonth->month)
             ->count();
 
         $currentMonthPRs = PurchaseRequest::whereYear('created_at', Carbon::now()->year)
             ->whereMonth('created_at', Carbon::now()->month)
             ->count();
-        $currentMonthPOs = PODocument::whereYear('created_at', Carbon::now()->year)
-            ->whereMonth('created_at', Carbon::now()->month)
+        $currentMonthPOs = PurchaseRequest::whereYear('po_generated_at', Carbon::now()->year)
+            ->whereMonth('po_generated_at', Carbon::now()->month)
             ->count();
 
         // Calculate percentage changes
-        $prPercentageChange = $lastMonthPRs > 0 ? round((($currentMonthPRs - $lastMonthPRs) / $lastMonthPRs) * 100) : 0;
-        $poPercentageChange = $lastMonthPOs > 0 ? round((($currentMonthPOs - $lastMonthPOs) / $lastMonthPOs) * 100) : 0;
+        if ($lastMonthPRs == 0 && $currentMonthPRs > 0) {
+            $prPercentageChange = 100;
+        } elseif ($lastMonthPRs == 0 && $currentMonthPRs == 0) {
+            $prPercentageChange = 0;
+        } elseif ($lastMonthPRs > 0 && $currentMonthPRs == 0) {
+            $prPercentageChange = -100;
+        } else {
+            $prPercentageChange = round((($currentMonthPRs - $lastMonthPRs) / $lastMonthPRs) * 100);
+        }
+
+        if ($lastMonthPOs == 0 && $currentMonthPOs > 0) {
+            $poPercentageChange = 100;
+        } elseif ($lastMonthPOs == 0 && $currentMonthPOs == 0) {
+            $poPercentageChange = 0;
+        } elseif ($lastMonthPOs > 0 && $currentMonthPOs == 0) {
+            $poPercentageChange = -100;
+        } else {
+            $poPercentageChange = round((($currentMonthPOs - $lastMonthPOs) / $lastMonthPOs) * 100);
+        }
+
+        // $prPercentageChange = $lastMonthPRs > 0 ? round((($currentMonthPRs - $lastMonthPRs) / $lastMonthPRs) * 100) : 0;
+        // $poPercentageChange = $lastMonthPOs > 0 ? round((($currentMonthPOs - $lastMonthPOs) / $lastMonthPOs) * 100) : 0;
 
         // Get recent activities (combine PRs and POs)
         $recentActivities = collect();
@@ -111,7 +138,9 @@ class AdminDashboardController extends Controller
             'totalPOs',
             'prPercentageChange',
             'poPercentageChange',
-            'recentActivities'
+            'recentActivities',
+            'prCount',
+            'poCount'
         ));
     }
 

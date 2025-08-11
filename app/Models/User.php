@@ -24,6 +24,7 @@ class User extends Authenticatable
         'role',
         'twofactor_code',
         'twofactor_code_expires_at',
+        'email_verified_at',
     ];
 
     /**

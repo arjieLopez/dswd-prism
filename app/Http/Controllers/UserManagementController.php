@@ -111,6 +111,8 @@ class UserManagementController extends Controller
             'email_verified_at' => $user->email_verified_at ? null : now(),
         ]);
 
+        $user->refresh();
+
         $newStatus = $user->email_verified_at ? 'active' : 'inactive';
 
         ActivityService::logUserStatusChanged($user->id, $user->name, $oldStatus, $newStatus);

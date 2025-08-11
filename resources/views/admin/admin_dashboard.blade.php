@@ -81,10 +81,31 @@
                     </div>
 
                 </div>
-
+                <!-- Total PRs Card -->
                 <div
-                    class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-center h-64 p-6">
-                    <div class="p-4 flex flex-col justify-center h-full">
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-center">
+                    <!-- h-64 p-6-->
+                    <div class="px-8 py-6 flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold text-gray-400 tracking-wide">
+                                {{ __('Total PRs') }}
+                            </div>
+                            <div class="font-semibold text-2xl text-gray-700">
+                                {{ $prCount }}
+                            </div>
+                            <div class="text-xs text-gray-400 tracking-wide">
+                                <p><span
+                                        class="{{ $prPercentageChange >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $prPercentageChange >= 0 ? '+' : '' }}{{ $prPercentageChange }}%</span>
+                                    {{ __('from') }}</p>
+                                <p>{{ __('last month') }}</p>
+                            </div>
+                        </div>
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center ml-4">
+                            <i class="iconify w-8 h-8 text-blue-600" data-icon="mdi:file-document-outline"></i>
+                        </div>
+                    </div>
+
+                    {{-- <div class="p-4 flex flex-col justify-center h-full">
                         <div class="flex items-start justify-between mb-6 h-full">
                             <div class="flex flex-col items-start justify-center h-full">
                                 <div class="w-20 h-20 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
@@ -112,12 +133,35 @@
                                 </svg>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </div> --}}
 
+                </div>
+                <!-- Total POs Card -->
                 <div
-                    class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-center h-64 p-6">
-                    <div class="p-4 flex flex-col justify-center h-full">
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-center">
+                    <!--  h-64 p-6 -->
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="px-8 py-6 flex items-center justify-between">
+                            <div>
+                                <div class="font-semibold text-gray-400 tracking-wide">
+                                    {{ __('Total POs') }}
+                                </div>
+                                <div class="font-semibold text-2xl text-gray-700">
+                                    {{ $poCount }}
+                                </div>
+                                <div class="text-xs text-gray-400 tracking-wide">
+                                    <p><span
+                                            class="{{ $poPercentageChange >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $poPercentageChange >= 0 ? '+' : '' }}{{ $poPercentageChange }}%</span>
+                                        {{ __('from') }}</p>
+                                    <p>{{ __('last month') }}</p>
+                                </div>
+                            </div>
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center ml-4">
+                                <i class="iconify w-8 h-8 text-green-600" data-icon="mdi:cart-outline"></i>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- <div class="p-4 flex flex-col justify-center h-full">
                         <div class="flex items-start justify-between mb-6 h-full">
                             <div class="flex flex-col items-start justify-center h-full">
                                 <div class="w-20 h-20 bg-green-100 rounded-lg flex items-center justify-center mb-4">
@@ -144,7 +188,7 @@
                                 </svg>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
 
             </div>
