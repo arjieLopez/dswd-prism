@@ -137,6 +137,7 @@
                         <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                     </div>
                     <div class="flex items-center gap-4">
+                        {{-- Check the implementation of the button --}}
                         <x-primary-button>{{ __('Upload Document') }}</x-primary-button>
                         <a href="{{ route('staff.po_generation') }}"
                             class="text-gray-600 hover:text-gray-800">Cancel</a>

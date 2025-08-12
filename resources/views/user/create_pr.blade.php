@@ -198,13 +198,13 @@
                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                 </div>
 
-                                <div>
+                                {{-- <div>
                                     <label for="requested_by_signature"
                                         class="block text-sm font-medium text-gray-700">Signature (Optional)</label>
                                     <input type="file" name="requested_by_signature" id="requested_by_signature"
                                         accept="image/*"
                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
 

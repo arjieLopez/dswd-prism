@@ -209,6 +209,26 @@ class PurchaseRequestController extends Controller
         return response()->json(['success' => true, 'message' => 'Purchase Request submitted successfully!']);
     }
 
+    public function withdraw(PurchaseRequest $purchaseRequest)
+    {
+        // Ensure only the owner can withdraw
+        if ($purchaseRequest->user_id !== auth()->id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Only allow withdrawal if status is pending
+        if ($purchaseRequest->status !== 'pending') {
+            return response()->json(['success' => false, 'message' => 'Only pending PRs can be withdrawn.']);
+        }
+
+        $purchaseRequest->status = 'draft';
+        $purchaseRequest->save();
+
+        // Optionally log activity here
+
+        return response()->json(['success' => true, 'message' => 'Purchase Request withdrawn successfully!']);
+    }
+
     public function print(PurchaseRequest $purchaseRequest)
     {
         // Optional: Only allow the owner to print

@@ -64,7 +64,7 @@
                     </script>
 
                     <form id="myForm" method="POST">
-                        <x-primary-button class="bg-sky-600 hover:bg-sky-700 ms-3 ">
+                        <x-primary-button class="ms-3 ">
                             {{ __('Log in') }}
                         </x-primary-button>
                     </form>

@@ -26,7 +26,7 @@
         </div>
 
         <div class="flex items-center justify-end mt-4">
-            <x-primary-button class="bg-sky-600 hover:bg-sky-700">
+            <x-primary-button>
                 {{ __('Submit') }}
             </x-primary-button>
         </div>

@@ -162,10 +162,11 @@
                             </path>
                         </svg>
                         <span>Create New PR</span>
-                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {{-- Icon for dropdown --}}
+                        {{-- <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
                             </path>
-                        </svg>
+                        </svg> --}}
                     </button>
 
                     <!-- Dropdown Menu -->
@@ -235,21 +236,34 @@
                             </svg>
                             Filter
                         </button>
-                        <button
-                            class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            Export
-                        </button>
+                        <div class="relative" id="export-dropdown-container">
+                            <button type="button" id="export-btn"
+                                class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Export
+                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div id="export-dropdown"
+                                class="hidden absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded shadow-lg z-50">
+                                <button type="button" class="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                                    id="export-xlsx">Export as XLSX</button>
+                                <button type="button" class="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                                    id="export-pdf">Export as PDF</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Purchase Request Table -->
                 @if ($purchaseRequests->count() > 0)
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <table id="purchase-requests-table" class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th
@@ -295,7 +309,11 @@
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
                                             <div class="flex space-x-2 justify-center">
                                                 @php
-                                                    $showEdit = !in_array($pr->status, ['approved', 'po_generated']);
+                                                    $showEdit = !in_array($pr->status, [
+                                                        'approved',
+                                                        'po_generated',
+                                                        'pending',
+                                                    ]);
                                                 @endphp
                                                 <button onclick="openViewModal({{ $pr->id }})"
                                                     class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium
@@ -576,6 +594,11 @@
                         onclick="submitDraftPR()">
                         Submit
                     </button>
+                    <button id="withdraw-draft-btn" type="button"
+                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg hidden"
+                        onclick="withdrawDraftPR()">
+                        Withdraw
+                    </button>
                     <button id="print-btn" type="button"
                         class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg hidden"
                         onclick="openPrintView()">
@@ -825,7 +848,7 @@
                         const statusElement = document.getElementById('view-status');
                         statusElement.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
                         statusElement.className =
-                            `mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-${data.status_color}-100 text-${data.status_color}-800`;
+                            `mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${data.status_color}`;
 
                         // Show or hide the submit button
                         const submitBtn = document.getElementById('submit-draft-btn');
@@ -835,6 +858,17 @@
                         } else {
                             submitBtn.classList.add('hidden');
                             submitBtn.removeAttribute('data-pr-id');
+                        }
+                        // Show or hide the withdraw button
+                        const withdrawBtn = document.getElementById('withdraw-draft-btn');
+                        if (withdrawBtn) {
+                            if (data.status === 'pending') {
+                                withdrawBtn.classList.remove('hidden');
+                                withdrawBtn.setAttribute('data-pr-id', prId);
+                            } else {
+                                withdrawBtn.classList.add('hidden');
+                                withdrawBtn.removeAttribute('data-pr-id');
+                            }
                         }
                         // Show or hide the print button
                         const printBtn = document.getElementById('print-btn');
@@ -886,6 +920,37 @@
                     })
                     .catch(error => {
                         showErrorAlert('Error submitting Purchase Request.');
+                        console.error(error);
+                    });
+            }
+
+            function withdrawDraftPR() {
+                const btn = document.getElementById('withdraw-draft-btn');
+                const prId = btn.getAttribute('data-pr-id');
+                if (!prId) return;
+
+                if (!confirm('Withdraw this Purchase Request?')) return;
+
+                fetch(`/purchase-requests/${prId}/withdraw`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({}),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showSuccessAlert('Purchase Request withdrawn successfully!');
+                            closeViewModal();
+                            setTimeout(() => window.location.reload(), 1500);
+                        } else {
+                            showErrorAlert(data.message || 'Failed to withdraw Purchase Request.');
+                        }
+                    })
+                    .catch(error => {
+                        showErrorAlert('Error withdrawing Purchase Request.');
                         console.error(error);
                     });
             }

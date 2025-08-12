@@ -90,6 +90,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/purchase-requests/{purchaseRequest}/update', [PurchaseRequestController::class, 'update'])->name('purchase-requests.update');
     Route::delete('/purchase-requests/{purchaseRequest}', [PurchaseRequestController::class, 'destroy'])->name('purchase-requests.destroy');
     Route::post('/purchase-requests/{purchaseRequest}/submit', [PurchaseRequestController::class, 'submit'])->name('purchase-requests.submit');
+    Route::post('/purchase-requests/{purchaseRequest}/withdraw', [PurchaseRequestController::class, 'withdraw'])->name('purchase-requests.withdraw');
     Route::get('/purchase-requests/{purchaseRequest}/print', [PurchaseRequestController::class, 'print'])->name('purchase-requests.print');
 });
 // Uploaded Documents Routes

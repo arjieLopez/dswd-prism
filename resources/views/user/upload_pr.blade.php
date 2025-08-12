@@ -132,12 +132,13 @@
                     <div>
                         <x-input-label for="notes" :value="__('Notes (Optional)')" />
                         <textarea id="notes" name="notes" rows="3"
-                            class="mt-1 block w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm"
+                            class="mt-1 block w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm placeholder-gray-400"
                             placeholder="Add any additional notes...">{{ old('notes') }}</textarea>
                         <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                     </div>
 
                     <div class="flex items-center gap-4">
+                        {{-- Check the implementation of the button --}}
                         <x-primary-button>{{ __('Upload Scanned Copy') }}</x-primary-button>
                         <a href="{{ route('user.requests') }}" class="text-gray-600 hover:text-gray-800">Cancel</a>
                     </div>
