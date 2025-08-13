@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import "./bootstrap";
 
 import Alpine from "alpinejs";
@@ -195,7 +195,7 @@ document.getElementById("export-pdf")?.addEventListener("click", function () {
         body.push(rowData);
     });
 
-    doc.autoTable({
+    autoTable(doc, {
         head: [head],
         body: body,
         startY: 25,

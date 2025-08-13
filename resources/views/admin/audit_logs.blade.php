@@ -114,7 +114,6 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
                             </tr>
                         </thead>
-                        <!-- Replace the static table body with: -->
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse ($auditLogs as $log)
                                 <tr>
@@ -179,7 +178,7 @@
             window.location.href = '{{ route('admin.audit_logs') }}?' + params.toString();
         }
 
-        // Add event listeners
+        // Event listeners
         document.getElementById('action-filter').addEventListener('change', applyFilters);
         document.getElementById('role-filter').addEventListener('change', applyFilters);
         document.getElementById('date-from').addEventListener('change', applyFilters);
