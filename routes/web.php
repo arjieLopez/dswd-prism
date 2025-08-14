@@ -99,6 +99,10 @@ Route::post('/uploaded-documents', [App\Http\Controllers\UploadedDocumentControl
 Route::get('/uploaded-documents/{uploadedDocument}/download', [App\Http\Controllers\UploadedDocumentController::class, 'download'])->middleware(['auth', 'verified'])->name('uploaded-documents.download');
 Route::delete('/uploaded-documents/{uploadedDocument}', [App\Http\Controllers\UploadedDocumentController::class, 'destroy'])->middleware(['auth', 'verified'])->name('uploaded-documents.destroy');
 
+// Export Uploaded Documents
+Route::post('/uploaded-documents/export/xlsx', [App\Http\Controllers\UploadedDocumentController::class, 'exportXLSX'])->middleware(['auth', 'verified'])->name('uploaded-documents.export.xlsx');
+Route::post('/uploaded-documents/export/pdf', [App\Http\Controllers\UploadedDocumentController::class, 'exportPDF'])->middleware(['auth', 'verified'])->name('uploaded-documents.export.pdf');
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

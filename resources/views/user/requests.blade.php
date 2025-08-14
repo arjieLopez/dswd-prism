@@ -162,7 +162,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
                             </path>
                         </svg>
-                        <span>Create New PR</span>
+                        <span>Add New PR</span>
                         {{-- Icon for dropdown --}}
                         {{-- <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
@@ -206,7 +206,7 @@
             </div>
 
             <!-- Search and Filter Controls -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <div class="bg-white overflow-visible shadow-sm sm:rounded-lg p-6">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
                     {{-- <div class="flex items-center gap-2 w-full md:w-auto">
                         <div class="relative">
@@ -228,14 +228,52 @@
 
 
                     <div class="flex items-center gap-2">
-                        <button class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6h18M4 14h16M4 18h16">
-                                </path>
-                            </svg>
-                            Filter
-                        </button>
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open"
+                                class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6h18M4 14h16M4 18h16">
+                                    </path>
+                                </svg>
+                                Filter
+                            </button>
+                            <div x-show="open" @click.away="open = false"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200 p-2">
+                                <ul>
+                                    <li>
+                                        <a href="{{ route('user.requests') }}"
+                                            class="block px-4 py-2 text-gray-700 hover:bg-blue-100 {{ !request('status') || request('status') == 'all' ? 'font-bold text-blue-600' : '' }}">
+                                            All Statuses
+                                        </a>
+                                    </li>
+                                    @php
+                                        $statusDisplayMap = [
+                                            'draft' => 'Draft',
+                                            'pending' => 'Pending',
+                                            'approved' => 'Approved',
+                                            'rejected' => 'Rejected',
+                                            'po_generated' => 'PO Generated',
+                                            'failed' => 'Failed',
+                                        ];
+                                    @endphp
+                                    @foreach ($statuses as $status)
+                                        <li>
+                                            <a href="{{ route('user.requests', ['status' => $status]) }}"
+                                                class="block px-4 py-2 text-gray-700 hover:bg-blue-100 {{ request('status') == $status ? 'font-bold text-blue-600' : '' }}">
+                                                {{ $statusDisplayMap[$status] ?? ucfirst($status) }}
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
                         <div class="relative" id="export-dropdown-container">
                             <button type="button" id="export-btn"
                                 class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition">
@@ -400,22 +438,103 @@
                         <span>Upload New Document</span>
                     </a> --}}
                     <div class="flex items-center gap-2">
-                        <button class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6h18M4 14h16M4 18h16">
-                                </path>
-                            </svg>
-                            Filter
-                        </button>
-                        <button
-                            class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            Export
-                        </button>
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open"
+                                class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6h18M4 14h16M4 18h16">
+                                    </path>
+                                </svg>
+                                Filter
+                            </button>
+                            <div x-show="open" @click.away="open = false"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200 p-2">
+                                <ul>
+                                    <li>
+                                        <a href="{{ route('user.requests', array_merge(request()->except('file_type'), ['file_type' => 'all'])) }}"
+                                            class="block px-4 py-2 text-gray-700 hover:bg-blue-100 {{ !request('file_type') || request('file_type') == 'all' ? 'font-bold text-blue-600' : '' }}">
+                                            All File Types
+                                        </a>
+                                    </li>
+                                    @foreach ($fileTypes as $type)
+                                        <li>
+                                            <a href="{{ route('user.requests', array_merge(request()->except('file_type'), ['file_type' => $type])) }}"
+                                                class="block px-4 py-2 text-gray-700 hover:bg-blue-100 {{ request('file_type') == $type ? 'font-bold text-blue-600' : '' }}">
+                                                {{ strtoupper($type) }}
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="relative" id="export-dropdown-container-docs">
+                            <button type="button" id="export-btn-docs"
+                                class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition">
+                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                    class="size-5 mr-3">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+                                </svg>
+                                Export
+                            </button>
+                            <div id="export-dropdown-docs"
+                                class="hidden absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded shadow-lg z-50">
+                                <form id="export-xlsx-docs-form" method="POST"
+                                    action="{{ route('uploaded-documents.export.xlsx') }}">
+                                    @csrf
+                                    <input type="hidden" name="file_type"
+                                        value="{{ request('file_type', 'all') }}">
+                                    <button type="submit"
+                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em"
+                                            viewBox="0 0 16 16" class="mr-3">
+                                            <path fill="currentColor" fill-rule="evenodd"
+                                                d="M14 4.5V11h-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5zM7.86 14.841a1.13 1.13 0 0 0 .401.823q.195.162.479.252q.284.091.665.091q.507 0 .858-.158q.355-.158.54-.44a1.17 1.17 0 0 0 .187-.656q0-.336-.135-.56a1 1 0 0 0-.375-.357a2 2 0 0 0-.565-.21l-.621-.144a1 1 0 0 1-.405-.176a.37.37 0 0 1-.143-.299q0-.234.184-.384q.188-.152.513-.152q.214 0 .37.068a.6.6 0 0 1 .245.181a.56.56 0 0 1 .12.258h.75a1.1 1.1 0 0 0-.199-.566a1.2 1.2 0 0 0-.5-.41a1.8 1.8 0 0 0-.78-.152q-.44 0-.777.15q-.336.149-.527.421q-.19.273-.19.639q0 .302.123.524t.351.367q.229.143.54.213l.618.144q.31.073.462.193a.39.39 0 0 1 .153.326a.5.5 0 0 1-.085.29a.56.56 0 0 1-.255.193q-.168.07-.413.07q-.176 0-.32-.04a.8.8 0 0 1-.249-.115a.58.58 0 0 1-.255-.384zm-3.726-2.909h.893l-1.274 2.007l1.254 1.992h-.908l-.85-1.415h-.035l-.853 1.415H1.5l1.24-2.016l-1.228-1.983h.931l.832 1.438h.036zm1.923 3.325h1.697v.674H5.266v-3.999h.791zm7.636-3.325h.893l-1.274 2.007l1.254 1.992h-.908l-.85-1.415h-.035l-.853 1.415h-.861l1.24-2.016l-1.228-1.983h.931l.832 1.438h.036z" />
+                                        </svg>
+                                        Export as XLSX
+                                    </button>
+                                </form>
+                                <form id="export-pdf-docs-form" method="POST"
+                                    action="{{ route('uploaded-documents.export.pdf') }}">
+                                    @csrf
+                                    <input type="hidden" name="file_type"
+                                        value="{{ request('file_type', 'all') }}">
+                                    <button type="submit"
+                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em"
+                                            viewBox="0 0 24 24" class="mr-3">
+                                            <path fill="currentColor"
+                                                d="M18.53 9L13 3.47a.75.75 0 0 0-.53-.22H8A2.75 2.75 0 0 0 5.25 6v12A2.75 2.75 0 0 0 8 20.75h8A2.75 2.75 0 0 0 18.75 18V9.5a.75.75 0 0 0-.22-.5m-5.28-3.19l2.94 2.94h-2.94ZM16 19.25H8A1.25 1.25 0 0 1 6.75 18V6A1.25 1.25 0 0 1 8 4.75h3.75V9.5a.76.76 0 0 0 .75.75h4.75V18A1.25 1.25 0 0 1 16 19.25" />
+                                            <path fill="currentColor"
+                                                d="M13.49 14.85a3.15 3.15 0 0 1-1.31-1.66a4.44 4.44 0 0 0 .19-2a.8.8 0 0 0-1.52-.19a5 5 0 0 0 .25 2.4A29 29 0 0 1 9.83 16c-.71.4-1.68 1-1.83 1.69c-.12.56.93 2 2.72-1.12a19 19 0 0 1 2.44-.72a4.7 4.7 0 0 0 2 .61a.82.82 0 0 0 .62-1.38c-.42-.43-1.67-.31-2.29-.23m-4.78 3a4.3 4.3 0 0 1 1.09-1.24c-.68 1.08-1.09 1.27-1.09 1.25Zm2.92-6.81c.26 0 .24 1.15.06 1.46a3.1 3.1 0 0 1-.06-1.45Zm-.87 4.88a15 15 0 0 0 .88-1.92a3.9 3.9 0 0 0 1.08 1.26a12.4 12.4 0 0 0-1.96.67Zm4.7-.18s-.18.22-1.33-.28c1.25-.08 1.46.21 1.33.29Z" />
+                                        </svg>
+                                        Export as PDF
+                                    </button>
+                                </form>
+                            </div>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const exportBtn = document.getElementById('export-btn-docs');
+                                    const exportDropdown = document.getElementById('export-dropdown-docs');
+                                    exportBtn.addEventListener('click', function(e) {
+                                        e.stopPropagation();
+                                        exportDropdown.classList.toggle('hidden');
+                                    });
+                                    document.addEventListener('click', function(e) {
+                                        if (!exportDropdown.contains(e.target) && e.target !== exportBtn) {
+                                            exportDropdown.classList.add('hidden');
+                                        }
+                                    });
+                                });
+                            </script>
+                        </div>
                     </div>
                 </div>
 
@@ -864,8 +983,17 @@
                         document.getElementById('view-delivery-period').textContent = data.delivery_period;
 
                         // Set status with color
+                        const statusDisplayMap = {
+                            'draft': 'Draft',
+                            'pending': 'Pending',
+                            'approved': 'Approved',
+                            'rejected': 'Rejected',
+                            'po_generated': 'PO Generated',
+                            'failed': 'Failed',
+                        };
                         const statusElement = document.getElementById('view-status');
-                        statusElement.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                        statusElement.textContent = statusDisplayMap[data.status] || (data.status.charAt(0).toUpperCase() +
+                            data.status.slice(1));
                         statusElement.className =
                             `mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${data.status_color}`;
 
@@ -1160,6 +1288,13 @@
                     return Object.keys(errors).length > 0 ? errors : null;
                 }
                 return null;
+            }
+
+            function applyStatusFilter() {
+                const status = document.getElementById('status-filter').value;
+                const params = new URLSearchParams();
+                if (status !== 'all') params.append('status', status);
+                window.location.href = '{{ route('user.requests') }}' + (params.toString() ? '?' + params.toString() : '');
             }
             // // Global error handling for edit form submission
             // // Uncomment this section if you want to handle the edit form submission with JavaScript

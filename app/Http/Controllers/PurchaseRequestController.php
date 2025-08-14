@@ -11,16 +11,28 @@ use Illuminate\Support\Str;
 
 class PurchaseRequestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $purchaseRequests = auth()->user()->purchaseRequests()->orderBy('created_at', 'desc')->paginate(10);
-        $uploadedDocuments = auth()->user()->uploadedDocuments()->orderBy('created_at', 'desc')->paginate(10);
+        $query = auth()->user()->purchaseRequests()->orderBy('created_at', 'desc');
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+        $purchaseRequests = $query->paginate(10);
+
+        $uploadedDocumentsQuery = auth()->user()->uploadedDocuments()->orderBy('created_at', 'desc');
+        $fileTypes = auth()->user()->uploadedDocuments()->select('file_type')->distinct()->pluck('file_type');
+        if ($request->filled('file_type') && $request->file_type !== 'all') {
+            $uploadedDocumentsQuery->where('file_type', $request->file_type);
+        }
+        $uploadedDocuments = $uploadedDocumentsQuery->paginate(10);
+
         $recentActivities = UserActivity::where('user_id', auth()->id())
             ->latest()
             ->take(10)
             ->get();
+        $statuses = PurchaseRequest::select('status')->distinct()->pluck('status');
 
-        return view('user.requests', compact('purchaseRequests', 'uploadedDocuments', 'recentActivities'));
+        return view('user.requests', compact('purchaseRequests', 'uploadedDocuments', 'recentActivities', 'statuses', 'fileTypes'));
     }
 
     public function create()
