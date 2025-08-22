@@ -154,7 +154,8 @@
             </div>
             <div class="grid grid-cols-4 gap-6">
                 <!-- Total PRs Card -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-center">
                     <div class="px-8 py-6 flex items-center justify-between">
                         <div>
                             <div class="font-semibold text-gray-400 tracking-wide">
@@ -170,14 +171,15 @@
                                 <p>{{ __('last month') }}</p>
                             </div>
                         </div>
-                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center ml-4">
-                            <i class="iconify w-8 h-8 text-blue-600" data-icon="mdi:file-document-outline"></i>
+                        <div class="w-14 h-16 bg-blue-100 rounded-full flex items-center justify-center ml-4">
+                            <i class="iconify w-7 h-7 text-blue-600" data-icon="mdi:file-document-outline"></i>
                         </div>
                     </div>
                 </div>
 
                 <!-- Approved PRs Card -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-center">
                     <div class="px-8 py-6 flex items-center justify-between">
                         <div>
                             <div class="font-semibold text-gray-400 tracking-wide">
@@ -200,7 +202,8 @@
                 </div>
 
                 <!-- Pending PRs Card -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-center">
                     <div class="px-8 py-6 flex items-center justify-between">
                         <div>
                             <div class="font-semibold text-gray-400 tracking-wide">
@@ -223,7 +226,8 @@
                 </div>
 
                 <!-- Rejected PRs Card -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-center">
                     <div class="px-8 py-6 flex items-center justify-between">
                         <div>
                             <div class="font-semibold text-gray-400 tracking-wide">

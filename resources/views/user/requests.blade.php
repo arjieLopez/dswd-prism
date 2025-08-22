@@ -157,7 +157,7 @@
                 <!-- Dropdown for Create Options -->
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open"
-                        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
+                        class="bg-green-500 hover:bg-green-700 active:bg-green-900 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
                             </path>
@@ -187,7 +187,7 @@
                                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                                     </path>
                                 </svg>
-                                Create PR Form
+                                Create Purchase Request
                             </a>
                             {{-- {{ route('purchase-requests.upload') }} --}}
                             <a href="{{ route('uploaded-documents.upload') }}"
@@ -230,7 +230,7 @@
                     <div class="flex items-center gap-2">
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open"
-                                class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
+                                class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100 active:bg-gray-200">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6h18M4 14h16M4 18h16">
@@ -276,7 +276,7 @@
                         </div>
                         <div class="relative" id="export-dropdown-container">
                             <button type="button" id="export-btn"
-                                class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition">
+                                class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition active:bg-green-300">
                                 <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                     class="size-5 mr-3">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -373,13 +373,13 @@
                                                     ]);
                                                 @endphp
                                                 <button onclick="openViewModal({{ $pr->id }})"
-                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium
+                                                    class="bg-blue-500 hover:bg-blue-700 active:bg-blue-900 text-white px-3 py-1 rounded text-sm font-medium
                 {{ $showEdit ? '' : 'w-28' }}">
                                                     View
                                                 </button>
                                                 @if ($showEdit)
                                                     <button onclick="openEditModal({{ $pr->id }})"
-                                                        class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-3 py-1 rounded text-sm font-medium">
+                                                        class="bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 border border-gray-300 px-3 py-1 rounded text-sm font-medium">
                                                         Edit
                                                     </button>
                                                 @endif
@@ -440,7 +440,7 @@
                     <div class="flex items-center gap-2">
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open"
-                                class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">
+                                class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100 active:bg-gray-200">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6h18M4 14h16M4 18h16">
@@ -476,7 +476,7 @@
                         </div>
                         <div class="relative" id="export-dropdown-container-docs">
                             <button type="button" id="export-btn-docs"
-                                class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition">
+                                class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition active:bg-green-300">
                                 <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                     class="size-5 mr-3">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -594,7 +594,7 @@
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
                                             <div class="flex space-x-2 justify-center">
                                                 <a href="{{ route('uploaded-documents.download', $document) }}"
-                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium">
+                                                    class="bg-blue-500 hover:bg-blue-700 active:bg-blue-900 text-white px-3 py-1 rounded text-sm font-medium">
                                                     Download
                                                 </a>
                                                 <form method="POST"
@@ -604,7 +604,7 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
-                                                        class="bg-white hover:bg-red-50 text-red-700 border border-red-300 px-3 py-1 rounded text-sm font-medium">
+                                                        class="bg-white hover:bg-red-50 active:bg-red-100 text-red-700 border border-red-300 px-3 py-1 rounded text-sm font-medium">
                                                         Delete
                                                     </button>
                                                 </form>

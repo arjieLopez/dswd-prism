@@ -61,7 +61,8 @@
             <!-- Statistics Cards -->
             <div class="grid grid-cols-3 gap-6">
                 <!-- Pending PRs Card -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-center">
                     <div class="px-8 py-6 flex items-center justify-between">
                         <div>
                             <div class="font-semibold text-gray-400 tracking-wide">
@@ -84,7 +85,8 @@
                 </div>
 
                 <!-- Approved PRs Card -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-center">
                     <div class="px-8 py-6 flex items-center justify-between">
                         <div>
                             <div class="font-semibold text-gray-400 tracking-wide">
@@ -107,7 +109,8 @@
                 </div>
 
                 <!-- POs Generated Card -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col justify-center">
                     <div class="px-8 py-6 flex items-center justify-between">
                         <div>
                             <div class="font-semibold text-gray-400 tracking-wide">
