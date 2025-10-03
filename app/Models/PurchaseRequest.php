@@ -70,6 +70,7 @@ class PurchaseRequest extends Model
             'rejected' => 'bg-red-100 text-red-800',
             'failed' => 'bg-red-100 text-red-800',
             'po_generated' => 'bg-blue-100 text-blue-800',
+            'completed' => 'bg-indigo-100 text-indigo-800',
             default => 'bg-gray-100 text-gray-800',
         };
     }
@@ -83,6 +84,7 @@ class PurchaseRequest extends Model
             'rejected' => 'Rejected',
             'po_generated' => 'PO Generated',
             'failed' => 'Failed',
+            'completed' => 'Completed',
             default => ucfirst($this->status),
         };
     }
@@ -90,5 +92,10 @@ class PurchaseRequest extends Model
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function items()
+    {
+        return $this->hasMany(PurchaseRequestItem::class);
     }
 }

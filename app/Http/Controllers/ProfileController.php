@@ -16,8 +16,15 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $user = $request->user();
+        $recentActivities = $user->activities()
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'recentActivities' => $recentActivities,
         ]);
     }
 

@@ -1,53 +1,9 @@
 <x-page-layout>
     <x-slot name="header">
-        <a href="/admin">
-            <img src="{{ asset('images/DSWD-Logo1.png') }}" alt="DSWD Logo" class="w-16">
-        </a>
-        <h2 class="p-4 font-bold text-xl text-gray-800 leading-tight tracking-wide">
-            {{ __('DSWD-PRISM') }}
-        </h2>
-        <span class="flex-1"></span>
-        <div class="p-4">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-7 h-7 inline-block align-middle">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-            </svg>
-        </div>
-
-        <div class="p-2">
-            <x-dropdown align="right" width="48">
-                <x-slot name="trigger">
-                    <button
-                        class="inline-flex items-center px-2 py-2 border border-transparent rounded-full text-gray-900 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
-                        aria-label="User menu">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-7 h-7">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        </svg>
-                    </button>
-                </x-slot>
-
-                <x-slot name="content">
-                    <x-dropdown-link :href="route('profile.edit')">
-                        {{ __('Profile') }}
-                    </x-dropdown-link>
-                    <!-- Authentication -->
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <x-dropdown-link :href="route('logout')"
-                            onclick="event.preventDefault(); this.closest('form').submit();">
-                            {{ __('Log Out') }}
-                        </x-dropdown-link>
-                    </form>
-                </x-slot>
-            </x-dropdown>
-        </div>
-
-        <h2 class="pr-4 font-semibold text-base text-gray-800 leading-tight">
-            <div>{{ Auth::user()->name }}</div>
-        </h2>
+        <x-app-header :homeUrl="route('admin')" :title="$pageTitle ?? __('DSWD-PRISM')" :userName="Auth::user()->first_name .
+            (Auth::user()->middle_name ? ' ' . Auth::user()->middle_name : '') .
+            ' ' .
+            Auth::user()->last_name" :recentActivities="$recentActivities ?? collect()" />
     </x-slot>
 
     <!-- Main Content -->
@@ -115,19 +71,21 @@
 
                 <!-- Success/Error Messages -->
                 @if (session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    <div id="success-message"
+                        class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                         {{ session('success') }}
                     </div>
                 @endif
 
                 @if (session('error'))
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    <div id="error-message"
+                        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                         {{ session('error') }}
                     </div>
                 @endif
 
                 @if ($errors->any())
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    <div id="error-list" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                         <ul class="list-disc list-inside">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -175,6 +133,9 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th
+                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    #</th>
+                                <th
                                     class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Name</th>
                                 <th
@@ -187,18 +148,20 @@
                                     class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status</th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Date Created</th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Action</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
+                            @php $counter = ($users->currentPage() - 1) * $users->perPage() + 1; @endphp
                             @forelse($users as $user)
                                 <tr>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                        {{ $counter++ }}
+                                    </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {{ $user->name }}
+                                        {{ $user->first_name }}{{ $user->middle_name ? ' ' . $user->middle_name : '' }}
+                                        {{ $user->last_name }}
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $user->email }}
@@ -212,41 +175,50 @@
                                             {{ $user->status }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $user->created_at->format('Y-m-d H:i:s') }}
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div class="flex items-center space-x-2">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
+                                        <div class="flex items-center justify-center space-x-2">
                                             <button
                                                 class="bg-blue-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-blue-600 transition"
-                                                onclick="openViewUserModal({{ $user->id }}, '{{ $user->name }}', '{{ $user->email }}', '{{ $user->role }}', '{{ $user->status }}', '{{ $user->created_at }}', '{{ $user->updated_at }}')">
+                                                onclick="openViewUserModal(
+                            {{ $user->id }},
+                            '{{ $user->first_name }}',
+                            '{{ $user->middle_name }}',
+                            '{{ $user->last_name }}',
+                            '{{ $user->email }}',
+                            '{{ $user->role }}',
+                            '{{ $user->designation }}',
+                            '{{ $user->employee_id }}',
+                            '{{ $user->office }}',
+                            '{{ $user->status }}',
+                            '{{ $user->created_at }}'
+                        )">
                                                 View
                                             </button>
                                             <button
                                                 class="bg-gray-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-gray-600 transition"
-                                                onclick="openEditUserModal({{ $user->id }}, '{{ $user->name }}', '{{ $user->email }}', '{{ $user->role }}')">
+                                                onclick="openEditUserModal(
+                            {{ $user->id }},
+                            '{{ $user->first_name }}',
+                            '{{ $user->middle_name }}',
+                            '{{ $user->last_name }}',
+                            '{{ $user->email }}',
+                            '{{ $user->role }}',
+                            '{{ $user->designation }}',
+                            '{{ $user->employee_id }}',
+                            '{{ $user->office }}'
+                        )">
                                                 Edit
                                             </button>
                                             @if ($user->id !== auth()->id())
-                                                <form method="POST"
-                                                    action="{{ route('admin.user_management.toggle-status', $user) }}"
-                                                    class="inline">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit"
-                                                        class="bg-{{ $user->isActive() ? 'yellow' : 'green' }}-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-{{ $user->isActive() ? 'yellow' : 'green' }}-600 transition">
-                                                        {{ $user->isActive() ? 'Deactivate' : 'Activate' }}
-                                                    </button>
-                                                </form>
-                                                <form method="POST"
-                                                    action="{{ route('admin.user_management.destroy', $user) }}"
-                                                    class="inline"
-                                                    onsubmit="return confirm('Are you sure you want to delete this user?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-red-600 transition">Delete</button>
-                                                </form>
+                                                {{-- <form method="POST"
+                            action="{{ route('admin.user_management.destroy', $user) }}"
+                            class="inline"
+                            onsubmit="return confirm('Are you sure you want to delete this user?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                class="bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-red-600 transition">Delete</button>
+                        </form> --}}
                                             @endif
                                         </div>
                                     </td>
@@ -279,7 +251,7 @@
 
     <!-- Add User Modal -->
     <div id="addUserModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white">
             <div class="mt-3">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-medium text-gray-900">Add New User</h3>
@@ -293,12 +265,28 @@
 
                 <form method="POST" action="{{ route('admin.user_management.store') }}">
                     @csrf
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
-                            Name
-                        </label>
-                        <input type="text" name="name" id="name" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="first_name">
+                                First Name
+                            </label>
+                            <input type="text" name="first_name" id="first_name" required
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="middle_name">
+                                Middle Name
+                            </label>
+                            <input type="text" name="middle_name" id="middle_name"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="last_name">
+                                Last Name
+                            </label>
+                            <input type="text" name="last_name" id="last_name" required
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
                     </div>
 
                     <div class="mb-4">
@@ -309,17 +297,43 @@
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="role">
-                            Role
-                        </label>
-                        <select name="role" id="role" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                            <option value="">Select Role</option>
-                            <option value="admin">Admin</option>
-                            <option value="staff">Staff</option>
-                            <option value="user">User</option>
-                        </select>
+                    <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="role">
+                                Role
+                            </label>
+                            <select name="role" id="role" required
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <option value="">Select Role</option>
+                                <option value="admin">Admin</option>
+                                <option value="staff">Staff</option>
+                                <option value="user">User</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="designation">
+                                Designation
+                            </label>
+                            <input type="text" name="designation" id="designation"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                    </div>
+
+                    <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="employee_id">
+                                Employee ID
+                            </label>
+                            <input type="text" name="employee_id" id="employee_id"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="office">
+                                Office
+                            </label>
+                            <input type="text" name="office" id="office"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
                     </div>
 
                     <div class="mb-4">
@@ -354,69 +368,9 @@
     </div>
 
 
-    <!-- Edit User Modal -->
-    <div id="editUserModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">Edit User</h3>
-                    <button onclick="closeEditUserModal()" class="text-gray-400 hover:text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <form id="editUserForm" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_name">
-                            Name
-                        </label>
-                        <input type="text" name="name" id="edit_name" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_email">
-                            Email
-                        </label>
-                        <input type="email" name="email" id="edit_email" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_role">
-                            Role
-                        </label>
-                        <select name="role" id="edit_role" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                            <option value="admin">Admin</option>
-                            <option value="staff">Staff</option>
-                            <option value="user">User</option>
-                        </select>
-                    </div>
-
-                    <div class="flex items-center justify-end space-x-3">
-                        <button type="button" onclick="closeEditUserModal()"
-                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Update User
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <!-- View User Modal -->
     <div id="viewUserModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white">
             <div class="mt-3">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-medium text-gray-900">User Details</h3>
@@ -433,39 +387,158 @@
                         <label class="block text-gray-700 text-sm font-bold mb-2">Name</label>
                         <p id="view_name" class="text-gray-900 bg-gray-100 p-2 rounded"></p>
                     </div>
-
                     <div>
                         <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
                         <p id="view_email" class="text-gray-900 bg-gray-100 p-2 rounded"></p>
                     </div>
-
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Role</label>
-                        <p id="view_role" class="text-gray-900 bg-gray-100 p-2 rounded"></p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Role</label>
+                            <p id="view_role" class="text-gray-900 bg-gray-100 p-2 rounded"></p>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Designation</label>
+                            <p id="view_designation" class="text-gray-900 bg-gray-100 p-2 rounded"></p>
+                        </div>
                     </div>
-
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Status</label>
-                        <p id="view_status" class="text-gray-900 bg-gray-100 p-2 rounded"></p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Employee ID</label>
+                            <p id="view_employee_id" class="text-gray-900 bg-gray-100 p-2 rounded"></p>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Office</label>
+                            <p id="view_office" class="text-gray-900 bg-gray-100 p-2 rounded"></p>
+                        </div>
                     </div>
-
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Date Created</label>
-                        <p id="view_created_at" class="text-gray-900 bg-gray-100 p-2 rounded"></p>
-                    </div>
-
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Last Updated</label>
-                        <p id="view_updated_at" class="text-gray-900 bg-gray-100 p-2 rounded"></p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                            <p id="view_status" class="text-gray-900 bg-gray-100 p-2 rounded"></p>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Date Created</label>
+                            <p id="view_created_at" class="text-gray-900 bg-gray-100 p-2 rounded"></p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-end mt-6">
+                <div class="flex items-center justify-end mt-6 space-x-3">
+                    <form id="viewUserStatusForm" method="POST" style="display:inline;">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" id="viewUserStatusBtn"
+                            class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded font-semibold transition">
+                            Deactivate
+                        </button>
+                    </form>
                     <button onclick="closeViewUserModal()"
                         class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                         Close
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Edit User</h3>
+                    <button onclick="closeEditUserModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <form id="editUserForm" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_first_name">
+                                First Name
+                            </label>
+                            <input type="text" name="first_name" id="edit_first_name" required
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_middle_name">
+                                Middle Name
+                            </label>
+                            <input type="text" name="middle_name" id="edit_middle_name"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_last_name">
+                                Last Name
+                            </label>
+                            <input type="text" name="last_name" id="edit_last_name" required
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_email">
+                            Email
+                        </label>
+                        <input type="email" name="email" id="edit_email" required
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+
+                    <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_role">
+                                Role
+                            </label>
+                            <select name="role" id="edit_role" required
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <option value="admin">Admin</option>
+                                <option value="staff">Staff</option>
+                                <option value="user">User</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_designation">
+                                Designation
+                            </label>
+                            <input type="text" name="designation" id="edit_designation"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                    </div>
+
+                    <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_employee_id">
+                                Employee ID
+                            </label>
+                            <input type="text" name="employee_id" id="edit_employee_id"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_office">
+                                Office
+                            </label>
+                            <input type="text" name="office" id="edit_office"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end space-x-3">
+                        <button type="button" onclick="closeEditUserModal()"
+                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Update User
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -574,34 +647,55 @@
             document.getElementById('addUserModal').querySelector('form').reset();
         }
 
+        // View User Modal Functions
+        function openViewUserModal(userId, firstName, middleName, lastName, email, role, designation, employeeId, office,
+            status, created_at) {
+            document.getElementById('viewUserModal').classList.remove('hidden');
+            document.getElementById('view_name').textContent = firstName + (middleName ? ' ' + middleName : '') + ' ' +
+                lastName;
+            document.getElementById('view_email').textContent = email;
+            document.getElementById('view_role').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+            document.getElementById('view_designation').textContent = designation;
+            document.getElementById('view_employee_id').textContent = employeeId;
+            document.getElementById('view_office').textContent = office;
+            document.getElementById('view_status').textContent = status;
+            document.getElementById('view_created_at').textContent = created_at;
+
+            const statusForm = document.getElementById('viewUserStatusForm');
+            const statusBtn = document.getElementById('viewUserStatusBtn');
+            if (parseInt(userId) === parseInt({{ auth()->id() }})) {
+                statusForm.style.display = 'none';
+            } else {
+                statusForm.style.display = 'inline';
+                statusForm.action = `/admin/user-management/${userId}/toggle-status`;
+                if (status.toLowerCase() === 'active') {
+                    statusBtn.textContent = 'Deactivate';
+                    statusBtn.className =
+                        'bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded font-semibold transition';
+                } else {
+                    statusBtn.textContent = 'Activate';
+                    statusBtn.className =
+                        'bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-semibold transition';
+                }
+            }
+        }
+
         // Edit User Modal Functions
-        function openEditUserModal(userId, name, email, role) {
+        function openEditUserModal(userId, firstName, middleName, lastName, email, role, designation, employeeId, office) {
             document.getElementById('editUserModal').classList.remove('hidden');
-
-            // Set form action
             document.getElementById('editUserForm').action = `/admin/user-management/${userId}`;
-
-            // Populate form fields
-            document.getElementById('edit_name').value = name;
+            document.getElementById('edit_first_name').value = firstName;
+            document.getElementById('edit_middle_name').value = middleName;
+            document.getElementById('edit_last_name').value = lastName;
             document.getElementById('edit_email').value = email;
             document.getElementById('edit_role').value = role;
+            document.getElementById('edit_designation').value = designation;
+            document.getElementById('edit_employee_id').value = employeeId;
+            document.getElementById('edit_office').value = office;
         }
 
         function closeEditUserModal() {
             document.getElementById('editUserModal').classList.add('hidden');
-        }
-
-        // View User Modal Functions
-        function openViewUserModal(userId, name, email, role, status, created_at, updated_at) {
-            document.getElementById('viewUserModal').classList.remove('hidden');
-
-            // Populate view fields
-            document.getElementById('view_name').textContent = name;
-            document.getElementById('view_email').textContent = email;
-            document.getElementById('view_role').textContent = role.charAt(0).toUpperCase() + role.slice(1);
-            document.getElementById('view_status').textContent = status;
-            document.getElementById('view_created_at').textContent = created_at;
-            document.getElementById('view_updated_at').textContent = updated_at;
         }
 
         function closeViewUserModal() {
@@ -637,6 +731,18 @@
                 closeFilterModal();
             }
         }
+
+        // Auto-hide success/error messages after 4 seconds
+        setTimeout(function() {
+            const successMsg = document.getElementById('success-message');
+            if (successMsg) successMsg.style.display = 'none';
+
+            const errorMsg = document.getElementById('error-message');
+            if (errorMsg) errorMsg.style.display = 'none';
+
+            const errorList = document.getElementById('error-list');
+            if (errorList) errorList.style.display = 'none';
+        }, 4000);
 
         // // Close modals when clicking outside
         // window.onclick = function(event) {

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\PurchaseRequestController;
+use App\Http\Controllers\UploadedDocumentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -92,12 +93,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/purchase-requests/{purchaseRequest}/submit', [PurchaseRequestController::class, 'submit'])->name('purchase-requests.submit');
     Route::post('/purchase-requests/{purchaseRequest}/withdraw', [PurchaseRequestController::class, 'withdraw'])->name('purchase-requests.withdraw');
     Route::get('/purchase-requests/{purchaseRequest}/print', [PurchaseRequestController::class, 'print'])->name('purchase-requests.print');
+    Route::post('/purchase-requests/{purchaseRequest}/complete', [PurchaseRequestController::class, 'complete'])->name('purchase-requests.complete');
 });
 // Uploaded Documents Routes
 Route::get('/uploaded-documents/upload', [App\Http\Controllers\UploadedDocumentController::class, 'upload'])->middleware(['auth', 'verified'])->name('uploaded-documents.upload');
 Route::post('/uploaded-documents', [App\Http\Controllers\UploadedDocumentController::class, 'store'])->middleware(['auth', 'verified'])->name('uploaded-documents.store');
 Route::get('/uploaded-documents/{uploadedDocument}/download', [App\Http\Controllers\UploadedDocumentController::class, 'download'])->middleware(['auth', 'verified'])->name('uploaded-documents.download');
 Route::delete('/uploaded-documents/{uploadedDocument}', [App\Http\Controllers\UploadedDocumentController::class, 'destroy'])->middleware(['auth', 'verified'])->name('uploaded-documents.destroy');
+Route::get('/uploaded-documents/for-pr/{pr_number}', [UploadedDocumentController::class, 'forPr']);
 
 // Export Uploaded Documents
 Route::post('/uploaded-documents/export/xlsx', [App\Http\Controllers\UploadedDocumentController::class, 'exportXLSX'])->middleware(['auth', 'verified'])->name('uploaded-documents.export.xlsx');

@@ -13,7 +13,13 @@ class SupplierController extends Controller
         $suppliers = Supplier::orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('staff.suppliers', compact('suppliers'));
+        $user = auth()->user();
+        $recentActivities = $user->activities()
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('staff.suppliers', compact('suppliers', 'recentActivities'));
     }
 
     public function store(Request $request)

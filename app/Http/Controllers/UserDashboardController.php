@@ -19,6 +19,11 @@ class UserDashboardController extends Controller
             ->whereMonth('created_at', $currentMonth->month)
             ->whereYear('created_at', $currentMonth->year)
             ->count();
+        $draftPRs = $user->purchaseRequests()
+            ->whereIn('status', ['draft'])
+            ->whereMonth('created_at', $currentMonth->month)
+            ->whereYear('created_at', $currentMonth->year)
+            ->count();
         $approvedPRs = $user->purchaseRequests()
             ->whereIn('status', ['approved', 'po_generated'])
             ->whereMonth('created_at', $currentMonth->month)
@@ -34,9 +39,20 @@ class UserDashboardController extends Controller
             ->whereMonth('created_at', $currentMonth->month)
             ->whereYear('created_at', $currentMonth->year)
             ->count();
+        $completedPRs = $user->purchaseRequests()
+            ->where('status', 'completed')
+            ->whereMonth('created_at', $currentMonth->month)
+            ->whereYear('created_at', $currentMonth->year)
+            ->count();
 
         // Get last month's data for each status
         $lastMonthTotal = $user->purchaseRequests()
+            ->whereMonth('created_at', $lastMonth->month)
+            ->whereYear('created_at', $lastMonth->year)
+            ->count();
+
+        $lastMonthDraft = $user->purchaseRequests()
+            ->where('status', 'draft')
             ->whereMonth('created_at', $lastMonth->month)
             ->whereYear('created_at', $lastMonth->year)
             ->count();
@@ -58,18 +74,26 @@ class UserDashboardController extends Controller
             ->whereMonth('created_at', $lastMonth->month)
             ->whereYear('created_at', $lastMonth->year)
             ->count();
+        $lastMonthCompleted = $user->purchaseRequests()
+            ->where('status', 'completed')
+            ->whereMonth('created_at', $lastMonth->month)
+            ->whereYear('created_at', $lastMonth->year)
+            ->count();
 
         // Calculate percentage changes for each status
         $totalPercentageChange = $this->calculatePercentageChange($totalPRs, $lastMonthTotal);
         $approvedPercentageChange = $this->calculatePercentageChange($approvedPRs, $lastMonthApproved);
+        $draftPercentageChange = $this->calculatePercentageChange($draftPRs, $lastMonthDraft);
         $pendingPercentageChange = $this->calculatePercentageChange($pendingPRs, $lastMonthPending);
         $rejectedPercentageChange = $this->calculatePercentageChange($rejectedPRs, $lastMonthRejected);
+        $completedPercentageChange = $this->calculatePercentageChange($completedPRs, $lastMonthCompleted);
 
         // Monthly data for chart (last 6 months)
         $labels = [];
         $approvePR = [];
         $pendingPR = [];
         $rejectPR = [];
+        $completedPR = [];
 
         for ($i = 5; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
@@ -92,27 +116,37 @@ class UserDashboardController extends Controller
                 ->whereMonth('created_at', $date->month)
                 ->whereYear('created_at', $date->year)
                 ->count();
+            $completedPR[] = $user->purchaseRequests()
+                ->where('status', 'completed')
+                ->whereMonth('created_at', $date->month)
+                ->whereYear('created_at', $date->year)
+                ->count();
         }
 
         // Get recent activities (increase limit for notifications)
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(15) // Increased from 10 to 15
+            ->limit(10)
             ->get();
 
         return view('user.requestingUnit_dashboard', compact(
             'totalPRs',
+            'draftPRs',
             'approvedPRs',
             'pendingPRs',
             'rejectedPRs',
+            'completedPRs',
             'totalPercentageChange',
+            'draftPercentageChange',
             'approvedPercentageChange',
             'pendingPercentageChange',
             'rejectedPercentageChange',
+            'completedPercentageChange',
             'labels',
             'approvePR',
             'pendingPR',
             'rejectPR',
+            'completedPR',
             'recentActivities'
         ));
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\UserActivity;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class AuditLogsController extends Controller
 {
@@ -14,7 +15,7 @@ class AuditLogsController extends Controller
             $query = UserActivity::with('user')
                 ->select([
                     'user_activities.*',
-                    'users.name as user_name',
+                    DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name) as user_name"),
                     'users.role as user_role'
                 ])
                 ->join('users', 'user_activities.user_id', '=', 'users.id');
@@ -23,7 +24,7 @@ class AuditLogsController extends Controller
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function ($q) use ($search) {
-                    $q->where('users.name', 'like', "%{$search}%")
+                    $q->where(DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name) as user_name"), 'like', "%{$search}%")
                         ->orWhere('user_activities.description', 'like', "%{$search}%")
                         ->orWhere('user_activities.pr_number', 'like', "%{$search}%")
                         ->orWhere('users.role', 'like', "%{$search}%");
@@ -48,16 +49,22 @@ class AuditLogsController extends Controller
                 $query->whereDate('user_activities.created_at', '<=', $request->date_to);
             }
 
-            $auditLogs = $query->orderBy('user_activities.created_at', 'desc')->paginate(15);
+            $auditLogs = $query->orderBy('user_activities.created_at', 'desc')->paginate(10);
 
             // Get available actions and roles for filters
             $actions = UserActivity::select('action')->distinct()->pluck('action');
             $roles = User::select('role')->distinct()->pluck('role');
 
-            return view('admin.audit_logs', compact('auditLogs', 'actions', 'roles'));
+            $user = auth()->user();
+            $recentActivities = $user->activities()
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+
+            return view('admin.audit_logs', compact('auditLogs', 'actions', 'roles', 'recentActivities'));
         } catch (\Exception $e) {
             // If there's an error, return empty results
-            $auditLogs = collect([])->paginate(15);
+            $auditLogs = collect([])->paginate(10);
             $actions = collect([]);
             $roles = collect([]);
 

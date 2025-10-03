@@ -19,12 +19,17 @@ class PRReviewController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('staff.pr_review', compact('purchaseRequests'));
+        $user = auth()->user();
+        $recentActivities = $user->activities()
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('staff.pr_review', compact('purchaseRequests', 'recentActivities'));
     }
 
     public function show(PurchaseRequest $purchaseRequest)
     {
-
         try {
             $data = [
                 'id' => $purchaseRequest->id,
@@ -33,19 +38,25 @@ class PRReviewController extends Controller
                 'fund_cluster' => $purchaseRequest->fund_cluster,
                 'office_section' => $purchaseRequest->office_section,
                 'date' => $purchaseRequest->date->toDateString(),
-                'unit' => $purchaseRequest->unit,
-                'quantity' => $purchaseRequest->quantity,
-                'unit_cost' => $purchaseRequest->unit_cost,
-                'total_cost' => $purchaseRequest->total_cost,
-                'item_description' => $purchaseRequest->item_description,
                 'delivery_address' => $purchaseRequest->delivery_address,
                 'purpose' => $purchaseRequest->purpose,
                 'requested_by_name' => $purchaseRequest->requested_by_name,
                 'delivery_period' => $purchaseRequest->delivery_period,
                 'status' => $purchaseRequest->status,
                 'status_color' => $this->getStatusColorClass($purchaseRequest->status),
-                'requesting_unit' => $purchaseRequest->user->name,
+                'requesting_unit' => $purchaseRequest->user
+                    ? ($purchaseRequest->user->first_name . ($purchaseRequest->user->middle_name ? ' ' . $purchaseRequest->user->middle_name : '') . ' ' . $purchaseRequest->user->last_name)
+                    : 'Unknown',
                 'created_at' => $purchaseRequest->created_at->format('M d, Y H:i'),
+                'items' => $purchaseRequest->items->map(function ($item) {
+                    return [
+                        'unit' => $item->unit,
+                        'quantity' => $item->quantity,
+                        'unit_cost' => $item->unit_cost,
+                        'total_cost' => $item->total_cost,
+                        'item_description' => $item->item_description,
+                    ];
+                }),
             ];
 
             return response()->json($data);
@@ -62,7 +73,13 @@ class PRReviewController extends Controller
             $purchaseRequest->update(['status' => 'approved']);
 
             // Log staff Activity:
-            ActivityService::logPrApproved($purchaseRequest->pr_number, auth()->user()->name);
+            ActivityService::logPrApproved(
+                $purchaseRequest->pr_number,
+                auth()->user()->first_name .
+                    (auth()->user()->middle_name ? ' ' . auth()->user()->middle_name : '') .
+                    ' ' .
+                    auth()->user()->last_name
+            );
 
             \App\Models\UserActivity::create([
                 'user_id' => $purchaseRequest->user_id,
@@ -86,7 +103,14 @@ class PRReviewController extends Controller
             $purchaseRequest->update(['status' => 'rejected']);
 
             // Add this line:
-            ActivityService::logPrRejected($purchaseRequest->pr_number, auth()->user()->name, request('reason'));
+            ActivityService::logPrRejected(
+                $purchaseRequest->pr_number,
+                auth()->user()->first_name .
+                    (auth()->user()->middle_name ? ' ' . auth()->user()->middle_name : '') .
+                    ' ' .
+                    auth()->user()->last_name,
+                request('reason')
+            );
 
             return response()->json(['success' => true, 'message' => 'Purchase Request rejected successfully!']);
         } catch (\Exception $e) {

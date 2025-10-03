@@ -102,7 +102,9 @@ class AdminDashboardController extends Controller
                     'type' => 'PR',
                     'document_number' => $pr->pr_number,
                     'action' => $this->getActionForPR($pr->status),
-                    'requesting_unit' => $pr->user->name ?? 'Unknown',
+                    'requesting_unit' => $pr->user
+                        ? ($pr->user->first_name . ($pr->user->middle_name ? ' ' . $pr->user->middle_name : '') . ' ' . $pr->user->last_name)
+                        : 'Unknown',
                     'status' => $pr->status,
                     'date' => $pr->created_at,
                     'status_color' => $this->getStatusColor($pr->status)
@@ -126,9 +128,11 @@ class AdminDashboardController extends Controller
             });
 
         // Combine and sort by date
-        $recentActivities = $recentPRs->concat($recentPOs)
-            ->sortByDesc('date')
-            ->take(5);
+        $user = auth()->user();
+        $recentActivities = $user->activities()
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
 
         return view('admin.admin_dashboard', compact(
             'labels',

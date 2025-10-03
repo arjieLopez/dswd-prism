@@ -72,9 +72,34 @@ class UploadedDocumentController extends Controller
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.uploaded_documents_pdf', $data);
         return $pdf->download('uploaded_documents.pdf');
     }
-    public function upload()
+    public function upload(Request $request)
     {
-        return view('user.upload_pr');
+        $user = auth()->user();
+        $recentActivities = $user->activities()
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        $prNumber = $request->query('pr_number');
+
+        $uploadedDocument = null;
+        if ($prNumber) {
+            $uploadedDocument = \App\Models\UploadedDocument::where('pr_number', $prNumber)->first();
+        }
+
+        return view('user.upload_pr', compact('recentActivities', 'prNumber', 'uploadedDocument'));
+    }
+
+    public function forPr($pr_number)
+    {
+        $doc = \App\Models\UploadedDocument::where('pr_number', $pr_number)->latest()->first();
+        if ($doc) {
+            return response()->json([
+                'exists' => true,
+                'download_url' => route('uploaded-documents.download', $doc->id),
+            ]);
+        }
+        return response()->json(['exists' => false]);
     }
 
     public function store(Request $request)

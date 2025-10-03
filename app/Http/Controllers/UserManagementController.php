@@ -19,7 +19,7 @@ class UserManagementController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+                $q->where(DB::raw("CONCAT(first_name, ' ', IFNULL(middle_name, ''), ' ', last_name)"), 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             });
         }
@@ -41,30 +41,51 @@ class UserManagementController extends Controller
         // Sort functionality
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
-        $query->orderBy($sortBy, $sortOrder);
+
+        if ($sortBy === 'name') {
+            $query->orderByRaw("CONCAT(first_name, ' ', IFNULL(middle_name, ''), ' ', last_name) $sortOrder");
+        } else {
+            $query->orderBy($sortBy, $sortOrder);
+        }
 
         $users = $query->paginate(10)->withQueryString();
 
-        return view('admin.user_management', compact('users'));
+        $user = auth()->user();
+        $recentActivities = $user->activities()
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('admin.user_management', compact('users', 'recentActivities'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'middle_name' => ['nullable', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'string', 'in:admin,staff,user'],
+            'designation' => ['nullable', 'string', 'max:255'],
+            'employee_id' => ['nullable', 'string', 'max:255'],
+            'office' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user = User::create([
-            'name' => $request->name,
+            'first_name' => $request->first_name,
+            'middle_name' => $request->middle_name,
+            'last_name' => $request->last_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'designation' => $request->designation,
+            'employee_id' => $request->employee_id,
+            'office' => $request->office,
         ]);
 
-        ActivityService::logUserCreated($user->id, $user->name, $user->role);
+        ActivityService::logUserCreated($user->id, $user->first_name . ' ' . ($user->middle_name ? $user->middle_name . ' ' : '') . $user->last_name, $user->role);
 
         return redirect()->route('admin.user_management')->with('success', 'User created successfully.');
     }
@@ -72,28 +93,43 @@ class UserManagementController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'middle_name' => ['nullable', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'role' => ['required', 'string', 'in:admin,staff,user'],
+            'designation' => ['nullable', 'string', 'max:255'],
+            'employee_id' => ['nullable', 'string', 'max:255'],
+            'office' => ['nullable', 'string', 'max:255'],
         ]);
 
         $oldRole = $user->role;
         $changes = [
-            'name' => $request->name !== $user->name ? ['old' => $user->name, 'new' => $request->name] : null,
-            'email' => $request->email !== $user->email ? ['old' => $user->email, 'new' => $request->email] : null,
-            'role' => $request->role !== $user->role ? ['old' => $user->role, 'new' => $request->role] : null,
+            'first_name'    => $request->first_name !== $user->first_name ? ['old' => $user->first_name, 'new' => $request->first_name] : null,
+            'middle_name'   => $request->middle_name !== $user->middle_name ? ['old' => $user->middle_name, 'new' => $request->middle_name] : null,
+            'last_name'     => $request->last_name !== $user->last_name ? ['old' => $user->last_name, 'new' => $request->last_name] : null,
+            'email'         => $request->email !== $user->email ? ['old' => $user->email, 'new' => $request->email] : null,
+            'role'          => $request->role !== $user->role ? ['old' => $user->role, 'new' => $request->role] : null,
+            'designation'   => $request->designation !== $user->designation ? ['old' => $user->designation, 'new' => $request->designation] : null,
+            'employee_id'   => $request->employee_id !== $user->employee_id ? ['old' => $user->employee_id, 'new' => $request->employee_id] : null,
+            'office'        => $request->office !== $user->office ? ['old' => $user->office, 'new' => $request->office] : null,
         ];
 
         $user->update([
-            'name' => $request->name,
+            'first_name' => $request->first_name,
+            'middle_name' => $request->middle_name,
+            'last_name' => $request->last_name,
             'email' => $request->email,
             'role' => $request->role,
+            'designation' => $request->designation,
+            'employee_id' => $request->employee_id,
+            'office' => $request->office,
         ]);
 
-        ActivityService::logUserUpdated($user->id, $user->name, $changes);
+        ActivityService::logUserUpdated($user->id, $user->first_name . ' ' . ($user->middle_name ? $user->middle_name . ' ' : '') . $user->last_name, $changes);
 
         if ($oldRole !== $user->role) {
-            ActivityService::logUserRoleChanged($user->id, $user->name, $oldRole, $user->role);
+            ActivityService::logUserRoleChanged($user->id, $user->first_name . ' ' . ($user->middle_name ? $user->middle_name . ' ' : '') . $user->last_name, $oldRole, $user->role);
         }
 
         return redirect()->route('admin.user_management')->with('success', 'User updated successfully.');
@@ -115,7 +151,7 @@ class UserManagementController extends Controller
 
         $newStatus = $user->email_verified_at ? 'active' : 'inactive';
 
-        ActivityService::logUserStatusChanged($user->id, $user->name, $oldStatus, $newStatus);
+        ActivityService::logUserStatusChanged($user->id, $user->first_name . ' ' . ($user->middle_name ? $user->middle_name . ' ' : '') . $user->last_name, $oldStatus, $newStatus);
 
         $status = $user->email_verified_at ? 'activated' : 'deactivated';
         return redirect()->route('admin.user_management')->with('success', "User {$status} successfully.");

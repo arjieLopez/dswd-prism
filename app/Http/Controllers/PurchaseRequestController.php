@@ -26,9 +26,10 @@ class PurchaseRequestController extends Controller
         }
         $uploadedDocuments = $uploadedDocumentsQuery->paginate(10);
 
-        $recentActivities = UserActivity::where('user_id', auth()->id())
-            ->latest()
-            ->take(10)
+        $user = auth()->user();
+        $recentActivities = $user->activities()
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
             ->get();
         $statuses = PurchaseRequest::select('status')->distinct()->pluck('status');
 
@@ -37,7 +38,13 @@ class PurchaseRequestController extends Controller
 
     public function create()
     {
-        return view('user.create_pr');
+        $user = auth()->user();
+        $recentActivities = $user->activities()
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('user.create_pr', compact('recentActivities'));
     }
 
     public function store(Request $request)
@@ -49,10 +56,14 @@ class PurchaseRequestController extends Controller
             'responsibility_center_code' => 'required|string|max:255',
             'date' => 'required|date',
             'stoc_property_no' => 'nullable|string|max:255',
-            'unit' => 'required|string|max:255',
-            'item_description' => 'required|string',
-            'quantity' => 'required|integer|min:1',
-            'unit_cost' => 'required|numeric|min:0',
+            'unit' => 'required|array',
+            'unit.*' => 'required|string|max:255',
+            'quantity' => 'required|array',
+            'quantity.*' => 'required|integer|min:1',
+            'unit_cost' => 'required|array',
+            'unit_cost.*' => 'required|numeric|min:0',
+            'item_description' => 'required|array',
+            'item_description.*' => 'required|string',
             'delivery_period' => 'required|string|max:255',
             'delivery_address' => 'required|string',
             'purpose' => 'required|string',
@@ -62,7 +73,10 @@ class PurchaseRequestController extends Controller
         ]);
 
         // Calculate totals
-        $totalCost = $request->quantity * $request->unit_cost;
+        $totalCost = 0;
+        foreach ($request->quantity as $i => $qty) {
+            $totalCost += $qty * $request->unit_cost[$i];
+        }
         $total = $totalCost; // Add tax or other calculations if needed
 
         // Generate PR Number
@@ -88,22 +102,26 @@ class PurchaseRequestController extends Controller
             'responsibility_center_code' => $request->responsibility_center_code,
             'date' => $request->date,
             'stoc_property_no' => $request->stoc_property_no,
-            'unit' => $request->unit,
-            'item_description' => $request->item_description,
-            'quantity' => $request->quantity,
-            'unit_cost' => $request->unit_cost,
-            'total_cost' => $totalCost,
             'total' => $total,
             'delivery_period' => $request->delivery_period,
             'delivery_address' => $request->delivery_address,
             'purpose' => $request->purpose,
-            'requested_by_name' => $request->requested_by_name,
+            'requested_by_name' => auth()->user()->first_name . (auth()->user()->middle_name ? ' ' . auth()->user()->middle_name : '') . ' ' . auth()->user()->last_name,
             'requested_by_designation' => $request->requested_by_designation,
             'requested_by_signature' => $requestedBySignature,
             'scanned_copy' => $scannedCopy,
             'status' => 'draft',
         ]);
 
+        foreach ($request->unit as $i => $unit) {
+            $item = $purchaseRequest->items()->create([
+                'unit' => $unit,
+                'quantity' => $request->quantity[$i],
+                'unit_cost' => $request->unit_cost[$i],
+                'item_description' => $request->item_description[$i],
+                'total_cost' => $request->quantity[$i] * $request->unit_cost[$i],
+            ]);
+        }
 
         ActivityService::logPrCreated($purchaseRequest->pr_number, $purchaseRequest->entity_name);
 
@@ -124,17 +142,21 @@ class PurchaseRequestController extends Controller
             'fund_cluster' => $purchaseRequest->fund_cluster,
             'office_section' => $purchaseRequest->office_section,
             'date' => $purchaseRequest->date->toDateString(),
-            'unit' => $purchaseRequest->unit,
-            'quantity' => $purchaseRequest->quantity,
-            'unit_cost' => $purchaseRequest->unit_cost,
-            'total_cost' => $purchaseRequest->total_cost,
-            'item_description' => $purchaseRequest->item_description,
             'delivery_address' => $purchaseRequest->delivery_address,
             'purpose' => $purchaseRequest->purpose,
             'requested_by_name' => $purchaseRequest->requested_by_name,
             'delivery_period' => $purchaseRequest->delivery_period,
             'status' => $purchaseRequest->status,
             'status_color' => $purchaseRequest->status_color,
+            'items' => $purchaseRequest->items->map(function ($item) {
+                return [
+                    'unit' => $item->unit,
+                    'quantity' => $item->quantity,
+                    'unit_cost' => $item->unit_cost,
+                    'total_cost' => $item->total_cost,
+                    'item_description' => $item->item_description,
+                ];
+            }),
         ]);
     }
 
@@ -151,17 +173,24 @@ class PurchaseRequestController extends Controller
                 'fund_cluster' => 'required|string|max:255',
                 'office_section' => 'required|string|max:255',
                 'date' => 'required|date',
-                'unit' => 'required|string|max:255',
-                'item_description' => 'required|string',
-                'quantity' => 'required|integer|min:1',
-                'unit_cost' => 'required|numeric|min:0',
+                'unit' => 'required|array',
+                'unit.*' => 'required|string|max:255',
+                'quantity' => 'required|array',
+                'quantity.*' => 'required|integer|min:1',
+                'unit_cost' => 'required|array',
+                'unit_cost.*' => 'required|numeric|min:0',
+                'item_description' => 'required|array',
+                'item_description.*' => 'required|string',
                 'delivery_period' => 'required|string|max:255',
                 'delivery_address' => 'required|string',
                 'purpose' => 'required|string',
             ]);
 
             // Calculate totals
-            $totalCost = $request->quantity * $request->unit_cost;
+            $totalCost = 0;
+            foreach ($request->quantity as $i => $qty) {
+                $totalCost += $qty * $request->unit_cost[$i];
+            }
             $total = $totalCost;
 
             if (!in_array($purchaseRequest->status, ['approved', 'po_generated'])) {
@@ -173,16 +202,24 @@ class PurchaseRequestController extends Controller
                 'fund_cluster' => $request->fund_cluster,
                 'office_section' => $request->office_section,
                 'date' => $request->date,
-                'unit' => $request->unit,
-                'item_description' => $request->item_description,
-                'quantity' => $request->quantity,
-                'unit_cost' => $request->unit_cost,
-                'total_cost' => $totalCost,
                 'total' => $total,
                 'delivery_period' => $request->delivery_period,
                 'delivery_address' => $request->delivery_address,
                 'purpose' => $request->purpose,
             ]);
+
+            // Delete existing items and create new ones
+            $purchaseRequest->items()->delete();
+
+            foreach ($request->unit as $i => $unit) {
+                $purchaseRequest->items()->create([
+                    'unit' => $unit,
+                    'quantity' => $request->quantity[$i],
+                    'unit_cost' => $request->unit_cost[$i],
+                    'item_description' => $request->item_description[$i],
+                    'total_cost' => $request->quantity[$i] * $request->unit_cost[$i],
+                ]);
+            }
 
             ActivityService::logPrUpdated($purchaseRequest->pr_number, $purchaseRequest->entity_name);
 
@@ -249,6 +286,26 @@ class PurchaseRequestController extends Controller
         }
 
         return view('user.print_pr', compact('purchaseRequest'));
+    }
+
+    public function complete(PurchaseRequest $purchaseRequest)
+    {
+        // Ensure only the owner can mark as completed
+        if ($purchaseRequest->user_id !== auth()->id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Only allow if status is approved or po_generated
+        if (!in_array($purchaseRequest->status, ['approved', 'po_generated'])) {
+            return response()->json(['success' => false, 'message' => 'PR cannot be marked as completed.'], 400);
+        }
+
+        $purchaseRequest->status = 'completed';
+        $purchaseRequest->save();
+
+        // Optionally log activity here
+
+        return response()->json(['success' => true, 'message' => 'Purchase Request marked as completed!']);
     }
 
     public function destroy(PurchaseRequest $purchaseRequest)

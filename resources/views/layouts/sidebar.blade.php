@@ -1,5 +1,5 @@
 <aside
-    class="fixed top-16 left-0 w-80 h-[calc(100vh-4rem)] bg-gradient-to-t from-blue-100 to-white border-r border-white flex flex-col py-6">
+    class="fixed top-16 left-0 w-60 h-[calc(100vh-4rem)] bg-gradient-to-t from-blue-100 to-white border-r border-white flex flex-col py-6">
     <nav class="flex-1 space-y-2">
         @auth
             @if (Auth::user()->role === 'admin')

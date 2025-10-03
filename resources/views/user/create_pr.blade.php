@@ -1,55 +1,12 @@
 <x-page-layout>
     <x-slot name="header">
-        <a href="/user">
-            <img src="{{ asset('images/DSWD-Logo1.png') }}" alt="DSWD Logo" class="w-16">
-        </a>
-        <h2 class="p-4 font-bold text-xl text-gray-800 leading-tight tracking-wide">
-            {{ __('DSWD-PRISM') }}
-        </h2>
-        <span class="flex-1"></span>
-        <div class="p-4">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-7 h-7 inline-block align-middle">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-            </svg>
-        </div>
-
-        <div class="p-2">
-            <x-dropdown align="right" width="48">
-                <x-slot name="trigger">
-                    <button
-                        class="inline-flex items-center px-2 py-2 border border-transparent rounded-full text-gray-900 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
-                        aria-label="User menu">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-7 h-7">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        </svg>
-                    </button>
-                </x-slot>
-
-                <x-slot name="content">
-                    <x-dropdown-link :href="route('profile.edit')">
-                        {{ __('Profile') }}
-                    </x-dropdown-link>
-                    <!-- Authentication -->
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <x-dropdown-link :href="route('logout')"
-                            onclick="event.preventDefault(); this.closest('form').submit();">
-                            {{ __('Log Out') }}
-                        </x-dropdown-link>
-                    </form>
-                </x-slot>
-            </x-dropdown>
-        </div>
-
-        <h2 class="pr-4 font-semibold text-base text-gray-800 leading-tight">
-            <div>{{ Auth::user()->name }}</div>
-        </h2>
+        <x-app-header :homeUrl="route('user')" :title="$pageTitle ?? __('DSWD-PRISM')" :userName="Auth::user()->first_name .
+            (Auth::user()->middle_name ? ' ' . Auth::user()->middle_name : '') .
+            ' ' .
+            Auth::user()->last_name" :recentActivities="$recentActivities ?? collect()" />
     </x-slot>
 
+    <!-- Main Content -->
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="mb-6">
@@ -85,7 +42,7 @@
                                 <label for="office_section"
                                     class="block text-sm font-medium text-gray-700">Office/Section</label>
                                 <input type="text" name="office_section" id="office_section"
-                                    value="{{ old('office_section') }}" required
+                                    value="{{ old('office_section', auth()->user()->office) }}" required readonly
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             </div>
 
@@ -116,37 +73,94 @@
                         <!-- Item Details -->
                         <div class="border-t pt-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Item Details</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
-                                    <label for="unit" class="block text-sm font-medium text-gray-700">Unit</label>
-                                    <input type="text" name="unit" id="unit" value="{{ old('unit') }}"
-                                        required
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                </div>
+                            <div id="items-container">
+                                <div class="item-fields border border-gray-200 rounded-lg p-4 mb-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Unit <span
+                                                    class="text-red-500">*</span></label>
+                                            <select name="unit[]" required
+                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                                <option value="">Select unit</option>
 
-                                <div>
-                                    <label for="quantity"
-                                        class="block text-sm font-medium text-gray-700">Quantity</label>
-                                    <input type="number" name="quantity" id="quantity"
-                                        value="{{ old('quantity') }}" min="1" required
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                </div>
+                                                <!-- Basic -->
+                                                <option value="pcs">pcs</option>
+                                                <option value="set">set</option>
+                                                <option value="pair">pair</option>
+                                                <option value="dozen">dozen</option>
+                                                <option value="lot">lot</option>
 
-                                <div>
-                                    <label for="unit_cost" class="block text-sm font-medium text-gray-700">Unit Cost
-                                        (₱)</label>
-                                    <input type="number" name="unit_cost" id="unit_cost"
-                                        value="{{ old('unit_cost') }}" min="0" step="0.01" required
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                                <!-- Packaging -->
+                                                <option value="box">box</option>
+                                                <option value="pack">pack</option>
+                                                <option value="carton">carton</option>
+                                                <option value="case">case</option>
+                                                <option value="roll">roll</option>
+                                                <option value="ream">ream</option>
+                                                <option value="bundle">bundle</option>
+                                                <option value="tube">tube</option>
+                                                <option value="bottle">bottle</option>
+                                                <option value="can">can</option>
+                                                <option value="jar">jar</option>
+                                                <option value="sachet">sachet</option>
+                                                <option value="drum">drum</option>
+                                                <option value="barrel">barrel</option>
+                                                <option value="bag">bag</option>
+
+                                                <!-- Weight -->
+                                                <option value="g">g</option>
+                                                <option value="kg">kg</option>
+                                                <option value="lb">lb</option>
+                                                <option value="ton">ton</option>
+
+                                                <!-- Volume -->
+                                                <option value="ml">ml</option>
+                                                <option value="l">L</option>
+                                                <option value="gal">gal</option>
+
+                                                <!-- Length -->
+                                                <option value="mm">mm</option>
+                                                <option value="cm">cm</option>
+                                                <option value="m">m</option>
+                                                <option value="km">km</option>
+
+                                                <!-- Area -->
+                                                <option value="sqm">sqm</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Quantity <span
+                                                    class="text-red-500">*</span></label>
+                                            <input type="number" name="quantity[]" min="1" required
+                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Unit Cost (₱) <span
+                                                    class="text-red-500">*</span></label>
+                                            <input type="number" name="unit_cost[]" min="0" step="0.01"
+                                                required
+                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div class="md:col-span-3 mt-2">
+                                            <label class="block text-sm font-medium text-gray-700">Item Description
+                                                <span class="text-red-500">*</span></label>
+                                            <textarea name="item_description[]" rows="3" required
+                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                                        </div>
+                                        <div class="md:col-span-3 mt-2 flex justify-end">
+                                            <button type="button"
+                                                class="remove-item-btn bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                                                style="display: none;">
+                                                Remove Item
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="mt-4">
-                                <label for="item_description" class="block text-sm font-medium text-gray-700">Item
-                                    Description</label>
-                                <textarea name="item_description" id="item_description" rows="3" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ old('item_description') }}</textarea>
-                            </div>
+                            <button type="button" id="add-item-btn"
+                                class="mt-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                + Add Another Item
+                            </button>
                         </div>
 
                         <!-- Delivery Information -->
@@ -185,7 +199,8 @@
                                     <label for="requested_by_name"
                                         class="block text-sm font-medium text-gray-700">Printed Name</label>
                                     <input type="text" name="requested_by_name" id="requested_by_name"
-                                        value="{{ old('requested_by_name', auth()->user()->name) }}" required
+                                        value="{{ old('requested_by_name', auth()->user()->first_name . (auth()->user()->middle_name ? ' ' . auth()->user()->middle_name : '') . ' ' . auth()->user()->last_name) }}"
+                                        required readonly
                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                 </div>
 
@@ -193,8 +208,9 @@
                                     <label for="requested_by_designation"
                                         class="block text-sm font-medium text-gray-700">Designation</label>
                                     <input type="text" name="requested_by_designation"
-                                        id="requested_by_designation" value="{{ old('requested_by_designation') }}"
-                                        required
+                                        id="requested_by_designation"
+                                        value="{{ old('requested_by_designation', auth()->user()->designation) }}"
+                                        required readonly
                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                 </div>
 
@@ -224,4 +240,71 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const itemsContainer = document.getElementById('items-container');
+            const addItemBtn = document.getElementById('add-item-btn');
+
+            // Function to update remove button visibility
+            function updateRemoveButtons() {
+                const itemFields = itemsContainer.querySelectorAll('.item-fields');
+                itemFields.forEach((item, index) => {
+                    const removeBtn = item.querySelector('.remove-item-btn');
+                    if (itemFields.length > 1) {
+                        removeBtn.style.display = 'inline-block';
+                    } else {
+                        removeBtn.style.display = 'none';
+                    }
+                });
+            }
+
+            // Function to create a new item
+            function createNewItem() {
+                const firstItem = itemsContainer.querySelector('.item-fields');
+                const newItem = firstItem.cloneNode(true);
+
+                // Clear all input values
+                newItem.querySelectorAll('input, textarea, select').forEach(input => {
+                    if (input.type === 'select-one') {
+                        input.selectedIndex = 0;
+                    } else {
+                        input.value = '';
+                    }
+                });
+
+                // Add event listener to the remove button
+                const removeBtn = newItem.querySelector('.remove-item-btn');
+                removeBtn.addEventListener('click', function() {
+                    if (itemsContainer.querySelectorAll('.item-fields').length > 1) {
+                        newItem.remove();
+                        updateRemoveButtons();
+                    }
+                });
+
+                return newItem;
+            }
+
+            // Add event listener to existing remove button
+            const existingRemoveBtn = itemsContainer.querySelector('.remove-item-btn');
+            if (existingRemoveBtn) {
+                existingRemoveBtn.addEventListener('click', function() {
+                    if (itemsContainer.querySelectorAll('.item-fields').length > 1) {
+                        existingRemoveBtn.closest('.item-fields').remove();
+                        updateRemoveButtons();
+                    }
+                });
+            }
+
+            // Add item button functionality
+            addItemBtn.addEventListener('click', function() {
+                const newItem = createNewItem();
+                itemsContainer.appendChild(newItem);
+                updateRemoveButtons();
+            });
+
+            // Initial update of remove button visibility
+            updateRemoveButtons();
+        });
+    </script>
 </x-page-layout>

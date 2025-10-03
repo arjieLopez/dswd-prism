@@ -1,149 +1,9 @@
 <x-page-layout>
     <x-slot name="header">
-        <a href="/user">
-            <img src="{{ asset('images/DSWD-Logo1.png') }}" alt="DSWD Logo" class="w-16">
-        </a>
-        <h2 class="p-4 font-bold text-xl text-gray-800 leading-tight tracking-wide">
-            {{ __('DSWD-PRISM') }}
-        </h2>
-        <span class="flex-1"></span>
-        {{-- Notification Start --}}
-        <div class="p-4">
-            <!-- Notification Bell with Indicator -->
-            <div class="relative" x-data="{
-                open: false,
-                hasUnread: {{ $recentActivities->where('created_at', '>=', now()->subDays(1))->count() > 0 ? 'true' : 'false' }},
-                markAsRead() {
-                    this.hasUnread = false;
-                    // Store in localStorage to persist across page reloads
-                    localStorage.setItem('notificationsViewed', new Date().toISOString());
-                }
-            }" x-init="// Check if user has viewed notifications since last activity
-            const lastViewed = localStorage.getItem('notificationsViewed');
-            const lastActivity = '{{ $recentActivities->first() ? $recentActivities->first()->created_at->toISOString() : '' }}';
-            if (lastViewed && lastActivity && new Date(lastViewed) > new Date(lastActivity)) {
-                hasUnread = false;
-            }">
-                <button @click="open = !open; if(open && hasUnread) markAsRead();"
-                    class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none">
-                    {{-- add this between svg and fill if needed [xmlns="http://www.w3.org/2000/svg"] --}}
-                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                    </svg>
-                    <!-- Red indicator for new notifications - positioned at top-right -->
-                    <span x-show="hasUnread" x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-75"
-                        class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-medium text-[10px] transform translate-x-1/2 -translate-y-1/2">
-                        {{ $recentActivities->where('created_at', '>=', now()->subDays(1))->count() > 9 ? '9+' : $recentActivities->where('created_at', '>=', now()->subDays(1))->count() }}
-                    </span>
-                </button>
-
-                <!-- Notification Dropdown -->
-                <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-100"
-                    x-transition:enter-start="transform opacity-0 scale-95"
-                    x-transition:enter-end="transform opacity-100 scale-100"
-                    x-transition:leave="transition ease-in duration-75"
-                    x-transition:leave-start="transform opacity-100 scale-100"
-                    x-transition:leave-end="transform opacity-0 scale-95"
-                    class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
-                    <div class="py-2">
-                        <div class="px-4 py-2 border-b border-gray-200">
-                            <h3 class="text-sm font-semibold text-gray-900">Recent Activities</h3>
-                        </div>
-
-                        @if ($recentActivities->count() > 0)
-                            <div class="max-h-64 overflow-y-auto">
-                                @foreach ($recentActivities as $activity)
-                                    <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
-                                        <div class="flex items-start space-x-3">
-                                            <div class="flex-shrink-0">
-                                                <div
-                                                    class="w-8 h-8 rounded-full flex items-center justify-center {{ $activity->action_color }}">
-                                                    <i class="iconify w-4 h-4"
-                                                        data-icon="{{ $activity->action_icon }}"></i>
-                                                </div>
-                                            </div>
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-medium text-gray-900">
-                                                    {{ $activity->description }}
-                                                </p>
-                                                <p class="text-sm text-gray-500">
-                                                    @if ($activity->pr_number)
-                                                        PR #{{ $activity->pr_number }}
-                                                    @endif
-                                                    @if ($activity->document_name)
-                                                        - {{ $activity->document_name }}
-                                                    @endif
-                                                </p>
-                                                <p class="text-xs text-gray-400">
-                                                    {{ $activity->created_at->diffForHumans() }}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <div class="px-4 py-2 border-t border-gray-200">
-                                <a href="{{ route('user.requests') }}"
-                                    class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                                    View all activities →
-                                </a>
-                            </div>
-                        @else
-                            <div class="px-4 py-8 text-center">
-                                <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                    </path>
-                                </svg>
-                                <p class="mt-2 text-sm text-gray-500">No recent activities</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-        {{-- Notification End --}}
-
-
-        <div class="p-2">
-            <x-dropdown align="right" width="48">
-                <x-slot name="trigger">
-                    <button
-                        class="inline-flex items-center px-2 py-2 border border-transparent rounded-full text-gray-900 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
-                        aria-label="User menu">
-                        {{-- add this between svg and fill [xmlns="http://www.w3.org/2000/svg"] --}}
-                        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                            class="w-7 h-7">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        </svg>
-                    </button>
-                </x-slot>
-
-                <x-slot name="content">
-                    <x-dropdown-link :href="route('profile.edit')">
-                        {{ __('Profile') }}
-                    </x-dropdown-link>
-                    <!-- Authentication -->
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <x-dropdown-link :href="route('logout')"
-                            onclick="event.preventDefault(); this.closest('form').submit();">
-                            {{ __('Log Out') }}
-                        </x-dropdown-link>
-                    </form>
-                </x-slot>
-            </x-dropdown>
-        </div>
-
-        <h2 class="pr-4 font-semibold text-base text-gray-800 leading-tight">
-            <div>{{ Auth::user()->name }}</div>
-        </h2>
+        <x-app-header :homeUrl="route('user')" :title="$pageTitle ?? __('DSWD-PRISM')" :userName="Auth::user()->first_name .
+            (Auth::user()->middle_name ? ' ' . Auth::user()->middle_name : '') .
+            ' ' .
+            Auth::user()->last_name" :recentActivities="$recentActivities ?? collect()" />
     </x-slot>
 
     <!-- Main Content -->
@@ -154,8 +14,18 @@
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                     {{ __('My Purchase Request') }}
                 </h2>
+                <div>
+                    <a href="{{ route('purchase-requests.create') }}"
+                        class="bg-green-500 hover:bg-green-700 active:bg-green-900 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
+                            </path>
+                        </svg>
+                        <span>Add New PR</span>
+                    </a>
+                </div>
                 <!-- Dropdown for Create Options -->
-                <div class="relative" x-data="{ open: false }">
+                {{-- <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open"
                         class="bg-green-500 hover:bg-green-700 active:bg-green-900 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,11 +33,11 @@
                             </path>
                         </svg>
                         <span>Add New PR</span>
-                        {{-- Icon for dropdown --}}
+                        {{-- Icon for dropdown --
                         {{-- <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
                             </path>
-                        </svg> --}}
+                        </svg> --
                     </button>
 
                     <!-- Dropdown Menu -->
@@ -189,7 +59,7 @@
                                 </svg>
                                 Create Purchase Request
                             </a>
-                            {{-- {{ route('purchase-requests.upload') }} --}}
+                            {{-- {{ route('purchase-requests.upload') }} --
                             <a href="{{ route('uploaded-documents.upload') }}"
                                 class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                                 <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor"
@@ -202,7 +72,7 @@
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> --}}
             </div>
 
             <!-- Search and Filter Controls -->
@@ -370,6 +240,8 @@
                                                         'po_generated',
                                                         'pending',
                                                         'rejected',
+                                                        'completed',
+                                                        'failed',
                                                     ]);
                                                 @endphp
                                                 <button onclick="openViewModal({{ $pr->id }})"
@@ -421,231 +293,6 @@
                     </div>
                 @endif
             </div>
-
-            <!-- Uploaded Documents Section -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 mt-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">
-                        {{ __('Uploaded Documents') }}
-                    </h3>
-                    {{-- <a href="{{ route('uploaded-documents.upload') }}"
-                        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                            </path>
-                        </svg>
-                        <span>Upload New Document</span>
-                    </a> --}}
-                    <div class="flex items-center gap-2">
-                        <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open"
-                                class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100 active:bg-gray-200">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6h18M4 14h16M4 18h16">
-                                    </path>
-                                </svg>
-                                Filter
-                            </button>
-                            <div x-show="open" @click.away="open = false"
-                                x-transition:enter="transition ease-out duration-100"
-                                x-transition:enter-start="transform opacity-0 scale-95"
-                                x-transition:enter-end="transform opacity-100 scale-100"
-                                x-transition:leave="transition ease-in duration-75"
-                                x-transition:leave-start="transform opacity-100 scale-100"
-                                x-transition:leave-end="transform opacity-0 scale-95"
-                                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200 p-2">
-                                <ul>
-                                    <li>
-                                        <a href="{{ route('user.requests', array_merge(request()->except('file_type'), ['file_type' => 'all'])) }}"
-                                            class="block px-4 py-2 text-gray-700 hover:bg-blue-100 {{ !request('file_type') || request('file_type') == 'all' ? 'font-bold text-blue-600' : '' }}">
-                                            All File Types
-                                        </a>
-                                    </li>
-                                    @foreach ($fileTypes as $type)
-                                        <li>
-                                            <a href="{{ route('user.requests', array_merge(request()->except('file_type'), ['file_type' => $type])) }}"
-                                                class="block px-4 py-2 text-gray-700 hover:bg-blue-100 {{ request('file_type') == $type ? 'font-bold text-blue-600' : '' }}">
-                                                {{ strtoupper($type) }}
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="relative" id="export-dropdown-container-docs">
-                            <button type="button" id="export-btn-docs"
-                                class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition active:bg-green-300">
-                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                    class="size-5 mr-3">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-                                </svg>
-                                Export
-                            </button>
-                            <div id="export-dropdown-docs"
-                                class="hidden absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded shadow-lg z-50">
-                                <form id="export-xlsx-docs-form" method="POST"
-                                    action="{{ route('uploaded-documents.export.xlsx') }}">
-                                    @csrf
-                                    <input type="hidden" name="file_type"
-                                        value="{{ request('file_type', 'all') }}">
-                                    <button type="submit"
-                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em"
-                                            viewBox="0 0 16 16" class="mr-3">
-                                            <path fill="currentColor" fill-rule="evenodd"
-                                                d="M14 4.5V11h-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5zM7.86 14.841a1.13 1.13 0 0 0 .401.823q.195.162.479.252q.284.091.665.091q.507 0 .858-.158q.355-.158.54-.44a1.17 1.17 0 0 0 .187-.656q0-.336-.135-.56a1 1 0 0 0-.375-.357a2 2 0 0 0-.565-.21l-.621-.144a1 1 0 0 1-.405-.176a.37.37 0 0 1-.143-.299q0-.234.184-.384q.188-.152.513-.152q.214 0 .37.068a.6.6 0 0 1 .245.181a.56.56 0 0 1 .12.258h.75a1.1 1.1 0 0 0-.199-.566a1.2 1.2 0 0 0-.5-.41a1.8 1.8 0 0 0-.78-.152q-.44 0-.777.15q-.336.149-.527.421q-.19.273-.19.639q0 .302.123.524t.351.367q.229.143.54.213l.618.144q.31.073.462.193a.39.39 0 0 1 .153.326a.5.5 0 0 1-.085.29a.56.56 0 0 1-.255.193q-.168.07-.413.07q-.176 0-.32-.04a.8.8 0 0 1-.249-.115a.58.58 0 0 1-.255-.384zm-3.726-2.909h.893l-1.274 2.007l1.254 1.992h-.908l-.85-1.415h-.035l-.853 1.415H1.5l1.24-2.016l-1.228-1.983h.931l.832 1.438h.036zm1.923 3.325h1.697v.674H5.266v-3.999h.791zm7.636-3.325h.893l-1.274 2.007l1.254 1.992h-.908l-.85-1.415h-.035l-.853 1.415h-.861l1.24-2.016l-1.228-1.983h.931l.832 1.438h.036z" />
-                                        </svg>
-                                        Export as XLSX
-                                    </button>
-                                </form>
-                                <form id="export-pdf-docs-form" method="POST"
-                                    action="{{ route('uploaded-documents.export.pdf') }}">
-                                    @csrf
-                                    <input type="hidden" name="file_type"
-                                        value="{{ request('file_type', 'all') }}">
-                                    <button type="submit"
-                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em"
-                                            viewBox="0 0 24 24" class="mr-3">
-                                            <path fill="currentColor"
-                                                d="M18.53 9L13 3.47a.75.75 0 0 0-.53-.22H8A2.75 2.75 0 0 0 5.25 6v12A2.75 2.75 0 0 0 8 20.75h8A2.75 2.75 0 0 0 18.75 18V9.5a.75.75 0 0 0-.22-.5m-5.28-3.19l2.94 2.94h-2.94ZM16 19.25H8A1.25 1.25 0 0 1 6.75 18V6A1.25 1.25 0 0 1 8 4.75h3.75V9.5a.76.76 0 0 0 .75.75h4.75V18A1.25 1.25 0 0 1 16 19.25" />
-                                            <path fill="currentColor"
-                                                d="M13.49 14.85a3.15 3.15 0 0 1-1.31-1.66a4.44 4.44 0 0 0 .19-2a.8.8 0 0 0-1.52-.19a5 5 0 0 0 .25 2.4A29 29 0 0 1 9.83 16c-.71.4-1.68 1-1.83 1.69c-.12.56.93 2 2.72-1.12a19 19 0 0 1 2.44-.72a4.7 4.7 0 0 0 2 .61a.82.82 0 0 0 .62-1.38c-.42-.43-1.67-.31-2.29-.23m-4.78 3a4.3 4.3 0 0 1 1.09-1.24c-.68 1.08-1.09 1.27-1.09 1.25Zm2.92-6.81c.26 0 .24 1.15.06 1.46a3.1 3.1 0 0 1-.06-1.45Zm-.87 4.88a15 15 0 0 0 .88-1.92a3.9 3.9 0 0 0 1.08 1.26a12.4 12.4 0 0 0-1.96.67Zm4.7-.18s-.18.22-1.33-.28c1.25-.08 1.46.21 1.33.29Z" />
-                                        </svg>
-                                        Export as PDF
-                                    </button>
-                                </form>
-                            </div>
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    const exportBtn = document.getElementById('export-btn-docs');
-                                    const exportDropdown = document.getElementById('export-dropdown-docs');
-                                    exportBtn.addEventListener('click', function(e) {
-                                        e.stopPropagation();
-                                        exportDropdown.classList.toggle('hidden');
-                                    });
-                                    document.addEventListener('click', function(e) {
-                                        if (!exportDropdown.contains(e.target) && e.target !== exportBtn) {
-                                            exportDropdown.classList.add('hidden');
-                                        }
-                                    });
-                                });
-                            </script>
-                        </div>
-                    </div>
-                </div>
-
-                @if ($uploadedDocuments->count() > 0)
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        PR Number
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        File Name
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        File Type
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        File Size
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Upload Date
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach ($uploadedDocuments as $document)
-                                    <tr>
-                                        <td
-                                            class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
-                                            {{ $document->pr_number }}
-                                        </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                            {{ $document->original_filename }}
-                                        </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                {{ strtoupper($document->file_type) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                            {{ $document->file_size_formatted }}
-                                        </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                            {{ $document->created_at->format('M d, Y H:i') }}
-                                        </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
-                                            <div class="flex space-x-2 justify-center">
-                                                <a href="{{ route('uploaded-documents.download', $document) }}"
-                                                    class="bg-blue-500 hover:bg-blue-700 active:bg-blue-900 text-white px-3 py-1 rounded text-sm font-medium">
-                                                    Download
-                                                </a>
-                                                <form method="POST"
-                                                    action="{{ route('uploaded-documents.destroy', $document) }}"
-                                                    class="inline"
-                                                    onsubmit="return confirm('Are you sure you want to delete this document?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="bg-white hover:bg-red-50 active:bg-red-100 text-red-700 border border-red-300 px-3 py-1 rounded text-sm font-medium">
-                                                        Delete
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="flex items-center justify-between mt-4">
-                        <div class="text-sm text-gray-700">
-                            Showing {{ $uploadedDocuments->firstItem() ?? 0 }} to
-                            {{ $uploadedDocuments->lastItem() ?? 0 }}
-                            of {{ $uploadedDocuments->total() }} results
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            {{ $uploadedDocuments->links() }}
-                        </div>
-                    </div>
-                @else
-                    <div class="text-center py-8">
-                        <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                            </path>
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No documents uploaded</h3>
-                        <p class="mt-1 text-sm text-gray-500">Get started by uploading your first document.</p>
-                        <div class="mt-4">
-                            <a href="{{ route('uploaded-documents.upload') }}"
-                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                                Upload Document
-                            </a>
-                        </div>
-                    </div>
-                @endif
-            </div>
         </div>
 
         <!-- View Purchase Request Modal -->
@@ -688,25 +335,25 @@
                         <span id="view-status"
                             class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full"></span>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Unit</label>
-                        <p id="view-unit" class="mt-1 text-sm text-gray-900"></p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Quantity</label>
-                        <p id="view-quantity" class="mt-1 text-sm text-gray-900"></p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Unit Cost</label>
-                        <p id="view-unit-cost" class="mt-1 text-sm text-gray-900"></p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Total Cost</label>
-                        <p id="view-total-cost" class="mt-1 text-sm text-gray-900"></p>
-                    </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700">Item Description</label>
-                        <p id="view-item-description" class="mt-1 text-sm text-gray-900"></p>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Items</label>
+                        <div
+                            style="max-height: 220px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
+                            <table class="min-w-full divide-y divide-gray-200 text-sm" id="view-items-table">
+                                <thead class="bg-gray-50 sticky top-0">
+                                    <tr>
+                                        <th class="px-2 py-1 text-left font-semibold">Unit</th>
+                                        <th class="px-2 py-1 text-left font-semibold">Qty</th>
+                                        <th class="px-2 py-1 text-left font-semibold">Unit Cost</th>
+                                        <th class="px-2 py-1 text-left font-semibold">Total Cost</th>
+                                        <th class="px-2 py-1 text-left font-semibold">Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="view-items-table-body">
+                                    <!-- Items will be populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700">Delivery Address</label>
@@ -737,10 +384,24 @@
                         onclick="withdrawDraftPR()">
                         Withdraw
                     </button>
+                    <button id="upload-btn" type="button"
+                        class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg hidden"
+                        onclick="redirectToUploadPR()">
+                        Upload
+                    </button>
+                    <a id="download-btn" href="#" target="_blank"
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hidden">
+                        Download
+                    </a>
                     <button id="print-btn" type="button"
                         class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg hidden"
                         onclick="openPrintView()">
                         Print
+                    </button>
+                    <button id="complete-btn" type="button"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg hidden"
+                        onclick="markAsCompleted()">
+                        Mark as Completed
                     </button>
                     <button type="button"
                         class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg"
@@ -793,44 +454,34 @@
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                         </div>
                         <div>
-                            <label for="edit-unit" class="block text-sm font-medium text-gray-700">Unit <span
-                                    class="text-red-500">*</span></label>
-                            <input type="text" name="unit" id="edit-unit"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                        </div>
-                        <div>
-                            <label for="edit-quantity" class="block text-sm font-medium text-gray-700">Quantity <span
-                                    class="text-red-500">*</span></label>
-                            <input type="number" name="quantity" id="edit-quantity" min="1"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                        </div>
-                        <div>
-                            <label for="edit-unit-cost" class="block text-sm font-medium text-gray-700">Unit Cost
-                                <span class="text-red-500">*</span></label>
-                            <input type="number" name="unit_cost" id="edit-unit-cost" step="0.01"
-                                min="0"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                        </div>
-                        <div>
                             <label for="edit-delivery-period" class="block text-sm font-medium text-gray-700">Delivery
                                 Period <span class="text-red-500">*</span></label>
                             <input type="text" name="delivery_period" id="edit-delivery-period"
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                         </div>
-                        <div class="md:col-span-2">
-                            <label for="edit-item-description" class="block text-sm font-medium text-gray-700">Item
-                                Description <span class="text-red-500">*</span></label>
-                            <textarea name="item_description" id="edit-item-description" rows="3"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"></textarea>
+                    </div>
+
+                    <!-- Item Details Section -->
+                    <div class="border-t pt-4 mt-4">
+                        <h4 class="text-md font-medium text-gray-900 mb-4">Item Details</h4>
+                        <div id="edit-items-container">
+                            <!-- Items will be populated by JavaScript -->
                         </div>
-                        <div class="md:col-span-2">
+                        <button type="button" id="edit-add-item-btn"
+                            class="mt-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            + Add Another Item
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 mt-4">
+                        <div>
                             <label for="edit-delivery-address"
                                 class="block text-sm font-medium text-gray-700">Delivery
                                 Address <span class="text-red-500">*</span></label>
                             <textarea name="delivery_address" id="edit-delivery-address" rows="3"
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"></textarea>
                         </div>
-                        <div class="md:col-span-2">
+                        <div>
                             <label for="edit-purpose" class="block text-sm font-medium text-gray-700">Purpose <span
                                     class="text-red-500">*</span></label>
                             <textarea name="purpose" id="edit-purpose" rows="3"
@@ -956,31 +607,50 @@
 
 
             function openViewModal(prId) {
+                console.log('Opening view modal for PR ID:', prId);
+
                 // Fetch purchase request data
                 fetch(`/purchase-requests/${prId}/data`)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
                     .then(data => {
+                        console.log('Received data:', data);
+
                         // Populate modal fields
                         document.getElementById('view-pr-number').textContent = data.pr_number;
                         document.getElementById('view-pr-date').textContent = data.date;
                         document.getElementById('view-entity-name').textContent = data.entity_name;
                         document.getElementById('view-fund-cluster').textContent = data.fund_cluster;
                         document.getElementById('view-office-section').textContent = data.office_section;
-                        document.getElementById('view-unit').textContent = data.unit;
-                        document.getElementById('view-quantity').textContent = data.quantity;
-                        document.getElementById('view-unit-cost').textContent = '₱' + parseFloat(data.unit_cost)
-                            .toLocaleString('en-US', {
-                                minimumFractionDigits: 2
-                            });
-                        document.getElementById('view-total-cost').textContent = '₱' + parseFloat(data.total_cost)
-                            .toLocaleString('en-US', {
-                                minimumFractionDigits: 2
-                            });
-                        document.getElementById('view-item-description').textContent = data.item_description;
                         document.getElementById('view-delivery-address').textContent = data.delivery_address;
                         document.getElementById('view-purpose').textContent = data.purpose;
                         document.getElementById('view-requested-by').textContent = data.requested_by_name;
                         document.getElementById('view-delivery-period').textContent = data.delivery_period;
+                        document.getElementById('view-pr-id').textContent = data.id;
+
+                        // Populate items table
+                        const itemsBody = document.getElementById('view-items-table-body');
+                        itemsBody.innerHTML = '';
+                        if (Array.isArray(data.items) && data.items.length > 0) {
+                            data.items.forEach(item => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td class="px-2 py-1">${item.unit}</td>
+                                    <td class="px-2 py-1">${item.quantity}</td>
+                                    <td class="px-2 py-1">₱${parseFloat(item.unit_cost).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                    <td class="px-2 py-1">₱${parseFloat(item.total_cost).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                    <td class="px-2 py-1">${item.item_description}</td>
+                                `;
+                                itemsBody.appendChild(row);
+                            });
+                        } else {
+                            const row = document.createElement('tr');
+                            row.innerHTML =
+                                `<td colspan="5" class="px-2 py-1 text-center text-gray-500">No items found</td>`;
+                            itemsBody.appendChild(row);
+                        }
 
                         // Set status with color
                         const statusDisplayMap = {
@@ -989,6 +659,7 @@
                             'approved': 'Approved',
                             'rejected': 'Rejected',
                             'po_generated': 'PO Generated',
+                            'completed': 'Completed',
                             'failed': 'Failed',
                         };
                         const statusElement = document.getElementById('view-status');
@@ -1020,14 +691,51 @@
                         // Show or hide the print button
                         const printBtn = document.getElementById('print-btn');
                         if (printBtn) {
-                            if (data.status === 'approved' || data.status === 'po_generated') {
+                            if (data.status === 'approved' || data.status === 'po_generated' || data.status ===
+                                'completed') {
                                 printBtn.classList.remove('hidden');
                             } else {
                                 printBtn.classList.add('hidden');
                             }
                         }
+                        // Show or hide the complete button
+                        const completeBtn = document.getElementById('complete-btn');
+                        if (completeBtn) {
+                            if (data.status === 'approved' || data.status === 'po_generated') {
+                                completeBtn.classList.remove('hidden');
+                                completeBtn.setAttribute('data-pr-id', prId);
+                            } else {
+                                completeBtn.classList.add('hidden');
+                                completeBtn.removeAttribute('data-pr-id');
+                            }
+                        }
+                        // Show or hide the upload button
+                        const uploadBtn = document.getElementById('upload-btn');
+                        const downloadBtn = document.getElementById('download-btn');
+                        if (uploadBtn) {
+                            if (['completed', 'po_generated', 'approved'].includes(data.status)) {
+                                uploadBtn.classList.remove('hidden');
+                                uploadBtn.setAttribute('data-pr-id', prId);
 
-                        document.getElementById('view-pr-id').textContent = data.id;
+                                // Fetch uploaded document info for this PR
+                                fetch(`/uploaded-documents/for-pr/${data.pr_number}`)
+                                    .then(response => response.json())
+                                    .then(docData => {
+                                        if (docData.exists && docData.download_url) {
+                                            downloadBtn.classList.remove('hidden');
+                                            downloadBtn.href = docData.download_url;
+                                        } else {
+                                            downloadBtn.classList.add('hidden');
+                                            downloadBtn.href = '#';
+                                        }
+                                    });
+                            } else {
+                                uploadBtn.classList.add('hidden');
+                                uploadBtn.removeAttribute('data-pr-id');
+                                downloadBtn.classList.add('hidden');
+                                downloadBtn.href = '#';
+                            }
+                        }
 
                         // Open modal
                         window.dispatchEvent(new CustomEvent('open-modal', {
@@ -1038,6 +746,13 @@
                         console.error('Error:', error);
                         showErrorAlert('Error loading purchase request data');
                     });
+            }
+
+            function redirectToUploadPR() {
+                const prNumber = document.getElementById('view-pr-number').textContent.trim();
+                if (prNumber) {
+                    window.location.href = `/uploaded-documents/upload?pr_number=${encodeURIComponent(prNumber)}`;
+                }
             }
 
             function submitDraftPR() {
@@ -1112,6 +827,36 @@
                 }
             }
 
+            function markAsCompleted() {
+                const prId = document.getElementById('view-pr-id').textContent.trim();
+                if (!prId) return;
+
+                if (!confirm('Mark this Purchase Request as Completed?')) return;
+
+                fetch(`/purchase-requests/${prId}/complete`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({}),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showSuccessAlert('Purchase Request marked as completed!');
+                            closeViewModal();
+                            setTimeout(() => window.location.reload(), 1500);
+                        } else {
+                            showErrorAlert(data.message || 'Failed to mark as completed.');
+                        }
+                    })
+                    .catch(error => {
+                        showErrorAlert('Error marking as completed.');
+                        console.error(error);
+                    });
+            }
+
             function closeViewModal() {
                 window.dispatchEvent(new CustomEvent('close-modal', {
                     detail: 'view-pr-modal'
@@ -1119,25 +864,46 @@
             }
 
             function openEditModal(prId) {
+                console.log('Opening edit modal for PR ID:', prId);
+
                 // Fetch purchase request data
                 fetch(`/purchase-requests/${prId}/data`)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
                     .then(data => {
-                        // Populate form fields
+                        console.log('Received data for edit:', data);
+
+                        // Populate basic form fields
                         document.getElementById('edit-entity-name').value = data.entity_name;
                         document.getElementById('edit-fund-cluster').value = data.fund_cluster;
                         document.getElementById('edit-office-section').value = data.office_section;
                         document.getElementById('edit-date').value = data.date;
-                        document.getElementById('edit-unit').value = data.unit;
-                        document.getElementById('edit-quantity').value = data.quantity;
-                        document.getElementById('edit-unit-cost').value = data.unit_cost;
                         document.getElementById('edit-delivery-period').value = data.delivery_period;
-                        document.getElementById('edit-item-description').value = data.item_description;
                         document.getElementById('edit-delivery-address').value = data.delivery_address;
                         document.getElementById('edit-purpose').value = data.purpose;
 
+                        // Populate items
+                        const itemsContainer = document.getElementById('edit-items-container');
+                        itemsContainer.innerHTML = '';
+
+                        if (Array.isArray(data.items) && data.items.length > 0) {
+                            data.items.forEach((item, index) => {
+                                const itemDiv = createEditItemDiv(item, index);
+                                itemsContainer.appendChild(itemDiv);
+                            });
+                        } else {
+                            // Add one empty item if no items exist
+                            const itemDiv = createEditItemDiv({}, 0);
+                            itemsContainer.appendChild(itemDiv);
+                        }
+
                         // Set form action
                         document.getElementById('edit-pr-form').action = `/purchase-requests/${prId}/update`;
+
+                        // Setup add item button functionality
+                        setupEditAddItemButton();
 
                         // Open modal
                         window.dispatchEvent(new CustomEvent('open-modal', {
@@ -1148,6 +914,98 @@
                         console.error('Error:', error);
                         showErrorAlert('Error loading purchase request data');
                     });
+            }
+
+            function createEditItemDiv(item = {}, index = 0) {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'edit-item-fields border border-gray-200 rounded-lg p-4 mb-4';
+                itemDiv.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Unit <span class="text-red-500">*</span></label>
+                            <select name="unit[]" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                <option value="">Select unit</option>
+                                <option value="pcs" ${item.unit === 'pcs' ? 'selected' : ''}>pcs</option>
+                                <option value="set" ${item.unit === 'set' ? 'selected' : ''}>set</option>
+                                <option value="pair" ${item.unit === 'pair' ? 'selected' : ''}>pair</option>
+                                <option value="dozen" ${item.unit === 'dozen' ? 'selected' : ''}>dozen</option>
+                                <option value="lot" ${item.unit === 'lot' ? 'selected' : ''}>lot</option>
+                                <option value="box" ${item.unit === 'box' ? 'selected' : ''}>box</option>
+                                <option value="pack" ${item.unit === 'pack' ? 'selected' : ''}>pack</option>
+                                <option value="carton" ${item.unit === 'carton' ? 'selected' : ''}>carton</option>
+                                <option value="case" ${item.unit === 'case' ? 'selected' : ''}>case</option>
+                                <option value="roll" ${item.unit === 'roll' ? 'selected' : ''}>roll</option>
+                                <option value="ream" ${item.unit === 'ream' ? 'selected' : ''}>ream</option>
+                                <option value="bundle" ${item.unit === 'bundle' ? 'selected' : ''}>bundle</option>
+                                <option value="tube" ${item.unit === 'tube' ? 'selected' : ''}>tube</option>
+                                <option value="bottle" ${item.unit === 'bottle' ? 'selected' : ''}>bottle</option>
+                                <option value="can" ${item.unit === 'can' ? 'selected' : ''}>can</option>
+                                <option value="jar" ${item.unit === 'jar' ? 'selected' : ''}>jar</option>
+                                <option value="sachet" ${item.unit === 'sachet' ? 'selected' : ''}>sachet</option>
+                                <option value="drum" ${item.unit === 'drum' ? 'selected' : ''}>drum</option>
+                                <option value="barrel" ${item.unit === 'barrel' ? 'selected' : ''}>barrel</option>
+                                <option value="bag" ${item.unit === 'bag' ? 'selected' : ''}>bag</option>
+                                <option value="g" ${item.unit === 'g' ? 'selected' : ''}>g</option>
+                                <option value="kg" ${item.unit === 'kg' ? 'selected' : ''}>kg</option>
+                                <option value="lb" ${item.unit === 'lb' ? 'selected' : ''}>lb</option>
+                                <option value="ton" ${item.unit === 'ton' ? 'selected' : ''}>ton</option>
+                                <option value="ml" ${item.unit === 'ml' ? 'selected' : ''}>ml</option>
+                                <option value="l" ${item.unit === 'l' ? 'selected' : ''}>L</option>
+                                <option value="gal" ${item.unit === 'gal' ? 'selected' : ''}>gal</option>
+                                <option value="mm" ${item.unit === 'mm' ? 'selected' : ''}>mm</option>
+                                <option value="cm" ${item.unit === 'cm' ? 'selected' : ''}>cm</option>
+                                <option value="m" ${item.unit === 'm' ? 'selected' : ''}>m</option>
+                                <option value="km" ${item.unit === 'km' ? 'selected' : ''}>km</option>
+                                <option value="sqm" ${item.unit === 'sqm' ? 'selected' : ''}>sqm</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Quantity <span class="text-red-500">*</span></label>
+                            <input type="number" name="quantity[]" min="1" required value="${item.quantity || ''}"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Unit Cost (₱) <span class="text-red-500">*</span></label>
+                            <input type="number" name="unit_cost[]" min="0" step="0.01" required value="${item.unit_cost || ''}"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        </div>
+                        <div class="md:col-span-3 mt-2">
+                            <label class="block text-sm font-medium text-gray-700">Item Description <span class="text-red-500">*</span></label>
+                            <textarea name="item_description[]" rows="3" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">${item.item_description || ''}</textarea>
+                        </div>
+                        <div class="md:col-span-3 mt-2 flex justify-end">
+                            <button type="button" class="remove-edit-item-btn bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm">
+                                Remove Item
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Add remove functionality
+                const removeBtn = itemDiv.querySelector('.remove-edit-item-btn');
+                removeBtn.addEventListener('click', function() {
+                    const itemsContainer = document.getElementById('edit-items-container');
+                    if (itemsContainer.children.length > 1) {
+                        itemDiv.remove();
+                    } else {
+                        showErrorAlert('At least one item is required');
+                    }
+                });
+
+                return itemDiv;
+            }
+
+            function setupEditAddItemButton() {
+                const addBtn = document.getElementById('edit-add-item-btn');
+                // Remove any existing listeners
+                const newAddBtn = addBtn.cloneNode(true);
+                addBtn.parentNode.replaceChild(newAddBtn, addBtn);
+
+                newAddBtn.addEventListener('click', function() {
+                    const itemsContainer = document.getElementById('edit-items-container');
+                    const newItemDiv = createEditItemDiv({}, itemsContainer.children.length);
+                    itemsContainer.appendChild(newItemDiv);
+                });
             }
 
             function closeEditModal() {
@@ -1296,74 +1154,6 @@
                 if (status !== 'all') params.append('status', status);
                 window.location.href = '{{ route('user.requests') }}' + (params.toString() ? '?' + params.toString() : '');
             }
-            // // Global error handling for edit form submission
-            // // Uncomment this section if you want to handle the edit form submission with JavaScript
-            // // This is an alternative to the inline form submission handler above.
-            // document.addEventListener('DOMContentLoaded', function() {
-            //     const editForm = document.getElementById('edit-pr-form');
-            //     if (editForm) {
-            //         editForm.addEventListener('submit', function(e) {
-            //             e.preventDefault();
-
-            //             const formData = new FormData(this);
-
-            //             // Debug: Log the form action
-            //             console.log('Form action:', this.action);
-            //             console.log('Form data:', Object.fromEntries(formData));
-
-            //             fetch(this.action, {
-            //                     method: 'POST',
-            //                     body: formData,
-            //                     headers: {
-            //                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-            //                             .getAttribute('content')
-            //                     }
-            //                 })
-            //                 .then(response => {
-            //                     console.log('Response status:', response.status);
-            //                     console.log('Response URL:', response.url);
-
-            //                     // Check if response is JSON
-            //                     const contentType = response.headers.get('content-type');
-            //                     console.log('Content-Type:', contentType);
-
-            //                     if (!response.ok) {
-            //                         return response.text().then(text => {
-            //                             console.log('Error response body:', text.substring(0,
-            //                                 200)); // First 200 chars
-            //                             throw new Error(
-            //                                 `HTTP ${response.status}: ${text.substring(0, 100)}`
-            //                             );
-            //                         });
-            //                     }
-
-            //                     if (contentType && contentType.includes('application/json')) {
-            //                         return response.json();
-            //                     } else {
-            //                         return response.text().then(text => {
-            //                             console.log('Non-JSON response:', text.substring(0, 200));
-            //                             throw new Error('Server returned HTML instead of JSON');
-            //                         });
-            //                     }
-            //                 })
-            //                 .then(data => {
-            //                     console.log('Success response:', data);
-            //                     if (data.success) {
-            //                         closeEditModal();
-            //                         alert('Purchase request updated successfully!');
-            //                         window.location.reload();
-            //                     } else {
-            //                         alert('Error updating purchase request: ' + (data.message ||
-            //                             'Unknown error'));
-            //                     }
-            //                 })
-            //                 .catch(error => {
-            //                     console.error('Detailed error:', error);
-            //                     alert('Error updating purchase request: ' + error.message);
-            //                 });
-            //         });
-            //     }
-            // });
         </script>
 
 </x-page-layout>

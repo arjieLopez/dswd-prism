@@ -27,7 +27,7 @@ class TwoFactorCodeNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return [];
+        return ['mail'];
     }
 
     /**

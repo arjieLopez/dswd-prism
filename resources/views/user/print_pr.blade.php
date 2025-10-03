@@ -94,21 +94,32 @@
                 <th style="width: 15%;">Total Cost</th>
             </tr>
             <!-- Item Rows -->
-            @php
-                $descriptions = preg_split('/\r\n|\r|\n/', $purchaseRequest->item_description);
-            @endphp
-            @foreach ($descriptions as $i => $desc)
+            @if ($purchaseRequest->items && $purchaseRequest->items->count() > 0)
+                @foreach ($purchaseRequest->items as $item)
+                    @php
+                        $descriptions = preg_split('/\r\n|\r|\n/', $item->item_description);
+                    @endphp
+                    @foreach ($descriptions as $i => $desc)
+                        <tr>
+                            <td class="text-center"></td>
+                            <td class="text-center">{{ $i == 0 ? $item->unit : '' }}</td>
+                            <td>{{ $desc }}</td>
+                            <td class="text-center">{{ $i == 0 ? $item->quantity : '' }}</td>
+                            <td class="text-right">{{ $i == 0 ? '₱' . number_format($item->unit_cost, 2) : '' }}</td>
+                            <td class="text-right">{{ $i == 0 ? '₱' . number_format($item->total_cost, 2) : '' }}</td>
+                        </tr>
+                    @endforeach
+                @endforeach
+                <!-- Total Row -->
                 <tr>
-                    <td class="text-center"></td>
-                    <td class="text-center">{{ $i == 0 ? $purchaseRequest->unit : '' }}</td>
-                    <td>{{ $desc }}</td>
-                    <td class="text-center">{{ $i == 0 ? $purchaseRequest->quantity : '' }}</td>
-                    <td class="text-right">{{ $i == 0 ? '₱' . number_format($purchaseRequest->unit_cost, 2) : '' }}
-                    </td>
-                    <td class="text-right">{{ $i == 0 ? '₱' . number_format($purchaseRequest->total_cost, 2) : '' }}
-                    </td>
+                    <td colspan="5" class="text-right"><strong>TOTAL AMOUNT:</strong></td>
+                    <td class="text-right"><strong>₱{{ number_format($purchaseRequest->total, 2) }}</strong></td>
                 </tr>
-            @endforeach
+            @else
+                <tr>
+                    <td colspan="6" class="text-center">No items found</td>
+                </tr>
+            @endif
             <!-- Purpose Row -->
             <tr>
                 <td colspan="3" style="vertical-align: top; text-align: left;"><strong>Purpose:</strong>
@@ -129,10 +140,13 @@
                     </div>
                 </td>
                 <td style="text-align: center;">
-                    <div style="padding-top: 3rem;"></div>
+                    <div style="padding-top: 2rem;"></div>
+                    <div style="text-align: center; margin-bottom: 0.5rem;">
+                        {{ $purchaseRequest->requested_by_name ?? '_____________________' }}
+                    </div>
                     <div class="signature-line"></div>
                     <div class="signature-label">Requested
-                        by:<br>{{ $purchaseRequest->requested_by_name ?? '_____________________' }}</div>
+                        by:<br>{{ $purchaseRequest->requested_by_designation ?? '_____________________' }}</div>
                 </td>
                 <td colspan="3" style="text-align: center;">
                     <div style="padding-top: 3rem;"></div>

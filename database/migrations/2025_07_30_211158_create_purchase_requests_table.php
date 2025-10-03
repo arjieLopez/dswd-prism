@@ -21,11 +21,6 @@ return new class extends Migration
             $table->string('responsibility_center_code');
             $table->date('date');
             $table->string('stoc_property_no')->nullable();
-            $table->string('unit');
-            $table->text('item_description');
-            $table->integer('quantity');
-            $table->decimal('unit_cost', 15, 2);
-            $table->decimal('total_cost', 15, 2);
             $table->decimal('total', 15, 2);
             $table->string('delivery_period');
             $table->text('delivery_address');

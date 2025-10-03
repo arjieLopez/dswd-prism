@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const approvePR = window.userApproveChartData || [];
         const pendingPR = window.userPendingChartData || [];
         const rejectPR = window.userRejectChartData || [];
+        const completedPR = window.userCompletedChartData || [];
 
         new Chart(chartCanvas, {
             type: "line",
@@ -80,6 +81,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         data: rejectPR,
                         borderColor: "rgba(211, 47, 47, 1)",
                         backgroundColor: "rgba(211, 47, 47, 1)",
+                        // fill: true,
+                        // tension: 0.4,
+                    },
+                    {
+                        label: "Completed PRs",
+                        data: completedPR,
+                        borderColor: "rgba(37, 99, 235, 1)",
+                        backgroundColor: "rgba(37, 99, 235, 1)",
                         // fill: true,
                         // tension: 0.4,
                     },

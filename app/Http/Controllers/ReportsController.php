@@ -22,10 +22,9 @@ class ReportsController extends Controller
                 'purchase_requests.status',
                 'purchase_requests.created_at',
                 'purchase_requests.updated_at',
-                'users.name',
                 DB::raw("'PR' as type"),
                 DB::raw("purchase_requests.pr_number as document_number"),
-                DB::raw("users.name as department"),
+                DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name) as department"),
                 DB::raw("purchase_requests.total as amount"),
                 DB::raw("purchase_requests.created_at as date_created"),
                 DB::raw("purchase_requests.updated_at as date_edited")
@@ -42,10 +41,9 @@ class ReportsController extends Controller
                 'purchase_requests.status',
                 'purchase_requests.po_generated_at',
                 'purchase_requests.updated_at',
-                'users.name',
                 DB::raw("'PO' as type"),
                 DB::raw("purchase_requests.po_number as document_number"),
-                DB::raw("users.name as department"),
+                DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name) as department"),
                 DB::raw("purchase_requests.total as amount"),
                 DB::raw("purchase_requests.po_generated_at as date_created"),
                 DB::raw("purchase_requests.updated_at as date_edited")
@@ -57,14 +55,14 @@ class ReportsController extends Controller
             $search = $request->search;
             $prQuery->where(function ($q) use ($search) {
                 $q->where('purchase_requests.pr_number', 'like', "%{$search}%")
-                    ->orWhere('users.name', 'like', "%{$search}%")
+                    ->orWhere(DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name)"), 'like', "%{$search}%")
                     ->orWhere('purchase_requests.status', 'like', "%{$search}%");
             });
 
             $poQuery->where(function ($q) use ($search) {
                 $q->where('purchase_requests.pr_number', 'like', "%{$search}%")
                     ->orWhere('purchase_requests.po_number', 'like', "%{$search}%")
-                    ->orWhere('users.name', 'like', "%{$search}%");
+                    ->orWhere(DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name)"), 'like', "%{$search}%");
             });
         }
 
@@ -102,7 +100,13 @@ class ReportsController extends Controller
             ->distinct()
             ->pluck('status');
 
-        return view('admin.reports', compact('reports', 'statuses'));
+        $user = auth()->user();
+        $recentActivities = $user->activities()
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('admin.reports', compact('reports', 'statuses', 'recentActivities'));
     }
 
     public function export(Request $request)

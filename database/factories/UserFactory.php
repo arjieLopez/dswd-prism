@@ -18,10 +18,16 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'middle_name' => fake()->randomElement([fake()->firstName(), null]),
+            'last_name' => fake()->lastName(),
+            'designation' => fake()->jobTitle(),
+            'office' => fake()->company(),
+            'employee_id' => fake()->unique()->numerify('EMP###'),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+            'password' => bcrypt('password'), // password
+            'role' => 'user',
             'remember_token' => Str::random(10),
         ];
     }
@@ -33,8 +39,41 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    public function admin(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => 'admin',
+            'email' => 'khalid.a.ambobot@gmail.com',
+            'first_name' => 'Admin',
+            'last_name' => 'User',
+            'employee_id' => 'EMP001',
+        ]);
+    }
+
+    public function staff(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => 'staff',
+            'email' => 'arjiepelimerlopez@gmail.com',
+            'first_name' => 'Staff',
+            'last_name' => 'User',
+            'employee_id' => 'EMP002',
+        ]);
+    }
+
+    public function user(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => 'user',
+            'email' => 'crisostomoarnaldopilipinoleand@gmail.com',
+            'first_name' => 'User',
+            'last_name' => 'User',
+            'employee_id' => 'EMP003',
         ]);
     }
 }

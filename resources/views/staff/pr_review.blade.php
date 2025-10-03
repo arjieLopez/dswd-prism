@@ -1,53 +1,9 @@
 <x-page-layout>
     <x-slot name="header">
-        <a href="/staff">
-            <img src="{{ asset('images/DSWD-Logo1.png') }}" alt="DSWD Logo" class="w-16">
-        </a>
-        <h2 class="p-4 font-bold text-xl text-gray-800 leading-tight tracking-wide">
-            {{ __('DSWD-PRISM') }}
-        </h2>
-        <span class="flex-1"></span>
-        <div class="p-4">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-7 h-7 inline-block align-middle">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-            </svg>
-        </div>
-
-        <div class="p-2">
-            <x-dropdown align="right" width="48">
-                <x-slot name="trigger">
-                    <button
-                        class="inline-flex items-center px-2 py-2 border border-transparent rounded-full text-gray-900 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
-                        aria-label="User menu">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-7 h-7">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        </svg>
-                    </button>
-                </x-slot>
-
-                <x-slot name="content">
-                    <x-dropdown-link :href="route('profile.edit')">
-                        {{ __('Profile') }}
-                    </x-dropdown-link>
-                    <!-- Authentication -->
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <x-dropdown-link :href="route('logout')"
-                            onclick="event.preventDefault(); this.closest('form').submit();">
-                            {{ __('Log Out') }}
-                        </x-dropdown-link>
-                    </form>
-                </x-slot>
-            </x-dropdown>
-        </div>
-
-        <h2 class="pr-4 font-semibold text-base text-gray-800 leading-tight">
-            <div>{{ Auth::user()->name }}</div>
-        </h2>
+        <x-app-header :homeUrl="route('staff')" :title="$pageTitle ?? __('DSWD-PRISM')" :userName="Auth::user()->first_name .
+            (Auth::user()->middle_name ? ' ' . Auth::user()->middle_name : '') .
+            ' ' .
+            Auth::user()->last_name" :recentActivities="$recentActivities ?? collect()" />
     </x-slot>
 
     <!-- Main Content -->
@@ -121,7 +77,8 @@
                                             {{ $pr->created_at->format('M d, Y H:i') }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                            {{ $pr->user->name }}
+                                            {{ $pr->user->first_name }}{{ $pr->user->middle_name ? ' ' . $pr->user->middle_name : '' }}
+                                            {{ $pr->user->last_name }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-center">
                                             <span
@@ -187,8 +144,8 @@
                 <h3 class="text-lg font-medium text-gray-900">Purchase Request Details</h3>
                 <button type="button" class="text-gray-400 hover:text-gray-600" onclick="closeViewModal()">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
                     </svg>
                 </button>
             </div>
@@ -220,28 +177,26 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Status</label>
-                    <span id="view-status"
-                        class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full"></span>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Unit</label>
-                    <p id="view-unit" class="mt-1 text-sm text-gray-900"></p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Quantity</label>
-                    <p id="view-quantity" class="mt-1 text-sm text-gray-900"></p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Unit Cost</label>
-                    <p id="view-unit-cost" class="mt-1 text-sm text-gray-900"></p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Total Cost</label>
-                    <p id="view-total-cost" class="mt-1 text-sm text-gray-900"></p>
+                    <span id="view-status" class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full"></span>
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700">Item Description</label>
-                    <p id="view-item-description" class="mt-1 text-sm text-gray-900"></p>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Items</label>
+                    <div style="max-height: 220px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm" id="view-items-table">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th class="px-2 py-1 text-left font-semibold">Unit</th>
+                                    <th class="px-2 py-1 text-left font-semibold">Qty</th>
+                                    <th class="px-2 py-1 text-left font-semibold">Unit Cost</th>
+                                    <th class="px-2 py-1 text-left font-semibold">Total Cost</th>
+                                    <th class="px-2 py-1 text-left font-semibold">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody id="view-items-table-body">
+                                <!-- Items will be populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700">Delivery Address</label>
@@ -290,28 +245,42 @@
                 })
                 .then(data => {
                     console.log('Received data:', data);
+
+                    // Populate basic fields
                     document.getElementById('view-pr-number').textContent = data.pr_number;
                     document.getElementById('view-pr-date').textContent = data.date;
                     document.getElementById('view-requesting-unit').textContent = data.requesting_unit;
                     document.getElementById('view-entity-name').textContent = data.entity_name;
                     document.getElementById('view-fund-cluster').textContent = data.fund_cluster;
                     document.getElementById('view-office-section').textContent = data.office_section;
-                    document.getElementById('view-unit').textContent = data.unit;
-                    document.getElementById('view-quantity').textContent = data.quantity;
-                    document.getElementById('view-unit-cost').textContent = '₱ ' + parseFloat(data.unit_cost)
-                        .toLocaleString('en-US', {
-                            minimumFractionDigits: 2
-                        });
-                    document.getElementById('view-total-cost').textContent = '₱ ' + parseFloat(data.total_cost)
-                        .toLocaleString('en-US', {
-                            minimumFractionDigits: 2
-                        });
-                    document.getElementById('view-item-description').textContent = data.item_description;
                     document.getElementById('view-delivery-address').textContent = data.delivery_address;
                     document.getElementById('view-purpose').textContent = data.purpose;
                     document.getElementById('view-requested-by').textContent = data.requested_by_name;
                     document.getElementById('view-delivery-period').textContent = data.delivery_period;
 
+                    // Populate items table
+                    const itemsBody = document.getElementById('view-items-table-body');
+                    itemsBody.innerHTML = '';
+                    if (Array.isArray(data.items) && data.items.length > 0) {
+                        data.items.forEach(item => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td class="px-2 py-1">${item.unit}</td>
+                                <td class="px-2 py-1">${item.quantity}</td>
+                                <td class="px-2 py-1">₱${parseFloat(item.unit_cost).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td class="px-2 py-1">₱${parseFloat(item.total_cost).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td class="px-2 py-1">${item.item_description}</td>
+                            `;
+                            itemsBody.appendChild(row);
+                        });
+                    } else {
+                        const row = document.createElement('tr');
+                        row.innerHTML =
+                            `<td colspan="5" class="px-2 py-1 text-center text-gray-500">No items found</td>`;
+                        itemsBody.appendChild(row);
+                    }
+
+                    // Set status
                     const statusElement = document.getElementById('view-status');
                     statusElement.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
                     statusElement.className =

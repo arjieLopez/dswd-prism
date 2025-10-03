@@ -11,7 +11,13 @@ class PODocumentController extends Controller
 {
     public function upload()
     {
-        return view('staff.upload_po_document');
+        $user = auth()->user();
+        $recentActivities = $user->activities()
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('staff.upload_po_document', compact('recentActivities'));
     }
 
     public function store(Request $request)

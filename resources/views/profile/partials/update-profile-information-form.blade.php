@@ -18,13 +18,48 @@
         @method('patch')
 
         <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)"
-                required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+            <x-input-label for="first_name" :value="__('First Name')" />
+            <x-text-input id="first_name" name="first_name" type="text" class="mt-1 block w-full" :value="old('first_name', $user->first_name)"
+                required autofocus autocomplete="given-name" />
+            <x-input-error class="mt-2" :messages="$errors->get('first_name')" />
         </div>
 
         <div>
+            <x-input-label for="middle_name" :value="__('Middle Name')" />
+            <x-text-input id="middle_name" name="middle_name" type="text" class="mt-1 block w-full" :value="old('middle_name', $user->middle_name)"
+                autocomplete="additional-name" />
+            <x-input-error class="mt-2" :messages="$errors->get('middle_name')" />
+        </div>
+
+        <div>
+            <x-input-label for="last_name" :value="__('Last Name')" />
+            <x-text-input id="last_name" name="last_name" type="text" class="mt-1 block w-full" :value="old('last_name', $user->last_name)"
+                required autocomplete="family-name" />
+            <x-input-error class="mt-2" :messages="$errors->get('last_name')" />
+        </div>
+
+        <div>
+            <x-input-label for="designation" :value="__('Designation')" />
+            <x-text-input id="designation" name="designation" type="text" class="mt-1 block w-full"
+                :value="old('designation', $user->designation)" autocomplete="organization-title" />
+            <x-input-error class="mt-2" :messages="$errors->get('designation')" />
+        </div>
+
+        <div>
+            <x-input-label for="office" :value="__('Office')" />
+            <x-text-input id="office" name="office" type="text" class="mt-1 block w-full" :value="old('office', $user->office)"
+                autocomplete="organization" />
+            <x-input-error class="mt-2" :messages="$errors->get('office')" />
+        </div>
+
+        <div>
+            <x-input-label for="employee_id" :value="__('Employee ID')" />
+            <x-text-input id="employee_id" name="employee_id" type="text" class="mt-1 block w-full"
+                :value="old('employee_id', $user->employee_id)" autocomplete="employee-id" />
+            <x-input-error class="mt-2" :messages="$errors->get('employee_id')" />
+        </div>
+
+        {{-- <div>
             <x-input-label for="email" :value="__('Email')" />
             <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)"
                 required autocomplete="username" />
@@ -48,7 +83,7 @@
                     @endif
                 </div>
             @endif
-        </div>
+        </div> --}}
 
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>

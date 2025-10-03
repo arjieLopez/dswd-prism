@@ -23,9 +23,7 @@
         <!-- Page Heading -->
         @if (isset($header))
             <header class="fixed top-0 left-0 w-full h-16 bg-white shadow z-30">
-                <div class="flex items-center max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8 h-full">
-                    {{ $header }}
-                </div>
+                {{ $header }}
             </header>
         @endif
 
@@ -35,7 +33,7 @@
             @include('layouts.sidebar')
 
             <!-- Main Content -->
-            <main class="pt-16 pl-80 w-full">
+            <main class="pt-16 pl-60 w-full">
                 {{ $slot }}
             </main>
 

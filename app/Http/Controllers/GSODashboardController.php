@@ -54,6 +54,12 @@ class GSODashboardController extends Controller
             ->orderBy('po_generated_at', 'desc')
             ->paginate(10);
 
+        $user = auth()->user();
+        $recentActivities = $user->activities()
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
         return view('staff.gso_dashboard', compact(
             'pendingPRs',
             'approvedPRs',
@@ -61,7 +67,8 @@ class GSODashboardController extends Controller
             'pendingPercentageChange',
             'approvedPercentageChange',
             'poGeneratedPercentageChange',
-            'generatedPOs'
+            'generatedPOs',
+            'recentActivities'
         ));
     }
 
