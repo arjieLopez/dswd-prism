@@ -234,16 +234,85 @@
                     </table>
                 </div>
 
-                <!-- Pagination -->
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between mt-4">
-                    <div class="text-gray-500 text-sm mb-2 md:mb-0">
-                        Showing {{ $users->firstItem() ?? 0 }} to {{ $users->lastItem() ?? 0 }} of
-                        {{ $users->total() }} results
+                <!-- Custom Pagination - Only show when there are more than 5 items -->
+                @if ($users->total() > 5)
+                    <div class="flex justify-center mt-6">
+                        <div class="flex items-center space-x-1">
+                            @if ($users->onFirstPage())
+                                <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 19l-7-7 7-7"></path>
+                                    </svg>
+                                </span>
+                            @else
+                                <a href="{{ $users->previousPageUrl() }}"
+                                    class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 19l-7-7 7-7"></path>
+                                    </svg>
+                                </a>
+                            @endif
+
+                            @php
+                                $start = max(1, $users->currentPage() - 2);
+                                $end = min($users->lastPage(), $users->currentPage() + 2);
+
+                                if ($end - $start < 4) {
+                                    if ($start == 1) {
+                                        $end = min($users->lastPage(), $start + 4);
+                                    } else {
+                                        $start = max(1, $end - 4);
+                                    }
+                                }
+                            @endphp
+
+                            @if ($start > 1)
+                                <a href="{{ $users->url(1) }}"
+                                    class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">1</a>
+                                @if ($start > 2)
+                                    <span class="px-2 py-2 text-gray-400">...</span>
+                                @endif
+                            @endif
+
+                            @for ($page = $start; $page <= $end; $page++)
+                                @if ($page == $users->currentPage())
+                                    <span
+                                        class="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md">{{ $page }}</span>
+                                @else
+                                    <a href="{{ $users->url($page) }}"
+                                        class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $page }}</a>
+                                @endif
+                            @endfor
+
+                            @if ($end < $users->lastPage())
+                                @if ($end < $users->lastPage() - 1)
+                                    <span class="px-2 py-2 text-gray-400">...</span>
+                                @endif
+                                <a href="{{ $users->url($users->lastPage()) }}"
+                                    class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $users->lastPage() }}</a>
+                            @endif
+
+                            @if ($users->hasMorePages())
+                                <a href="{{ $users->nextPageUrl() }}"
+                                    class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+                            @else
+                                <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </span>
+                            @endif
+                        </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        {{ $users->links() }}
-                    </div>
-                </div>
+                @endif
 
             </div>
         </div>

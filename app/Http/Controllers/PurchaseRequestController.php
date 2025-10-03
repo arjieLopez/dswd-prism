@@ -14,10 +14,25 @@ class PurchaseRequestController extends Controller
     public function index(Request $request)
     {
         $query = auth()->user()->purchaseRequests()->orderBy('created_at', 'desc');
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('pr_number', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('status', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        // Status filtering
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
-        $purchaseRequests = $query->paginate(10);
+
+        $purchaseRequests = $query->paginate(5)->appends($request->query());
 
         $uploadedDocumentsQuery = auth()->user()->uploadedDocuments()->orderBy('created_at', 'desc');
         $fileTypes = auth()->user()->uploadedDocuments()->select('file_type')->distinct()->pluck('file_type');

@@ -12,7 +12,7 @@
             <!-- Header with Create Button -->
             <div class="flex items-center justify-between">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    {{ __('My Purchase Request') }}
+                    {{ __('Request Monitoring') }}
                 </h2>
                 <div>
                     <a href="{{ route('purchase-requests.create') }}"
@@ -24,78 +24,38 @@
                         <span>Add New PR</span>
                     </a>
                 </div>
-                <!-- Dropdown for Create Options -->
-                {{-- <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open"
-                        class="bg-green-500 hover:bg-green-700 active:bg-green-900 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
-                            </path>
-                        </svg>
-                        <span>Add New PR</span>
-                        {{-- Icon for dropdown --
-                        {{-- <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
-                            </path>
-                        </svg> --
-                    </button>
-
-                    <!-- Dropdown Menu -->
-                    <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-100"
-                        x-transition:enter-start="transform opacity-0 scale-95"
-                        x-transition:enter-end="transform opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-75"
-                        x-transition:leave-start="transform opacity-100 scale-100"
-                        x-transition:leave-end="transform opacity-0 scale-95"
-                        class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50 border border-gray-200">
-                        <div class="py-1">
-                            <a href="{{ route('purchase-requests.create') }}"
-                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
-                                <svg class="w-4 h-4 mr-3 text-blue-500" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                    </path>
-                                </svg>
-                                Create Purchase Request
-                            </a>
-                            {{-- {{ route('purchase-requests.upload') }} --
-                            <a href="{{ route('uploaded-documents.upload') }}"
-                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
-                                <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                                    </path>
-                                </svg>
-                                Upload Scanned Copy
-                            </a>
-                        </div>
-                    </div>
-                </div> --}}
             </div>
 
             <!-- Search and Filter Controls -->
             <div class="bg-white overflow-visible shadow-sm sm:rounded-lg p-6">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
-                    {{-- <div class="flex items-center gap-2 w-full md:w-auto">
+                    <form method="GET" action="{{ route('user.requests') }}"
+                        class="flex items-center gap-2 w-full md:w-auto">
                         <div class="relative">
                             <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
-                            <input type="text" placeholder="Search PRs..."
-                                class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64">
+                            <input type="text" name="search" placeholder="Search PRs..."
+                                value="{{ request('search') }}"
+                                class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64 placeholder-gray-400">
                         </div>
-                        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+                        <!-- Preserve other query parameters -->
+                        @if (request('status'))
+                            <input type="hidden" name="status" value="{{ request('status') }}">
+                        @endif
+                        <button type="submit"
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
                             Search
                         </button>
-                    </div> --}}
-                    <h3 class="text-lg font-medium text-gray-900">
-                        {{ __('Request Monitoring') }}
-                    </h3>
-
+                        @if (request('search'))
+                            <a href="{{ route('user.requests') }}"
+                                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">
+                                Clear
+                            </a>
+                        @endif
+                    </form>
 
                     <div class="flex items-center gap-2">
                         <div class="relative" x-data="{ open: false }">
@@ -118,7 +78,7 @@
                                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200 p-2">
                                 <ul>
                                     <li>
-                                        <a href="{{ route('user.requests') }}"
+                                        <a href="{{ route('user.requests', array_filter(['search' => request('search')])) }}"
                                             class="block px-4 py-2 text-gray-700 hover:bg-blue-100 {{ !request('status') || request('status') == 'all' ? 'font-bold text-blue-600' : '' }}">
                                             All Statuses
                                         </a>
@@ -135,7 +95,7 @@
                                     @endphp
                                     @foreach ($statuses as $status)
                                         <li>
-                                            <a href="{{ route('user.requests', ['status' => $status]) }}"
+                                            <a href="{{ route('user.requests', array_filter(['status' => $status, 'search' => request('search')])) }}"
                                                 class="block px-4 py-2 text-gray-700 hover:bg-blue-100 {{ request('status') == $status ? 'font-bold text-blue-600' : '' }}">
                                                 {{ $statusDisplayMap[$status] ?? ucfirst($status) }}
                                             </a>
@@ -188,10 +148,36 @@
 
                 <!-- Purchase Request Table -->
                 @if ($purchaseRequests->count() > 0)
+                    <!-- Search Results Indicator -->
+                    @if (request('search'))
+                        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    <span class="text-blue-800 font-medium">
+                                        Search Results for "{{ request('search') }}"
+                                    </span>
+                                </div>
+                                <div class="text-blue-600 text-sm">
+                                    {{ $purchaseRequests->total() }}
+                                    {{ $purchaseRequests->total() === 1 ? 'result' : 'results' }} found
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="overflow-x-auto">
                         <table id="purchase-requests-table" class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        #
+                                    </th>
                                     <th
                                         class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         PR Number
@@ -217,6 +203,9 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach ($purchaseRequests as $pr)
                                     <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            {{ ($purchaseRequests->currentPage() - 1) * $purchaseRequests->perPage() + $loop->iteration }}
+                                        </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                             {{ $pr->pr_number }}
                                         </td>
@@ -263,33 +252,124 @@
                         </table>
                     </div>
 
-                    <!-- Pagination - Only show when there are items -->
-                    <div class="flex items-center justify-between mt-4">
-                        <div class="text-sm text-gray-700">
-                            Showing {{ $purchaseRequests->firstItem() ?? 0 }} to
-                            {{ $purchaseRequests->lastItem() ?? 0 }}
-                            of {{ $purchaseRequests->total() }} results
+                    <!-- Custom Pagination - Only show when there are more than 5 items -->
+                    @if ($purchaseRequests->total() > 5)
+                        <div class="flex justify-center mt-6">
+                            <div class="flex items-center space-x-1">
+                                @if ($purchaseRequests->onFirstPage())
+                                    <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 19l-7-7 7-7"></path>
+                                        </svg>
+                                    </span>
+                                @else
+                                    <a href="{{ $purchaseRequests->previousPageUrl() }}"
+                                        class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 19l-7-7 7-7"></path>
+                                        </svg>
+                                    </a>
+                                @endif
+
+                                @php
+                                    $start = max(1, $purchaseRequests->currentPage() - 2);
+                                    $end = min($purchaseRequests->lastPage(), $purchaseRequests->currentPage() + 2);
+
+                                    if ($end - $start < 4) {
+                                        if ($start == 1) {
+                                            $end = min($purchaseRequests->lastPage(), $start + 4);
+                                        } else {
+                                            $start = max(1, $end - 4);
+                                        }
+                                    }
+                                @endphp
+
+                                @if ($start > 1)
+                                    <a href="{{ $purchaseRequests->url(1) }}"
+                                        class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">1</a>
+                                    @if ($start > 2)
+                                        <span class="px-2 py-2 text-gray-400">...</span>
+                                    @endif
+                                @endif
+
+                                @for ($page = $start; $page <= $end; $page++)
+                                    @if ($page == $purchaseRequests->currentPage())
+                                        <span
+                                            class="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md">{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $purchaseRequests->url($page) }}"
+                                            class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $page }}</a>
+                                    @endif
+                                @endfor
+
+                                @if ($end < $purchaseRequests->lastPage())
+                                    @if ($end < $purchaseRequests->lastPage() - 1)
+                                        <span class="px-2 py-2 text-gray-400">...</span>
+                                    @endif
+                                    <a href="{{ $purchaseRequests->url($purchaseRequests->lastPage()) }}"
+                                        class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $purchaseRequests->lastPage() }}</a>
+                                @endif
+
+                                @if ($purchaseRequests->hasMorePages())
+                                    <a href="{{ $purchaseRequests->nextPageUrl() }}"
+                                        class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </a>
+                                @else
+                                    <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </span>
+                                @endif
+                            </div>
                         </div>
-                        <div class="flex items-center space-x-2">
-                            {{ $purchaseRequests->links() }}
-                        </div>
-                    </div>
+                    @endif
                 @else
                     <div class="text-center py-8">
-                        <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                            </path>
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No purchase requests found</h3>
-                        <p class="mt-1 text-sm text-gray-500">Get started by creating your first purchase request.</p>
-                        <div class="mt-4">
-                            <a href="{{ route('purchase-requests.create') }}"
-                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                                Create your first PR
-                            </a>
-                        </div>
+                        @if (request('search'))
+                            <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No results found for
+                                "{{ request('search') }}"</h3>
+                            <p class="mt-1 text-sm text-gray-500">Try adjusting your search terms or browse all
+                                purchase requests.</p>
+                            <div class="mt-4">
+                                <a href="{{ route('user.requests') }}"
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                                    View All Requests
+                                </a>
+                            </div>
+                        @else
+                            <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No purchase requests found</h3>
+                            <p class="mt-1 text-sm text-gray-500">Get started by creating your first purchase request.
+                            </p>
+                            <div class="mt-4">
+                                <a href="{{ route('purchase-requests.create') }}"
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                                    Create your first PR
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 @endif
             </div>

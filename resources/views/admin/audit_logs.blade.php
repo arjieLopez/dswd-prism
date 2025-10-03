@@ -106,15 +106,85 @@
                     </table>
                 </div>
 
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between mt-4">
-                    <div class="text-gray-500 text-sm mb-2 md:mb-0">
-                        Showing {{ $auditLogs->firstItem() ?? 0 }} to {{ $auditLogs->lastItem() ?? 0 }} of
-                        {{ $auditLogs->total() }} results
+                <!-- Custom Pagination - Only show when there are more than 5 items -->
+                @if ($auditLogs->total() > 5)
+                    <div class="flex justify-center mt-6">
+                        <div class="flex items-center space-x-1">
+                            @if ($auditLogs->onFirstPage())
+                                <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 19l-7-7 7-7"></path>
+                                    </svg>
+                                </span>
+                            @else
+                                <a href="{{ $auditLogs->previousPageUrl() }}"
+                                    class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 19l-7-7 7-7"></path>
+                                    </svg>
+                                </a>
+                            @endif
+
+                            @php
+                                $start = max(1, $auditLogs->currentPage() - 2);
+                                $end = min($auditLogs->lastPage(), $auditLogs->currentPage() + 2);
+
+                                if ($end - $start < 4) {
+                                    if ($start == 1) {
+                                        $end = min($auditLogs->lastPage(), $start + 4);
+                                    } else {
+                                        $start = max(1, $end - 4);
+                                    }
+                                }
+                            @endphp
+
+                            @if ($start > 1)
+                                <a href="{{ $auditLogs->url(1) }}"
+                                    class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">1</a>
+                                @if ($start > 2)
+                                    <span class="px-2 py-2 text-gray-400">...</span>
+                                @endif
+                            @endif
+
+                            @for ($page = $start; $page <= $end; $page++)
+                                @if ($page == $auditLogs->currentPage())
+                                    <span
+                                        class="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md">{{ $page }}</span>
+                                @else
+                                    <a href="{{ $auditLogs->url($page) }}"
+                                        class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $page }}</a>
+                                @endif
+                            @endfor
+
+                            @if ($end < $auditLogs->lastPage())
+                                @if ($end < $auditLogs->lastPage() - 1)
+                                    <span class="px-2 py-2 text-gray-400">...</span>
+                                @endif
+                                <a href="{{ $auditLogs->url($auditLogs->lastPage()) }}"
+                                    class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $auditLogs->lastPage() }}</a>
+                            @endif
+
+                            @if ($auditLogs->hasMorePages())
+                                <a href="{{ $auditLogs->nextPageUrl() }}"
+                                    class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+                            @else
+                                <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </span>
+                            @endif
+                        </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        {{ $auditLogs->links() }}
-                    </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
