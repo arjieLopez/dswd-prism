@@ -1,5 +1,3 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import "./bootstrap";
 
 import Alpine from "alpinejs";
@@ -154,79 +152,81 @@ if (exportBtn && exportDropdown) {
 }
 
 // XLSX export logic
-import * as XLSX from "xlsx";
-window.XLSX = XLSX;
-
 document.getElementById("export-xlsx")?.addEventListener("click", function () {
     exportDropdown.classList.add("hidden");
-    var table = document.getElementById("purchase-requests-table");
-    var tableClone = table.cloneNode(true);
-
-    // Remove the last header cell (Action)
-    var headerRow = tableClone.querySelector("thead tr");
-    if (headerRow) {
-        headerRow.removeChild(headerRow.lastElementChild);
-    }
-    // Remove the last cell from each body row
-    tableClone.querySelectorAll("tbody tr").forEach(function (row) {
-        row.removeChild(row.lastElementChild);
+    
+    // Get current URL parameters to preserve filters
+    const urlParams = new URLSearchParams(window.location.search);
+    const formData = new FormData();
+    
+    // Add all current filter parameters to the form
+    if (urlParams.get('search')) formData.append('search', urlParams.get('search'));
+    if (urlParams.get('status')) formData.append('status', urlParams.get('status'));
+    if (urlParams.get('date_from')) formData.append('date_from', urlParams.get('date_from'));
+    if (urlParams.get('date_to')) formData.append('date_to', urlParams.get('date_to'));
+    
+    // Add CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (csrfToken) formData.append('_token', csrfToken);
+    
+    // Create and submit form
+    fetch('/purchase-requests/export/xlsx', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'purchase_requests_' + new Date().toISOString().slice(0,19).replace(/:/g, '-') + '.csv';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    })
+    .catch(error => {
+        console.error('Export failed:', error);
+        alert('Export failed. Please try again.');
     });
-
-    var wb = XLSX.utils.table_to_book(tableClone, {
-        sheet: "Purchase Requests",
-    });
-    XLSX.writeFile(wb, "purchase_requests.xlsx");
 });
 
 // PDF export logic
-
 document.getElementById("export-pdf")?.addEventListener("click", function () {
     exportDropdown.classList.add("hidden");
-    var table = document.getElementById("purchase-requests-table");
-    var doc = new jsPDF();
-
-    // Add a title
-    doc.setFontSize(16);
-    doc.text("Purchase Requests Report", 14, 15);
-
-    // Prepare table data (excluding last column)
-    var head = [];
-    var body = [];
-    var headerCells = table.querySelectorAll("thead tr th");
-    headerCells.forEach((th, i) => {
-        if (i < headerCells.length - 1) head.push(th.innerText);
+    
+    // Get current URL parameters to preserve filters
+    const urlParams = new URLSearchParams(window.location.search);
+    const formData = new FormData();
+    
+    // Add all current filter parameters to the form
+    if (urlParams.get('search')) formData.append('search', urlParams.get('search'));
+    if (urlParams.get('status')) formData.append('status', urlParams.get('status'));
+    if (urlParams.get('date_from')) formData.append('date_from', urlParams.get('date_from'));
+    if (urlParams.get('date_to')) formData.append('date_to', urlParams.get('date_to'));
+    
+    // Add CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (csrfToken) formData.append('_token', csrfToken);
+    
+    // Create and submit form
+    fetch('/purchase-requests/export/pdf', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'purchase_requests_' + new Date().toISOString().slice(0,19).replace(/:/g, '-') + '.pdf';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    })
+    .catch(error => {
+        console.error('Export failed:', error);
+        alert('Export failed. Please try again.');
     });
-    table.querySelectorAll("tbody tr").forEach((row) => {
-        var rowData = [];
-        row.querySelectorAll("td").forEach((td, i) => {
-            if (i < row.cells.length - 1) rowData.push(td.innerText);
-        });
-        body.push(rowData);
-    });
-
-    autoTable(doc, {
-        head: [head],
-        body: body,
-        startY: 25,
-        styles: { fontSize: 8 },
-    });
-
-    // Footer
-    var pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(10);
-        doc.text(
-            "DSWD-PRISM • Generated: " + new Date().toLocaleDateString(),
-            14,
-            doc.internal.pageSize.height - 10
-        );
-        doc.text(
-            "Page " + i + " of " + pageCount,
-            doc.internal.pageSize.width - 40,
-            doc.internal.pageSize.height - 10
-        );
-    }
-
-    doc.save("purchase_requests.pdf");
 });

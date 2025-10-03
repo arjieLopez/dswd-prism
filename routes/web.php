@@ -94,6 +94,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/purchase-requests/{purchaseRequest}/withdraw', [PurchaseRequestController::class, 'withdraw'])->name('purchase-requests.withdraw');
     Route::get('/purchase-requests/{purchaseRequest}/print', [PurchaseRequestController::class, 'print'])->name('purchase-requests.print');
     Route::post('/purchase-requests/{purchaseRequest}/complete', [PurchaseRequestController::class, 'complete'])->name('purchase-requests.complete');
+    
+    // Export routes for purchase requests
+    Route::post('/purchase-requests/export/xlsx', [PurchaseRequestController::class, 'exportXLSX'])->name('purchase-requests.export.xlsx');
+    Route::post('/purchase-requests/export/pdf', [PurchaseRequestController::class, 'exportPDF'])->name('purchase-requests.export.pdf');
 });
 // Uploaded Documents Routes
 Route::get('/uploaded-documents/upload', [App\Http\Controllers\UploadedDocumentController::class, 'upload'])->middleware(['auth', 'verified'])->name('uploaded-documents.upload');

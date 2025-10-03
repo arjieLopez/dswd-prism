@@ -45,20 +45,26 @@
                         @if (request('status'))
                             <input type="hidden" name="status" value="{{ request('status') }}">
                         @endif
+                        @if (request('date_from'))
+                            <input type="hidden" name="date_from" value="{{ request('date_from') }}">
+                        @endif
+                        @if (request('date_to'))
+                            <input type="hidden" name="date_to" value="{{ request('date_to') }}">
+                        @endif
                         <button type="submit"
                             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
                             Search
                         </button>
-                        @if (request('search'))
+                        @if (request('search') || request('date_from') || request('date_to') || request('status'))
                             <a href="{{ route('user.requests') }}"
                                 class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">
-                                Clear
+                                Clear All
                             </a>
                         @endif
                     </form>
 
                     <div class="flex items-center gap-2">
-                        <div class="relative" x-data="{ open: false }">
+                        <div class="relative" x-data="{ open: false, activeTab: 'status' }">
                             <button @click="open = !open"
                                 class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100 active:bg-gray-200">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,33 +81,108 @@
                                 x-transition:leave="transition ease-in duration-75"
                                 x-transition:leave-start="transform opacity-100 scale-100"
                                 x-transition:leave-end="transform opacity-0 scale-95"
-                                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200 p-2">
-                                <ul>
-                                    <li>
-                                        <a href="{{ route('user.requests', array_filter(['search' => request('search')])) }}"
-                                            class="block px-4 py-2 text-gray-700 hover:bg-blue-100 {{ !request('status') || request('status') == 'all' ? 'font-bold text-blue-600' : '' }}">
-                                            All Statuses
-                                        </a>
-                                    </li>
-                                    @php
-                                        $statusDisplayMap = [
-                                            'draft' => 'Draft',
-                                            'pending' => 'Pending',
-                                            'approved' => 'Approved',
-                                            'rejected' => 'Rejected',
-                                            'po_generated' => 'PO Generated',
-                                            'failed' => 'Failed',
-                                        ];
-                                    @endphp
-                                    @foreach ($statuses as $status)
+                                class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+
+                                <!-- Filter Tabs -->
+                                <div class="flex border-b border-gray-200">
+                                    <button @click="activeTab = 'status'"
+                                        :class="activeTab === 'status' ? 'bg-blue-50 text-blue-700 border-blue-500' :
+                                            'text-gray-500 hover:text-gray-700'"
+                                        class="flex-1 px-4 py-3 text-sm font-medium border-b-2 border-transparent">
+                                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z">
+                                            </path>
+                                        </svg>
+                                        Status
+                                    </button>
+                                    <button @click="activeTab = 'date'"
+                                        :class="activeTab === 'date' ? 'bg-blue-50 text-blue-700 border-blue-500' :
+                                            'text-gray-500 hover:text-gray-700'"
+                                        class="flex-1 px-4 py-3 text-sm font-medium border-b-2 border-transparent">
+                                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                            </path>
+                                        </svg>
+                                        Date Range
+                                    </button>
+                                </div>
+
+                                <!-- Status Filter Content -->
+                                <div x-show="activeTab === 'status'" class="p-2">
+                                    <ul>
                                         <li>
-                                            <a href="{{ route('user.requests', array_filter(['status' => $status, 'search' => request('search')])) }}"
-                                                class="block px-4 py-2 text-gray-700 hover:bg-blue-100 {{ request('status') == $status ? 'font-bold text-blue-600' : '' }}">
-                                                {{ $statusDisplayMap[$status] ?? ucfirst($status) }}
+                                            <a href="{{ route('user.requests', array_filter(['search' => request('search'), 'date_from' => request('date_from'), 'date_to' => request('date_to')])) }}"
+                                                class="block px-4 py-2 text-gray-700 hover:bg-blue-100 rounded {{ !request('status') || request('status') == 'all' ? 'font-bold text-blue-600 bg-blue-50' : '' }}">
+                                                All Statuses
                                             </a>
                                         </li>
-                                    @endforeach
-                                </ul>
+                                        @php
+                                            $statusDisplayMap = [
+                                                'draft' => 'Draft',
+                                                'pending' => 'Pending',
+                                                'approved' => 'Approved',
+                                                'rejected' => 'Rejected',
+                                                'po_generated' => 'PO Generated',
+                                                'failed' => 'Failed',
+                                            ];
+                                        @endphp
+                                        @foreach ($statuses as $status)
+                                            <li>
+                                                <a href="{{ route('user.requests', array_filter(['status' => $status, 'search' => request('search'), 'date_from' => request('date_from'), 'date_to' => request('date_to')])) }}"
+                                                    class="block px-4 py-2 text-gray-700 hover:bg-blue-100 rounded {{ request('status') == $status ? 'font-bold text-blue-600 bg-blue-50' : '' }}">
+                                                    {{ $statusDisplayMap[$status] ?? ucfirst($status) }}
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+
+                                <!-- Date Filter Content -->
+                                <div x-show="activeTab === 'date'" class="p-4">
+                                    <form method="GET" action="{{ route('user.requests') }}" class="space-y-4">
+                                        <!-- Preserve existing parameters -->
+                                        @if (request('search'))
+                                            <input type="hidden" name="search" value="{{ request('search') }}">
+                                        @endif
+                                        @if (request('status'))
+                                            <input type="hidden" name="status" value="{{ request('status') }}">
+                                        @endif
+
+                                        <div class="space-y-3">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">From
+                                                    Date</label>
+                                                <input type="date" name="date_from"
+                                                    value="{{ request('date_from') }}"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">To
+                                                    Date</label>
+                                                <input type="date" name="date_to"
+                                                    value="{{ request('date_to') }}"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                            </div>
+                                        </div>
+
+                                        <div class="flex gap-2 pt-2">
+                                            <button type="submit"
+                                                class="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                                                Apply Filter
+                                            </button>
+                                            @if (request('date_from') || request('date_to'))
+                                                <a href="{{ route('user.requests', array_filter(['search' => request('search'), 'status' => request('status')])) }}"
+                                                    class="flex-1 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg text-sm text-center">
+                                                    Clear Dates
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                         <div class="relative" id="export-dropdown-container">
@@ -145,6 +226,66 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Active Filters Indicator -->
+                @if (request('search') || request('status') || request('date_from') || request('date_to'))
+                    <div
+                        class="flex flex-wrap items-center gap-2 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <span class="text-sm font-medium text-blue-700">Active Filters:</span>
+
+                        @if (request('search'))
+                            <span
+                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                Search: "{{ request('search') }}"
+                            </span>
+                        @endif
+
+                        @if (request('status') && request('status') !== 'all')
+                            <span
+                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z">
+                                    </path>
+                                </svg>
+                                Status: {{ ucfirst(str_replace('_', ' ', request('status'))) }}
+                            </span>
+                        @endif
+
+                        @if (request('date_from') || request('date_to'))
+                            <span
+                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                Date:
+                                @if (request('date_from') && request('date_to'))
+                                    {{ \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') }} -
+                                    {{ \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') }}
+                                @elseif (request('date_from'))
+                                    From {{ \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') }}
+                                @else
+                                    Until {{ \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') }}
+                                @endif
+                            </span>
+                        @endif
+
+                        <a href="{{ route('user.requests') }}"
+                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 transition-colors">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            Clear All
+                        </a>
+                    </div>
+                @endif
 
                 <!-- Purchase Request Table -->
                 @if ($purchaseRequests->count() > 0)
