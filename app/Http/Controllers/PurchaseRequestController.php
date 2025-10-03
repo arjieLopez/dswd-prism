@@ -410,11 +410,11 @@ class PurchaseRequestController extends Controller
         // Create CSV file
         $filename = 'purchase_requests_' . date('Y-m-d_H-i-s') . '.csv';
         $handle = fopen('php://temp', 'r+');
-        
+
         foreach ($csvContent as $row) {
             fputcsv($handle, $row);
         }
-        
+
         rewind($handle);
         $csvData = stream_get_contents($handle);
         fclose($handle);
@@ -457,7 +457,7 @@ class PurchaseRequestController extends Controller
 
         $pdf = Pdf::loadView('exports.purchase_requests_pdf', compact('purchaseRequests'));
         $filename = 'purchase_requests_' . date('Y-m-d_H-i-s') . '.pdf';
-        
+
         return $pdf->download($filename);
     }
 }

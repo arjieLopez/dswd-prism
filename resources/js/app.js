@@ -154,79 +154,97 @@ if (exportBtn && exportDropdown) {
 // XLSX export logic
 document.getElementById("export-xlsx")?.addEventListener("click", function () {
     exportDropdown.classList.add("hidden");
-    
+
     // Get current URL parameters to preserve filters
     const urlParams = new URLSearchParams(window.location.search);
     const formData = new FormData();
-    
+
     // Add all current filter parameters to the form
-    if (urlParams.get('search')) formData.append('search', urlParams.get('search'));
-    if (urlParams.get('status')) formData.append('status', urlParams.get('status'));
-    if (urlParams.get('date_from')) formData.append('date_from', urlParams.get('date_from'));
-    if (urlParams.get('date_to')) formData.append('date_to', urlParams.get('date_to'));
-    
+    if (urlParams.get("search"))
+        formData.append("search", urlParams.get("search"));
+    if (urlParams.get("status"))
+        formData.append("status", urlParams.get("status"));
+    if (urlParams.get("date_from"))
+        formData.append("date_from", urlParams.get("date_from"));
+    if (urlParams.get("date_to"))
+        formData.append("date_to", urlParams.get("date_to"));
+
     // Add CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    if (csrfToken) formData.append('_token', csrfToken);
-    
+    const csrfToken = document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute("content");
+    if (csrfToken) formData.append("_token", csrfToken);
+
     // Create and submit form
-    fetch('/purchase-requests/export/xlsx', {
-        method: 'POST',
-        body: formData
+    fetch("/purchase-requests/export/xlsx", {
+        method: "POST",
+        body: formData,
     })
-    .then(response => response.blob())
-    .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'purchase_requests_' + new Date().toISOString().slice(0,19).replace(/:/g, '-') + '.csv';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-    })
-    .catch(error => {
-        console.error('Export failed:', error);
-        alert('Export failed. Please try again.');
-    });
+        .then((response) => response.blob())
+        .then((blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download =
+                "purchase_requests_" +
+                new Date().toISOString().slice(0, 19).replace(/:/g, "-") +
+                ".csv";
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        })
+        .catch((error) => {
+            console.error("Export failed:", error);
+            alert("Export failed. Please try again.");
+        });
 });
 
 // PDF export logic
 document.getElementById("export-pdf")?.addEventListener("click", function () {
     exportDropdown.classList.add("hidden");
-    
+
     // Get current URL parameters to preserve filters
     const urlParams = new URLSearchParams(window.location.search);
     const formData = new FormData();
-    
+
     // Add all current filter parameters to the form
-    if (urlParams.get('search')) formData.append('search', urlParams.get('search'));
-    if (urlParams.get('status')) formData.append('status', urlParams.get('status'));
-    if (urlParams.get('date_from')) formData.append('date_from', urlParams.get('date_from'));
-    if (urlParams.get('date_to')) formData.append('date_to', urlParams.get('date_to'));
-    
+    if (urlParams.get("search"))
+        formData.append("search", urlParams.get("search"));
+    if (urlParams.get("status"))
+        formData.append("status", urlParams.get("status"));
+    if (urlParams.get("date_from"))
+        formData.append("date_from", urlParams.get("date_from"));
+    if (urlParams.get("date_to"))
+        formData.append("date_to", urlParams.get("date_to"));
+
     // Add CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    if (csrfToken) formData.append('_token', csrfToken);
-    
+    const csrfToken = document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute("content");
+    if (csrfToken) formData.append("_token", csrfToken);
+
     // Create and submit form
-    fetch('/purchase-requests/export/pdf', {
-        method: 'POST',
-        body: formData
+    fetch("/purchase-requests/export/pdf", {
+        method: "POST",
+        body: formData,
     })
-    .then(response => response.blob())
-    .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'purchase_requests_' + new Date().toISOString().slice(0,19).replace(/:/g, '-') + '.pdf';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-    })
-    .catch(error => {
-        console.error('Export failed:', error);
-        alert('Export failed. Please try again.');
-    });
+        .then((response) => response.blob())
+        .then((blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download =
+                "purchase_requests_" +
+                new Date().toISOString().slice(0, 19).replace(/:/g, "-") +
+                ".pdf";
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        })
+        .catch((error) => {
+            console.error("Export failed:", error);
+            alert("Export failed. Please try again.");
+        });
 });
