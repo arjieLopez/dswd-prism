@@ -16,7 +16,7 @@
                     </h2>
                     <a href="{{ route('staff.po_generation') }}"
                         class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                        ← Back to PO Generation
+                        ← Back to Purchase Orders
                     </a>
                 </div>
 
@@ -25,14 +25,18 @@
                     @csrf
 
                     <div>
-                        <x-input-label for="po_number" :value="__('PO Number')" />
+                        <x-input-label for="po_number">
+                            PO Number <span class="text-red-500">*</span>
+                        </x-input-label>
                         <x-text-input id="po_number" name="po_number" type="text" class="mt-1 block w-full"
-                            :value="old('po_number')" required autofocus />
+                            :value="old('po_number', request('po_number'))" required autofocus readonly />
                         <x-input-error :messages="$errors->get('po_number')" class="mt-2" />
                     </div>
 
                     <div>
-                        <x-input-label for="po_document" :value="__('PO Document')" />
+                        <x-input-label for="po_document">
+                            PO Document <span class="text-red-500">*</span>
+                        </x-input-label>
                         <div x-data="{ fileName: null, isDragging: false }" @dragover.prevent="isDragging = true"
                             @dragleave.prevent="isDragging = false"
                             @drop.prevent="isDragging = false; $refs.fileInput.files = $event.dataTransfer.files; fileName = $event.dataTransfer.files[0]?.name">
@@ -88,7 +92,7 @@
                     <div>
                         <x-input-label for="notes" :value="__('Notes (Optional)')" />
                         <textarea id="notes" name="notes" rows="3"
-                            class="mt-1 block w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm"
+                            class="mt-1 block w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm placeholder-gray-400"
                             placeholder="Add any additional notes...">{{ old('notes') }}</textarea>
                         <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                     </div>

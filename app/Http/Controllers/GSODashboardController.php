@@ -5,54 +5,100 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
 use App\Models\PODocument;
+use App\Models\UserActivity;
 use Carbon\Carbon;
 
 class GSODashboardController extends Controller
 {
-    public function show()
+    public function show(Request $request)
     {
-        // Get current month and last month
-        $currentMonth = Carbon::now();
-        $lastMonth = Carbon::now()->subMonth();
+        // Get filter type and dates
+        $filterType = $request->get('filter_type', 'this_month');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
 
-        // Get PR statistics for current month
+        // Set date range based on filter type
+        if ($filterType === 'this_month') {
+            $currentMonth = Carbon::now();
+            $startDate = $currentMonth->copy()->startOfMonth();
+            $endDate = $currentMonth->copy()->endOfMonth();
+        } elseif ($filterType === 'previous_month') {
+            $currentMonth = Carbon::now()->subMonth();
+            $startDate = $currentMonth->copy()->startOfMonth();
+            $endDate = $currentMonth->copy()->endOfMonth();
+        } elseif ($filterType === 'custom' && $dateFrom && $dateTo) {
+            $startDate = Carbon::createFromFormat('Y-m-d', $dateFrom)->startOfDay();
+            $endDate = Carbon::createFromFormat('Y-m-d', $dateTo)->endOfDay();
+            $currentMonth = $startDate; // For reference
+        } else {
+            // Default to this month
+            $currentMonth = Carbon::now();
+            $startDate = $currentMonth->copy()->startOfMonth();
+            $endDate = $currentMonth->copy()->endOfMonth();
+        }
+
+        $lastMonth = $currentMonth->copy()->subMonth();
+
+        // Get PR statistics for selected date range
         $pendingPRs = PurchaseRequest::where('status', 'pending')
-            ->whereMonth('created_at', $currentMonth->month)
-            ->whereYear('created_at', $currentMonth->year)
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
-        $approvedPRs = PurchaseRequest::where('status', 'approved')
-            ->whereMonth('created_at', $currentMonth->month)
-            ->whereYear('created_at', $currentMonth->year)
-            ->count();
-        $poGenerated = PurchaseRequest::whereMonth('po_generated_at', $currentMonth->month)
-            ->whereYear('po_generated_at', $currentMonth->year)
-            ->count();
+        $pendingTotal = PurchaseRequest::where('status', 'pending')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->sum('total');
 
-        // Get PR statistics for last month
+        $approvedPRs = PurchaseRequest::where('status', 'approved')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->count();
+        $approvedTotal = PurchaseRequest::where('status', 'approved')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->sum('total');
+
+        $poGenerated = PurchaseRequest::where('status', 'po_generated')
+            ->whereBetween('updated_at', [$startDate, $endDate])
+            ->count();
+        $poGeneratedTotal = PurchaseRequest::where('status', 'po_generated')
+            ->whereBetween('updated_at', [$startDate, $endDate])
+            ->sum('total');
+
+        $completedPRs = PurchaseRequest::where('status', 'completed')
+            ->whereBetween('updated_at', [$startDate, $endDate])
+            ->count();
+        $completedTotal = PurchaseRequest::where('status', 'completed')
+            ->whereBetween('updated_at', [$startDate, $endDate])
+            ->sum('total');
+
+        // Get PR statistics for last month (for percentage calculation)
+        $lastMonthStartDate = $lastMonth->copy()->startOfMonth();
+        $lastMonthEndDate = $lastMonth->copy()->endOfMonth();
+
         $lastMonthPendingPRs = PurchaseRequest::where('status', 'pending')
-            ->whereMonth('created_at', $lastMonth->month)
-            ->whereYear('created_at', $lastMonth->year)
+            ->whereBetween('created_at', [$lastMonthStartDate, $lastMonthEndDate])
             ->count();
 
         $lastMonthApprovedPRs = PurchaseRequest::where('status', 'approved')
-            ->whereMonth('created_at', $lastMonth->month)
-            ->whereYear('created_at', $lastMonth->year)
+            ->whereBetween('created_at', [$lastMonthStartDate, $lastMonthEndDate])
             ->count();
 
-        $lastMonthPOGenerated = PurchaseRequest::whereMonth('po_generated_at', $lastMonth->month)
-            ->whereYear('po_generated_at', $lastMonth->year)
+        $lastMonthPOGenerated = PurchaseRequest::where('status', 'po_generated')
+            ->whereBetween('updated_at', [$lastMonthStartDate, $lastMonthEndDate])
+            ->count();
+
+        $lastMonthCompletedPRs = PurchaseRequest::where('status', 'completed')
+            ->whereBetween('updated_at', [$lastMonthStartDate, $lastMonthEndDate])
             ->count();
 
         // Calculate percentage changes
         $pendingPercentageChange = $this->calculatePercentageChange($pendingPRs, $lastMonthPendingPRs);
         $approvedPercentageChange = $this->calculatePercentageChange($approvedPRs, $lastMonthApprovedPRs);
         $poGeneratedPercentageChange = $this->calculatePercentageChange($poGenerated, $lastMonthPOGenerated);
+        $completedPercentageChange = $this->calculatePercentageChange($completedPRs, $lastMonthCompletedPRs);
 
-        // Get generated Purchase Orders
-        $generatedPOs = PurchaseRequest::where('status', 'po_generated')
+        // Get completed Purchase Requests
+        $completedPRsList = PurchaseRequest::whereIn('status', ['completed', 'po_generated'])
             ->with(['user', 'supplier']) // Add supplier relationship
-            ->orderBy('po_generated_at', 'desc')
-            ->paginate(10);
+            ->orderBy('updated_at', 'desc')
+            ->paginate(5);
 
         $user = auth()->user();
         $recentActivities = $user->activities()
@@ -62,12 +108,18 @@ class GSODashboardController extends Controller
 
         return view('staff.gso_dashboard', compact(
             'pendingPRs',
+            'pendingTotal',
             'approvedPRs',
+            'approvedTotal',
+            'completedPRs',
+            'completedTotal',
             'poGenerated',
+            'poGeneratedTotal',
             'pendingPercentageChange',
             'approvedPercentageChange',
+            'completedPercentageChange',
             'poGeneratedPercentageChange',
-            'generatedPOs',
+            'completedPRsList',
             'recentActivities'
         ));
     }

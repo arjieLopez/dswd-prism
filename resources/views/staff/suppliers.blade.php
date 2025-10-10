@@ -154,7 +154,7 @@
                     <div class="space-y-4">
                         <div>
                             <label for="supplier_name" class="block text-sm font-medium text-gray-700">Supplier
-                                Name</label>
+                                Name <span class="text-red-500">*</span></label>
                             <input type="text" name="supplier_name" id="supplier_name" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         </div>
@@ -165,24 +165,26 @@
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div>
-                            <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
+                            <label for="address" class="block text-sm font-medium text-gray-700">Address <span
+                                    class="text-red-500">*</span></label>
                             <textarea name="address" id="address" rows="3" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
                         </div>
                         <div>
                             <label for="contact_person" class="block text-sm font-medium text-gray-700">Contact
-                                Person</label>
+                                Person <span class="text-red-500">*</span></label>
                             <input type="text" name="contact_person" id="contact_person" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div>
                             <label for="contact_number" class="block text-sm font-medium text-gray-700">Contact
-                                Number</label>
+                                Number <span class="text-red-500">*</span></label>
                             <input type="text" name="contact_number" id="contact_number" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                            <label for="email" class="block text-sm font-medium text-gray-700">Email <span
+                                    class="text-red-500">*</span></label>
                             <input type="email" name="email" id="email" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         </div>
@@ -215,7 +217,7 @@
                     <div class="space-y-4">
                         <div>
                             <label for="edit_supplier_name" class="block text-sm font-medium text-gray-700">Supplier
-                                Name</label>
+                                Name <span class="text-red-500">*</span></label>
                             <input type="text" name="supplier_name" id="edit_supplier_name" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         </div>
@@ -226,24 +228,26 @@
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div>
-                            <label for="edit_address" class="block text-sm font-medium text-gray-700">Address</label>
+                            <label for="edit_address" class="block text-sm font-medium text-gray-700">Address <span
+                                    class="text-red-500">*</span></label>
                             <textarea name="address" id="edit_address" rows="3" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
                         </div>
                         <div>
                             <label for="edit_contact_person" class="block text-sm font-medium text-gray-700">Contact
-                                Person</label>
+                                Person <span class="text-red-500">*</span></label>
                             <input type="text" name="contact_person" id="edit_contact_person" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div>
                             <label for="edit_contact_number" class="block text-sm font-medium text-gray-700">Contact
-                                Number</label>
+                                Number <span class="text-red-500">*</span></label>
                             <input type="text" name="contact_number" id="edit_contact_number" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div>
-                            <label for="edit_email" class="block text-sm font-medium text-gray-700">Email</label>
+                            <label for="edit_email" class="block text-sm font-medium text-gray-700">Email <span
+                                    class="text-red-500">*</span></label>
                             <input type="email" name="email" id="edit_email" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         </div>

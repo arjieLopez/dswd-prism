@@ -29,7 +29,7 @@
                             </svg>
                             <input type="text" name="search" placeholder="Search users..."
                                 value="{{ request('search') }}"
-                                class="pl-10 w-full md:w-64 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                class="pl-10 w-full md:w-64 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-gray-400">
                         </div>
                         <button type="submit"
                             class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
@@ -337,7 +337,7 @@
                     <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="first_name">
-                                First Name
+                                First Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="first_name" id="first_name" required
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -351,7 +351,7 @@
                         </div>
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="last_name">
-                                Last Name
+                                Last Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="last_name" id="last_name" required
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -360,7 +360,7 @@
 
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
-                            Email
+                            Email <span class="text-red-500">*</span>
                         </label>
                         <input type="email" name="email" id="email" required
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -369,7 +369,7 @@
                     <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="role">
-                                Role
+                                Role <span class="text-red-500">*</span>
                             </label>
                             <select name="role" id="role" required
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -407,7 +407,7 @@
 
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
-                            Password
+                            Password <span class="text-red-500">*</span>
                         </label>
                         <input type="password" name="password" id="password" required
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -415,7 +415,7 @@
 
                     <div class="mb-6">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="password_confirmation">
-                            Confirm Password
+                            Confirm Password <span class="text-red-500">*</span>
                         </label>
                         <input type="password" name="password_confirmation" id="password_confirmation" required
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -530,7 +530,7 @@
                     <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_first_name">
-                                First Name
+                                First Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="first_name" id="edit_first_name" required
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -544,7 +544,7 @@
                         </div>
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_last_name">
-                                Last Name
+                                Last Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="last_name" id="edit_last_name" required
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -553,7 +553,7 @@
 
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_email">
-                            Email
+                            Email <span class="text-red-500">*</span>
                         </label>
                         <input type="email" name="email" id="edit_email" required
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -562,7 +562,7 @@
                     <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_role">
-                                Role
+                                Role <span class="text-red-500">*</span>
                             </label>
                             <select name="role" id="edit_role" required
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">

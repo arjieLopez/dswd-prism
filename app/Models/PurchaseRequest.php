@@ -39,6 +39,7 @@ class PurchaseRequest extends Model
         'po_number',
         'po_generated_at',
         'po_generated_by',
+        'completed_at',
         'supplier_id',
         'mode_of_procurement',
         'delivery_term',
@@ -53,6 +54,7 @@ class PurchaseRequest extends Model
         'total_cost' => 'decimal:2',
         'total' => 'decimal:2',
         'po_generated_at' => 'datetime',
+        'completed_at' => 'datetime',
         'date_of_delivery' => 'date'
     ];
 

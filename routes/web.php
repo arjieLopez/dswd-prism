@@ -55,6 +55,8 @@ Route::get('/staff/pr-review', [App\Http\Controllers\PRReviewController::class, 
 Route::get('/staff/pr-review/{purchaseRequest}/data', [App\Http\Controllers\PRReviewController::class, 'show'])->middleware(['auth', 'verified'])->name('staff.pr_review.data');
 Route::post('/staff/pr-review/{purchaseRequest}/approve', [App\Http\Controllers\PRReviewController::class, 'approve'])->middleware(['auth', 'verified'])->name('staff.pr_review.approve');
 Route::post('/staff/pr-review/{purchaseRequest}/reject', [App\Http\Controllers\PRReviewController::class, 'reject'])->middleware(['auth', 'verified'])->name('staff.pr_review.reject');
+Route::post('/staff/pr-review/export/xlsx', [App\Http\Controllers\PRReviewController::class, 'exportXLSX'])->middleware(['auth', 'verified'])->name('staff.pr_review.export.xlsx');
+Route::post('/staff/pr-review/export/pdf', [App\Http\Controllers\PRReviewController::class, 'exportPDF'])->middleware(['auth', 'verified'])->name('staff.pr_review.export.pdf');
 // PO Generation Routes
 Route::get('/staff/po-generation', [App\Http\Controllers\POGenerationController::class, 'index'])->middleware(['auth', 'verified'])->name('staff.po_generation');
 Route::get('/staff/po-generation/{purchaseRequest}/data', [App\Http\Controllers\POGenerationController::class, 'show'])->middleware(['auth', 'verified'])->name('staff.po_generation.data');
@@ -66,6 +68,7 @@ Route::get('/staff/po-generation/{purchaseRequest}/print', [\App\Http\Controller
 // PO Document Routes
 Route::get('/po-documents/upload', [App\Http\Controllers\PODocumentController::class, 'upload'])->middleware(['auth', 'verified'])->name('po-documents.upload');
 Route::post('/po-documents', [App\Http\Controllers\PODocumentController::class, 'store'])->middleware(['auth', 'verified'])->name('po-documents.store');
+Route::get('/po-documents/for-po/{po_number}', [App\Http\Controllers\PODocumentController::class, 'forPo'])->middleware(['auth', 'verified'])->name('po-documents.for-po');
 Route::get('/po-documents/{poDocument}/download', [App\Http\Controllers\PODocumentController::class, 'download'])->middleware(['auth', 'verified'])->name('po-documents.download');
 Route::delete('/po-documents/{poDocument}', [App\Http\Controllers\PODocumentController::class, 'destroy'])->middleware(['auth', 'verified'])->name('po-documents.destroy');
 // PO Generation Form Routes

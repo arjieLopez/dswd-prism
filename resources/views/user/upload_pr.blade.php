@@ -24,14 +24,18 @@
                     @csrf
 
                     <div>
-                        <x-input-label for="pr_number" :value="__('PR Number')" />
+                        <x-input-label for="pr_number">
+                            PR Number <span class="text-red-500">*</span>
+                        </x-input-label>
                         <x-text-input id="pr_number" name="pr_number" type="text" class="mt-1 block w-full"
                             :value="old('pr_number', $prNumber ?? '')" required autofocus readonly />
                         <x-input-error :messages="$errors->get('pr_number')" class="mt-2" />
                     </div>
 
                     <div>
-                        <x-input-label for="scanned_copy" :value="__('Scanned Copy')" />
+                        <x-input-label for="scanned_copy">
+                            Scanned Copy <span class="text-red-500">*</span>
+                        </x-input-label>
                         <div x-data="{ fileName: null, isDragging: false }" @dragover.prevent="isDragging = true"
                             @dragleave.prevent="isDragging = false"
                             @drop.prevent="isDragging = false; $refs.fileInput.files = $event.dataTransfer.files; fileName = $event.dataTransfer.files[0]?.name">

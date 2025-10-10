@@ -24,7 +24,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="entity_name" class="block text-sm font-medium text-gray-700">Entity
-                                    Name</label>
+                                    Name <span class="text-red-500">*</span></label>
                                 <input type="text" name="entity_name" id="entity_name"
                                     value="{{ old('entity_name') }}" required
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
@@ -32,7 +32,7 @@
 
                             <div>
                                 <label for="fund_cluster" class="block text-sm font-medium text-gray-700">Fund
-                                    Cluster</label>
+                                    Cluster <span class="text-red-500">*</span></label>
                                 <input type="text" name="fund_cluster" id="fund_cluster"
                                     value="{{ old('fund_cluster') }}" required
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
@@ -40,7 +40,8 @@
 
                             <div>
                                 <label for="office_section"
-                                    class="block text-sm font-medium text-gray-700">Office/Section</label>
+                                    class="block text-sm font-medium text-gray-700">Office/Section <span
+                                        class="text-red-500">*</span></label>
                                 <input type="text" name="office_section" id="office_section"
                                     value="{{ old('office_section', auth()->user()->office) }}" required readonly
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
@@ -48,14 +49,16 @@
 
                             <div>
                                 <label for="responsibility_center_code"
-                                    class="block text-sm font-medium text-gray-700">Responsibility Center Code</label>
+                                    class="block text-sm font-medium text-gray-700">Responsibility Center Code <span
+                                        class="text-red-500">*</span></label>
                                 <input type="text" name="responsibility_center_code" id="responsibility_center_code"
                                     value="{{ old('responsibility_center_code') }}" required
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             </div>
 
                             <div>
-                                <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
+                                <label for="date" class="block text-sm font-medium text-gray-700">Date <span
+                                        class="text-red-500">*</span></label>
                                 <input type="date" name="date" id="date"
                                     value="{{ old('date', date('Y-m-d')) }}" required
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
@@ -169,7 +172,8 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label for="delivery_period"
-                                        class="block text-sm font-medium text-gray-700">Delivery Period</label>
+                                        class="block text-sm font-medium text-gray-700">Delivery Period <span
+                                            class="text-red-500">*</span></label>
                                     <input type="text" name="delivery_period" id="delivery_period"
                                         value="{{ old('delivery_period') }}" required
                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
@@ -177,7 +181,8 @@
 
                                 <div>
                                     <label for="delivery_address"
-                                        class="block text-sm font-medium text-gray-700">Delivery Address</label>
+                                        class="block text-sm font-medium text-gray-700">Delivery Address <span
+                                            class="text-red-500">*</span></label>
                                     <textarea name="delivery_address" id="delivery_address" rows="3" required
                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ old('delivery_address') }}</textarea>
                                 </div>
@@ -186,7 +191,8 @@
 
                         <!-- Purpose -->
                         <div class="border-t pt-6">
-                            <label for="purpose" class="block text-sm font-medium text-gray-700">Purpose</label>
+                            <label for="purpose" class="block text-sm font-medium text-gray-700">Purpose <span
+                                    class="text-red-500">*</span></label>
                             <textarea name="purpose" id="purpose" rows="3" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ old('purpose') }}</textarea>
                         </div>
@@ -197,7 +203,8 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label for="requested_by_name"
-                                        class="block text-sm font-medium text-gray-700">Printed Name</label>
+                                        class="block text-sm font-medium text-gray-700">Printed Name <span
+                                            class="text-red-500">*</span></label>
                                     <input type="text" name="requested_by_name" id="requested_by_name"
                                         value="{{ old('requested_by_name', auth()->user()->first_name . (auth()->user()->middle_name ? ' ' . auth()->user()->middle_name : '') . ' ' . auth()->user()->last_name) }}"
                                         required readonly
@@ -206,7 +213,8 @@
 
                                 <div>
                                     <label for="requested_by_designation"
-                                        class="block text-sm font-medium text-gray-700">Designation</label>
+                                        class="block text-sm font-medium text-gray-700">Designation <span
+                                            class="text-red-500">*</span></label>
                                     <input type="text" name="requested_by_designation"
                                         id="requested_by_designation"
                                         value="{{ old('requested_by_designation', auth()->user()->designation) }}"

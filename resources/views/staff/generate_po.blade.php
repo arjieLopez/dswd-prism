@@ -14,9 +14,9 @@
                     <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                         {{ __('Generate Purchase Order') }}
                     </h2>
-                    <a href="{{ route('staff.po_generation') }}"
-                        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">
-                        Back to PO Generation
+                    <a href="{{ route('staff.pr_review') }}"
+                        class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        ← Back to Request Review
                     </a>
                 </div>
 
@@ -58,7 +58,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier
-                                    *</label>
+                                    <span class="text-red-500">*</span></label>
                                 <select name="supplier_id" id="supplier_id" required onchange="updateSupplierInfo()"
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                     <option value="">Select Supplier</option>
@@ -96,7 +96,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="mode_of_procurement" class="block text-sm font-medium text-gray-700">Mode of
-                                    Procurement *</label>
+                                    Procurement <span class="text-red-500">*</span></label>
                                 <select name="mode_of_procurement" id="mode_of_procurement" required
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                     <option value="">Select Mode</option>
@@ -116,21 +116,21 @@
                             </div>
                             <div>
                                 <label for="delivery_term" class="block text-sm font-medium text-gray-700">Delivery
-                                    Term *</label>
+                                    Term <span class="text-red-500">*</span></label>
                                 <input type="text" name="delivery_term" id="delivery_term" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
                                     placeholder="e.g., Within 30 days from receipt of PO">
                             </div>
                             <div>
                                 <label for="payment_term" class="block text-sm font-medium text-gray-700">Payment Term
-                                    *</label>
+                                    <span class="text-red-500">*</span></label>
                                 <input type="text" name="payment_term" id="payment_term" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
                                     placeholder="e.g., 30 days after delivery">
                             </div>
                             <div>
                                 <label for="date_of_delivery" class="block text-sm font-medium text-gray-700">Date of
-                                    Delivery *</label>
+                                    Delivery <span class="text-red-500">*</span></label>
                                 <input type="date" name="date_of_delivery" id="date_of_delivery" required
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             </div>
@@ -167,10 +167,11 @@
                                                     {{ $item->item_description }}</td>
                                             </tr>
                                         @endforeach
-                                        <tr class="bg-gray-100 font-semibold">
-                                            <td colspan="3" class="px-3 py-3 text-right text-sm text-gray-700">
-                                                Grand Total:</td>
-                                            <td class="px-3 py-3 text-sm text-gray-900">
+                                        <tr class="bg-gray-50 border-t-2 border-gray-300">
+                                            <td class="px-3 py-3 font-semibold text-sm">Grand Total:</td>
+                                            <td class="px-3 py-3"></td>
+                                            <td class="px-3 py-3"></td>
+                                            <td class="px-3 py-3 text-sm font-semibold text-green-600">
                                                 ₱{{ number_format($purchaseRequest->total, 2) }}</td>
                                             <td></td>
                                         </tr>
@@ -187,12 +188,12 @@
 
                     <!-- Action Buttons -->
                     <div class="flex justify-end space-x-4 pt-6">
-                        <a href="{{ route('staff.po_generation') }}"
+                        <a href="{{ route('staff.pr_review') }}"
                             class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg">
                             Cancel
                         </a>
                         <button type="submit"
-                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">
                             Generate PO
                         </button>
                     </div>

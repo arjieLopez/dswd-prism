@@ -7,17 +7,49 @@ use App\Models\PurchaseRequest;
 use App\Models\User;
 use App\Models\UserActivity;
 use App\Services\ActivityService;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 class PRReviewController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Get all purchase requests for review (including draft for debugging)
-        $purchaseRequests = PurchaseRequest::with('user')
+        $query = PurchaseRequest::with('user')
             ->where('status', '!=', 'draft')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->orderBy('created_at', 'desc');
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('pr_number', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('status', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
+                        $userQuery->where('first_name', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('middle_name', 'like', '%' . $searchTerm . '%');
+                    });
+            });
+        }
+
+        // Status filtering
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // Date range filtering
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $purchaseRequests = $query->paginate(10)->appends($request->query());
 
         $user = auth()->user();
         $recentActivities = $user->activities()
@@ -25,7 +57,13 @@ class PRReviewController extends Controller
             ->limit(10)
             ->get();
 
-        return view('staff.pr_review', compact('purchaseRequests', 'recentActivities'));
+        // Get available statuses for filtering
+        $statuses = PurchaseRequest::where('status', '!=', 'draft')
+            ->select('status')
+            ->distinct()
+            ->pluck('status');
+
+        return view('staff.pr_review', compact('purchaseRequests', 'recentActivities', 'statuses'));
     }
 
     public function show(PurchaseRequest $purchaseRequest)
@@ -131,5 +169,139 @@ class PRReviewController extends Controller
             'failed' => 'bg-red-100 text-red-800',
             default => 'bg-gray-100 text-gray-800',
         };
+    }
+
+    public function exportXLSX(Request $request)
+    {
+        $query = PurchaseRequest::with('user')
+            ->where('status', '!=', 'draft')
+            ->orderBy('created_at', 'desc');
+
+        // Apply the same filters as index method
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('pr_number', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('status', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
+                        $userQuery->where('first_name', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('middle_name', 'like', '%' . $searchTerm . '%');
+                    });
+            });
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Get all filtered results (no pagination)
+        $purchaseRequests = $query->get();
+
+        // Create CSV content
+        $csvContent = [];
+        $csvContent[] = [
+            'Counter',
+            'PR Number',
+            'Entity Name',
+            'Fund Cluster',
+            'Office/Section',
+            'Requested By',
+            'Total Amount',
+            'Status',
+            'Date Created',
+            'Date'
+        ];
+
+        $counter = 1;
+        foreach ($purchaseRequests as $pr) {
+            $requestedBy = $pr->user ? $pr->user->first_name .
+                ($pr->user->middle_name ? ' ' . $pr->user->middle_name : '') .
+                ' ' . $pr->user->last_name : 'N/A';
+
+            $csvContent[] = [
+                $counter++,
+                $pr->pr_number,
+                $pr->entity_name,
+                $pr->fund_cluster,
+                $pr->office_section,
+                $requestedBy,
+                '₱' . number_format($pr->total, 2),
+                ucfirst(str_replace('_', ' ', $pr->status)),
+                $pr->created_at->format('M d, Y'),
+                $pr->date ? \Carbon\Carbon::parse($pr->date)->format('M d, Y') : ''
+            ];
+        }
+
+        // Create CSV file
+        $filename = 'pr_review_' . date('Y-m-d_H-i-s') . '.csv';
+        $handle = fopen('php://temp', 'r+');
+
+        foreach ($csvContent as $row) {
+            fputcsv($handle, $row);
+        }
+
+        rewind($handle);
+        $csvData = stream_get_contents($handle);
+        fclose($handle);
+
+        return response($csvData)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
+
+    public function exportPDF(Request $request)
+    {
+        $query = PurchaseRequest::with('user')
+            ->where('status', '!=', 'draft')
+            ->orderBy('created_at', 'desc');
+
+        // Apply the same filters as index method
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('pr_number', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('status', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
+                        $userQuery->where('first_name', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('middle_name', 'like', '%' . $searchTerm . '%');
+                    });
+            });
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Get all filtered results (no pagination)
+        $purchaseRequests = $query->get();
+
+        $pdf = Pdf::loadView('exports.pr_review_pdf', compact('purchaseRequests'));
+        $filename = 'pr_review_' . date('Y-m-d_H-i-s') . '.pdf';
+
+        return $pdf->download($filename);
     }
 }

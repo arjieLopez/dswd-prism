@@ -25,7 +25,7 @@
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                             <input type="text" placeholder="Search..."
-                                class="pl-10 w-full md:w-64 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                class="pl-10 w-full md:w-64 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-gray-400">
                         </div>
                         <button
                             class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Search</button>
@@ -50,10 +50,10 @@
                         </select>
 
                         <input type="date" id="date-from"
-                            class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-gray-400"
                             placeholder="From Date">
                         <input type="date" id="date-to"
-                            class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-gray-400"
                             placeholder="To Date">
                     </div>
                 </div>

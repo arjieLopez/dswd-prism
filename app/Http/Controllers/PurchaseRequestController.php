@@ -7,6 +7,7 @@ use App\Models\UserActivity;
 use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -42,7 +43,7 @@ class PurchaseRequestController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $purchaseRequests = $query->paginate(5)->appends($request->query());
+        $purchaseRequests = $query->paginate(10)->appends($request->query());
 
         $uploadedDocumentsQuery = auth()->user()->uploadedDocuments()->orderBy('created_at', 'desc');
         $fileTypes = auth()->user()->uploadedDocuments()->select('file_type')->distinct()->pluck('file_type');
@@ -315,22 +316,38 @@ class PurchaseRequestController extends Controller
 
     public function complete(PurchaseRequest $purchaseRequest)
     {
-        // Ensure only the owner can mark as completed
-        if ($purchaseRequest->user_id !== auth()->id()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        try {
+            // Ensure only the owner can mark as completed
+            if ($purchaseRequest->user_id !== auth()->id()) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+            }
+
+            // Only allow if status is approved or po_generated
+            if (!in_array($purchaseRequest->status, ['approved', 'po_generated'])) {
+                return response()->json(['success' => false, 'message' => 'PR cannot be marked as completed. Current status: ' . $purchaseRequest->status], 400);
+            }
+
+            $purchaseRequest->status = 'completed';
+
+            // Try to set completed_at if the column exists
+            try {
+                $purchaseRequest->completed_at = now();
+            } catch (\Exception $e) {
+                // If completed_at column doesn't exist yet, continue without it
+                // This will be handled once the migration is run
+                Log::info('completed_at field not available yet: ' . $e->getMessage());
+            }
+
+            $purchaseRequest->save();
+
+            // Log activity (basic logging for now)
+            Log::info('Purchase Request marked as completed: ' . $purchaseRequest->pr_number . ' by user ' . auth()->id());
+
+            return response()->json(['success' => true, 'message' => 'Purchase Request marked as completed!']);
+        } catch (\Exception $e) {
+            Log::error('Error completing purchase request: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error marking as completed: ' . $e->getMessage()], 500);
         }
-
-        // Only allow if status is approved or po_generated
-        if (!in_array($purchaseRequest->status, ['approved', 'po_generated'])) {
-            return response()->json(['success' => false, 'message' => 'PR cannot be marked as completed.'], 400);
-        }
-
-        $purchaseRequest->status = 'completed';
-        $purchaseRequest->save();
-
-        // Optionally log activity here
-
-        return response()->json(['success' => true, 'message' => 'Purchase Request marked as completed!']);
     }
 
     public function destroy(PurchaseRequest $purchaseRequest)

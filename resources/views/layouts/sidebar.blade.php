@@ -35,21 +35,21 @@
                     class="flex items-center px-4 py-3 rounded-lg transition-colors duration-200 {{ request()->routeIs('staff') ? 'bg-gradient-to-r from-blue-300 to-white font-bold text-gray-900' : 'text-gray-700 hover:bg-blue-50' }}">
                     <i class="iconify w-5 h-5 mr-3 {{ request()->routeIs('staff') ? 'text-gray-900' : 'text-gray-600' }}"
                         data-icon="mdi:view-dashboard"></i>
-                    GSO Dashboard
+                    Dashboard
                 </a>
 
                 <a href="{{ route('staff.pr_review') }}"
-                    class="flex items-center px-4 py-3 rounded-lg transition-colors duration-200 {{ request()->routeIs('staff.pr_review') ? 'bg-gradient-to-r from-blue-300 to-white font-bold text-gray-900' : 'text-gray-700 hover:bg-blue-50' }}">
-                    <i class="iconify w-5 h-5 mr-3 {{ request()->routeIs('staff.pr_review') ? 'text-gray-900' : 'text-gray-600' }}"
+                    class="flex items-center px-4 py-3 rounded-lg transition-colors duration-200 {{ request()->routeIs('staff.pr_review') || request()->routeIs('staff.generate_po.*') ? 'bg-gradient-to-r from-blue-300 to-white font-bold text-gray-900' : 'text-gray-700 hover:bg-blue-50' }}">
+                    <i class="iconify w-5 h-5 mr-3 {{ request()->routeIs('staff.pr_review') || request()->routeIs('staff.generate_po.*') ? 'text-gray-900' : 'text-gray-600' }}"
                         data-icon="mdi:file-document"></i>
-                    PR Review
+                    Request Review
                 </a>
 
                 <a href="{{ route('staff.po_generation') }}"
-                    class="flex items-center px-4 py-3 rounded-lg transition-colors duration-200 {{ request()->routeIs('staff.po_generation') ? 'bg-gradient-to-r from-blue-300 to-white font-bold text-gray-900' : 'text-gray-700 hover:bg-blue-50' }}">
-                    <i class="iconify w-5 h-5 mr-3 {{ request()->routeIs('staff.po_generation') ? 'text-gray-900' : 'text-gray-600' }}"
+                    class="flex items-center px-4 py-3 rounded-lg transition-colors duration-200 {{ request()->routeIs('staff.po_generation') || request()->routeIs('po-documents.*') ? 'bg-gradient-to-r from-blue-300 to-white font-bold text-gray-900' : 'text-gray-700 hover:bg-blue-50' }}">
+                    <i class="iconify w-5 h-5 mr-3 {{ request()->routeIs('staff.po_generation') || request()->routeIs('po-documents.*') ? 'text-gray-900' : 'text-gray-600' }}"
                         data-icon="mdi:cart"></i>
-                    PO Generation
+                    Purchase Orders
                 </a>
 
                 <a href="{{ route('staff.suppliers') }}"

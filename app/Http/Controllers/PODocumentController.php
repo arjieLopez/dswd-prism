@@ -67,6 +67,18 @@ class PODocumentController extends Controller
         }
     }
 
+    public function forPo($po_number)
+    {
+        $doc = PODocument::where('po_number', $po_number)->latest()->first();
+        if ($doc) {
+            return response()->json([
+                'exists' => true,
+                'download_url' => route('po-documents.download', $doc->id),
+            ]);
+        }
+        return response()->json(['exists' => false]);
+    }
+
     public function destroy(PODocument $poDocument)
     {
         try {

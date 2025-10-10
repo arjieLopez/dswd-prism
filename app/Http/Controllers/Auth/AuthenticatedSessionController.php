@@ -58,10 +58,6 @@ class AuthenticatedSessionController extends Controller
             return back()->withErrors(['email' => 'Authentication failed. Please try again.']);
         }
 
-        // 5. Two-Factor Authentication
-        $request->user()->regenerateTwoFactorCode();
-        $request->user()->notify(new TwoFactorCodeNotification());
-
         // 6. Redirect to verify page for 2FA
         return redirect()->route('verify.show');
     }

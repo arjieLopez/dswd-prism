@@ -175,8 +175,18 @@ document.getElementById("export-xlsx")?.addEventListener("click", function () {
         ?.getAttribute("content");
     if (csrfToken) formData.append("_token", csrfToken);
 
+    // Determine which export route to use based on current page
+    const currentPath = window.location.pathname;
+    let exportUrl = "/purchase-requests/export/xlsx";
+    let filenamePrefix = "purchase_requests";
+
+    if (currentPath.includes("pr-review") || currentPath.includes("staff")) {
+        exportUrl = "/staff/pr-review/export/xlsx";
+        filenamePrefix = "pr_review";
+    }
+
     // Create and submit form
-    fetch("/purchase-requests/export/xlsx", {
+    fetch(exportUrl, {
         method: "POST",
         body: formData,
     })
@@ -186,7 +196,8 @@ document.getElementById("export-xlsx")?.addEventListener("click", function () {
             const a = document.createElement("a");
             a.href = url;
             a.download =
-                "purchase_requests_" +
+                filenamePrefix +
+                "_" +
                 new Date().toISOString().slice(0, 19).replace(/:/g, "-") +
                 ".csv";
             document.body.appendChild(a);
@@ -224,8 +235,18 @@ document.getElementById("export-pdf")?.addEventListener("click", function () {
         ?.getAttribute("content");
     if (csrfToken) formData.append("_token", csrfToken);
 
+    // Determine which export route to use based on current page
+    const currentPath = window.location.pathname;
+    let exportUrl = "/purchase-requests/export/pdf";
+    let filenamePrefix = "purchase_requests";
+
+    if (currentPath.includes("pr-review") || currentPath.includes("staff")) {
+        exportUrl = "/staff/pr-review/export/pdf";
+        filenamePrefix = "pr_review";
+    }
+
     // Create and submit form
-    fetch("/purchase-requests/export/pdf", {
+    fetch(exportUrl, {
         method: "POST",
         body: formData,
     })
@@ -235,7 +256,8 @@ document.getElementById("export-pdf")?.addEventListener("click", function () {
             const a = document.createElement("a");
             a.href = url;
             a.download =
-                "purchase_requests_" +
+                filenamePrefix +
+                "_" +
                 new Date().toISOString().slice(0, 19).replace(/:/g, "-") +
                 ".pdf";
             document.body.appendChild(a);

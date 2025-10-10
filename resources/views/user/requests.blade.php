@@ -55,12 +55,6 @@
                             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
                             Search
                         </button>
-                        @if (request('search') || request('date_from') || request('date_to') || request('status'))
-                            <a href="{{ route('user.requests') }}"
-                                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">
-                                Clear All
-                            </a>
-                        @endif
                     </form>
 
                     <div class="flex items-center gap-2">
@@ -344,7 +338,7 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach ($purchaseRequests as $pr)
                                     <tr>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                             {{ ($purchaseRequests->currentPage() - 1) * $purchaseRequests->perPage() + $loop->iteration }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
@@ -393,8 +387,8 @@
                         </table>
                     </div>
 
-                    <!-- Custom Pagination - Only show when there are more than 5 items -->
-                    @if ($purchaseRequests->total() > 5)
+                    <!-- Custom Pagination - Only show when there are more than 10 items -->
+                    @if ($purchaseRequests->total() > 10)
                         <div class="flex justify-center mt-6">
                             <div class="flex items-center space-x-1">
                                 @if ($purchaseRequests->onFirstPage())
@@ -855,6 +849,7 @@
                         const itemsBody = document.getElementById('view-items-table-body');
                         itemsBody.innerHTML = '';
                         if (Array.isArray(data.items) && data.items.length > 0) {
+                            let grandTotal = 0;
                             data.items.forEach(item => {
                                 const row = document.createElement('tr');
                                 row.innerHTML = `
@@ -865,7 +860,18 @@
                                     <td class="px-2 py-1">${item.item_description}</td>
                                 `;
                                 itemsBody.appendChild(row);
+                                grandTotal += parseFloat(item.total_cost);
                             });
+
+                            // Add grand total row
+                            const totalRow = document.createElement('tr');
+                            totalRow.className = 'bg-gray-50 border-t-2 border-gray-300';
+                            totalRow.innerHTML = `
+                                <td class="px-2 py-1 font-semibold" colspan="3">Grand Total:</td>
+                                <td class="px-2 py-1 font-semibold text-green-600">₱${grandTotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td class="px-2 py-1"></td>
+                            `;
+                            itemsBody.appendChild(totalRow);
                         } else {
                             const row = document.createElement('tr');
                             row.innerHTML =
