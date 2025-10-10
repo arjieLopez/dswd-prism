@@ -105,32 +105,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-// import * as XLSX from "xlsx";
-// window.XLSX = XLSX;
-
-// document.getElementById("export-btn").addEventListener("click", function () {
-//     var table = document.getElementById("purchase-requests-table");
-//     // Clone the table
-//     var tableClone = table.cloneNode(true);
-
-//     // Remove the last header cell (Action)
-//     var headerRow = tableClone.querySelector("thead tr");
-//     if (headerRow) {
-//         headerRow.removeChild(headerRow.lastElementChild);
-//     }
-
-//     // Remove the last cell from each body row
-//     tableClone.querySelectorAll("tbody tr").forEach(function (row) {
-//         row.removeChild(row.lastElementChild);
-//     });
-
-//     // Export the modified table
-//     var wb = XLSX.utils.table_to_book(tableClone, {
-//         sheet: "Purchase Requests",
-//     });
-//     XLSX.writeFile(wb, "purchase_requests.xlsx");
-// });
-
 const exportBtn = document.getElementById("export-btn");
 const exportDropdown = document.getElementById("export-dropdown");
 const exportDropdownContainer = document.getElementById(
@@ -180,9 +154,12 @@ document.getElementById("export-xlsx")?.addEventListener("click", function () {
     let exportUrl = "/purchase-requests/export/xlsx";
     let filenamePrefix = "purchase_requests";
 
-    if (currentPath.includes("pr-review") || currentPath.includes("staff")) {
+    if (currentPath.includes("pr-review")) {
         exportUrl = "/staff/pr-review/export/xlsx";
         filenamePrefix = "pr_review";
+    } else if (currentPath.includes("po-generation")) {
+        exportUrl = "/staff/po-generation/export/xlsx";
+        filenamePrefix = "po_generation";
     }
 
     // Create and submit form
@@ -240,9 +217,12 @@ document.getElementById("export-pdf")?.addEventListener("click", function () {
     let exportUrl = "/purchase-requests/export/pdf";
     let filenamePrefix = "purchase_requests";
 
-    if (currentPath.includes("pr-review") || currentPath.includes("staff")) {
+    if (currentPath.includes("pr-review")) {
         exportUrl = "/staff/pr-review/export/pdf";
         filenamePrefix = "pr_review";
+    } else if (currentPath.includes("po-generation")) {
+        exportUrl = "/staff/po-generation/export/pdf";
+        filenamePrefix = "po_generation";
     }
 
     // Create and submit form

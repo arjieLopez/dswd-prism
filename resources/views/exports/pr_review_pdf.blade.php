@@ -1,152 +1,243 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <title>PR Review Report</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PR Review Export</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            margin: 20px;
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            margin: 0;
+            padding: 20px;
+            color: #333;
         }
 
         .header {
             text-align: center;
             margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
         }
 
         .header h1 {
+            font-size: 16px;
+            font-weight: bold;
             margin: 0;
-            color: #333;
+            color: #1a365d;
         }
 
-        .header p {
+        .header h2 {
+            font-size: 12px;
+            font-weight: normal;
             margin: 5px 0;
-            color: #666;
+            color: #4a5568;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-bottom: 20px;
+            font-size: 8px;
         }
 
         th,
         td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            border: 1px solid #cbd5e0;
+            padding: 6px 4px;
             text-align: left;
-            font-size: 10px;
+            vertical-align: top;
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: #edf2f7;
             font-weight: bold;
+            font-size: 9px;
+            color: #2d3748;
         }
 
-        .status {
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .status-badge {
+            display: inline-block;
             padding: 2px 6px;
             border-radius: 3px;
-            font-size: 9px;
+            font-size: 7px;
             font-weight: bold;
-        }
-
-        .status-draft {
-            background-color: #fef3cd;
-            color: #856404;
-        }
-
-        .status-pending {
-            background-color: #fff3cd;
-            color: #856404;
+            text-transform: uppercase;
         }
 
         .status-approved {
-            background-color: #d1e7dd;
-            color: #0f5132;
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-pending {
+            background-color: #fef5e7;
+            color: #744210;
         }
 
         .status-rejected {
-            background-color: #f8d7da;
-            color: #721c24;
+            background-color: #fed7d7;
+            color: #742a2a;
         }
 
         .status-po-generated {
-            background-color: #d1ecf1;
-            color: #0c5460;
+            background-color: #bee3f8;
+            color: #2a4365;
         }
 
         .status-completed {
-            background-color: #e2e3e5;
-            color: #41464b;
+            background-color: #d6f5d6;
+            color: #22543d;
         }
 
         .footer {
             margin-top: 30px;
             text-align: center;
-            font-size: 10px;
-            color: #666;
+            font-size: 8px;
+            color: #718096;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+        }
+
+        .summary {
+            background-color: #f0fff4;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #9ae6b4;
+            border-radius: 5px;
+        }
+
+        .summary h3 {
+            font-size: 11px;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+            color: #22543d;
+        }
+
+        .summary-grid {
+            display: table;
+            width: 100%;
+        }
+
+        .summary-row {
+            display: table-row;
+        }
+
+        .summary-cell {
+            display: table-cell;
+            padding: 2px 10px;
+            font-size: 9px;
+        }
+
+        .summary-label {
+            font-weight: bold;
+            color: #2f855a;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #718096;
+            font-style: italic;
+            padding: 30px;
+            font-size: 11px;
+        }
+
+        .wrapped-text {
+            word-wrap: break-word;
+            word-break: break-word;
+            max-width: 120px;
         }
     </style>
 </head>
 
 <body>
     <div class="header">
-        <h1>PR Review Report</h1>
-        <p>Generated on {{ date('F d, Y H:i:s') }}</p>
-        <p>Total Records: {{ count($purchaseRequests) }}</p>
+        <h1>DSWD-PRISM - PR Review Export</h1>
+        <h2>Purchase Requests Review Report</h2>
+        <div style="font-size: 9px; color: #666;">
+            Generated on: {{ now()->format('F j, Y g:i A') }}
+        </div>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>PR Number</th>
-                <th>Entity Name</th>
-                <th>Fund Cluster</th>
-                <th>Office/Section</th>
-                <th>Requested By</th>
-                <th>Total Amount</th>
-                <th>Status</th>
-                <th>Date Created</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($purchaseRequests as $index => $pr)
+    <div class="summary">
+        <h3>Export Summary</h3>
+        <div class="summary-grid">
+            <div class="summary-row">
+                <div class="summary-cell summary-label">Total Records:</div>
+                <div class="summary-cell">{{ $purchaseRequests->count() }}</div>
+                <div class="summary-cell summary-label">Pending PRs:</div>
+                <div class="summary-cell">{{ $purchaseRequests->where('status', 'pending')->count() }}</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-cell summary-label">Approved PRs:</div>
+                <div class="summary-cell">{{ $purchaseRequests->where('status', 'approved')->count() }}</div>
+                <div class="summary-cell summary-label">Rejected PRs:</div>
+                <div class="summary-cell">{{ $purchaseRequests->where('status', 'rejected')->count() }}</div>
+            </div>
+        </div>
+    </div>
+
+    @if ($purchaseRequests->count() > 0)
+        <table>
+            <thead>
                 <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>{{ $pr->pr_number }}</td>
-                    <td>{{ $pr->entity_name }}</td>
-                    <td>{{ $pr->fund_cluster }}</td>
-                    <td>{{ $pr->office_section }}</td>
-                    <td>
-                        @if ($pr->user)
+                    <th style="width: 12%;">PR Number</th>
+                    <th style="width: 14%;">Requestor</th>
+                    <th style="width: 14%;">Entity Name</th>
+                    <th style="width: 12%;">Office/Section</th>
+                    <th style="width: 18%;">Purpose</th>
+                    <th style="width: 12%;">Total Amount</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 12%;">Date Created</th>
+                    <th style="width: 6%;">Items</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($purchaseRequests as $pr)
+                    <tr>
+                        <td class="text-center">{{ $pr->pr_number }}</td>
+                        <td class="wrapped-text">
                             {{ $pr->user->first_name }}
                             @if ($pr->user->middle_name)
                                 {{ $pr->user->middle_name }}
                             @endif
                             {{ $pr->user->last_name }}
-                        @else
-                            N/A
-                        @endif
-                    </td>
-                    <td>₱{{ number_format($pr->total, 2) }}</td>
-                    <td>
-                        <span class="status status-{{ str_replace('_', '-', $pr->status) }}">
-                            {{ ucfirst(str_replace('_', ' ', $pr->status)) }}
-                        </span>
-                    </td>
-                    <td>{{ $pr->created_at->format('M d, Y') }}</td>
-                    <td>{{ $pr->date ? \Carbon\Carbon::parse($pr->date)->format('M d, Y') : '' }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+                        </td>
+                        <td class="wrapped-text">{{ $pr->entity_name }}</td>
+                        <td class="wrapped-text">{{ $pr->office_section }}</td>
+                        <td class="wrapped-text">{{ $pr->purpose }}</td>
+                        <td class="text-right">₱{{ number_format($pr->total, 2) }}</td>
+                        <td class="text-center">
+                            <span class="status-badge status-{{ str_replace('_', '-', $pr->status) }}">
+                                {{ ucfirst(str_replace('_', ' ', $pr->status)) }}
+                            </span>
+                        </td>
+                        <td class="text-center">{{ $pr->created_at->format('M j, Y') }}</td>
+                        <td class="text-center">{{ $pr->items->count() ?? 0 }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @else
+        <div class="no-data">
+            No purchase requests found matching the specified criteria.
+        </div>
+    @endif
 
     <div class="footer">
-        <p>This report was generated by DSWD-PRISM system.</p>
+        <div>Department of Social Welfare and Development</div>
+        <div>PRISM - Procurement Information System</div>
+        <div>{{ url('/') }}</div>
     </div>
 </body>
 

@@ -168,7 +168,7 @@
                                 <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                     class="size-5 mr-3">
                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                        d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
                                 </svg>
                                 Export
                             </button>
@@ -178,16 +178,16 @@
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                                     id="export-xlsx">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em"
-                                        viewBox="0 0 24 24" class="mr-2">
-                                        <path fill="currentColor"
-                                            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm4 18H6V4h7v5h5z" />
+                                        viewBox="0 0 16 16" class="mr-3">
+                                        <path fill="currentColor" fill-rule="evenodd"
+                                            d="M14 4.5V11h-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5zM7.86 14.841a1.13 1.13 0 0 0 .401.823q.195.162.479.252q.284.091.665.091q.507 0 .858-.158q.355-.158.54-.44a1.17 1.17 0 0 0 .187-.656q0-.336-.135-.56a1 1 0 0 0-.375-.357a2 2 0 0 0-.565-.21l-.621-.144a1 1 0 0 1-.405-.176a.37.37 0 0 1-.143-.299q0-.234.184-.384q.188-.152.513-.152q.214 0 .37.068a.6.6 0 0 1 .245.181a.56.56 0 0 1 .12.258h.75a1.1 1.1 0 0 0-.199-.566a1.2 1.2 0 0 0-.5-.41a1.8 1.8 0 0 0-.78-.152q-.44 0-.777.15q-.336.149-.527.421q-.19.273-.19.639q0 .302.123.524t.351.367q.229.143.54.213l.618.144q.31.073.462.193a.39.39 0 0 1 .153.326a.5.5 0 0 1-.085.29a.56.56 0 0 1-.255.193q-.168.07-.413.07q-.176 0-.32-.04a.8.8 0 0 1-.249-.115a.58.58 0 0 1-.255-.384zm-3.726-2.909h.893l-1.274 2.007l1.254 1.992h-.908l-.85-1.415h-.035l-.853 1.415H1.5l1.24-2.016l-1.228-1.983h.931l.832 1.438h.036zm1.923 3.325h1.697v.674H5.266v-3.999h.791zm7.636-3.325h.893l-1.274 2.007l1.254 1.992h-.908l-.85-1.415h-.035l-.853 1.415h-.861l1.24-2.016l-1.228-1.983h.931l.832 1.438h.036z" />
                                     </svg>
                                     Export as XLSX</button>
                                 <button type="button"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                                     id="export-pdf">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em"
-                                        viewBox="0 0 24 24" class="mr-2">
+                                        viewBox="0 0 24 24" class="mr-3">
                                         <path fill="currentColor"
                                             d="M18.53 9L13 3.47a.75.75 0 0 0-.53-.22H8A2.75 2.75 0 0 0 5.25 6v12A2.75 2.75 0 0 0 8 20.75h8A2.75 2.75 0 0 0 18.75 18V9.5a.75.75 0 0 0-.22-.5m-5.28-3.19l2.94 2.94h-2.94ZM16 19.25H8A1.25 1.25 0 0 1 6.75 18V6A1.25 1.25 0 0 1 8 4.75h3.75V9.5a.76.76 0 0 0 .75.75h4.75V18A1.25 1.25 0 0 1 16 19.25" />
                                         <path fill="currentColor"
@@ -502,99 +502,6 @@
     </script>
 
     <script>
-        // Export dropdown functionality
-        document.getElementById('export-btn').addEventListener('click', function(e) {
-            e.stopPropagation();
-            document.getElementById('export-dropdown').classList.toggle('hidden');
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('export-dropdown');
-            const btn = document.getElementById('export-btn');
-            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-
-        // Export XLSX functionality
-        document.getElementById('export-xlsx').addEventListener('click', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const formData = new FormData();
-
-            // Preserve all active filters
-            if (urlParams.get('search')) formData.append('search', urlParams.get('search'));
-            if (urlParams.get('status')) formData.append('status', urlParams.get('status'));
-            if (urlParams.get('date_from')) formData.append('date_from', urlParams.get('date_from'));
-            if (urlParams.get('date_to')) formData.append('date_to', urlParams.get('date_to'));
-
-            // Add CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            if (csrfToken) formData.append('_token', csrfToken);
-
-            fetch('/staff/po-generation/export/xlsx', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.blob())
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'po_generation_export_' + new Date().toISOString().slice(0, 19).replace(/:/g,
-                        '-') + '.xlsx';
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                })
-                .catch(error => {
-                    console.error('Export error:', error);
-                    alert('Error exporting data');
-                });
-
-            document.getElementById('export-dropdown').classList.add('hidden');
-        });
-
-        // Export PDF functionality
-        document.getElementById('export-pdf').addEventListener('click', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const formData = new FormData();
-
-            // Preserve all active filters
-            if (urlParams.get('search')) formData.append('search', urlParams.get('search'));
-            if (urlParams.get('status')) formData.append('status', urlParams.get('status'));
-            if (urlParams.get('date_from')) formData.append('date_from', urlParams.get('date_from'));
-            if (urlParams.get('date_to')) formData.append('date_to', urlParams.get('date_to'));
-
-            // Add CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            if (csrfToken) formData.append('_token', csrfToken);
-
-            fetch('/staff/po-generation/export/pdf', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.blob())
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'po_generation_export_' + new Date().toISOString().slice(0, 19).replace(/:/g,
-                        '-') + '.pdf';
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                })
-                .catch(error => {
-                    console.error('Export error:', error);
-                    alert('Error exporting data');
-                });
-
-            document.getElementById('export-dropdown').classList.add('hidden');
-        });
-
         function openViewPOModal(poId) {
             console.log('Opening view modal for PO ID:', poId);
             fetch(`/staff/po-generation/${poId}/data`, {

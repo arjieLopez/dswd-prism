@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\PODocument;
 use App\Models\Supplier;
 use App\Services\ActivityService;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class POGenerationController extends Controller
 {
@@ -258,5 +259,136 @@ class POGenerationController extends Controller
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Error generating PO: ' . $e->getMessage()]);
         }
+    }
+
+    public function exportXLSX(Request $request)
+    {
+        $query = PurchaseRequest::with(['supplier', 'user'])
+            ->whereIn('status', ['po_generated', 'completed'])
+            ->orderBy('po_generated_at', 'desc');
+
+        // Apply the same filters as index method
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('pr_number', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('po_number', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('supplier', function ($supplierQuery) use ($searchTerm) {
+                        $supplierQuery->where('supplier_name', 'like', '%' . $searchTerm . '%');
+                    })
+                    ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
+                        $userQuery->where('first_name', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('middle_name', 'like', '%' . $searchTerm . '%');
+                    });
+            });
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('po_generated_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('po_generated_at', '<=', $request->date_to);
+        }
+
+        // Get all filtered results (no pagination)
+        $generatedPOs = $query->get();
+
+        // Create CSV content
+        $csvContent = [];
+        $csvContent[] = [
+            'Counter',
+            'PO Number',
+            'PR Number',
+            'Supplier',
+            'Requested By',
+            'Date Generated',
+            'Amount',
+            'Status'
+        ];
+
+        $counter = 1;
+        foreach ($generatedPOs as $po) {
+            $requestedBy = $po->user ? $po->user->first_name .
+                ($po->user->middle_name ? ' ' . $po->user->middle_name : '') .
+                ' ' . $po->user->last_name : 'N/A';
+
+            $csvContent[] = [
+                $counter++,
+                $po->po_number,
+                $po->pr_number,
+                $po->supplier ? $po->supplier->supplier_name : 'N/A',
+                $requestedBy,
+                $po->po_generated_at ? $po->po_generated_at->format('M d, Y') : 'N/A',
+                '₱' . number_format($po->total, 2),
+                ucfirst(str_replace('_', ' ', $po->status))
+            ];
+        }
+
+        // Create CSV file
+        $filename = 'po_generation_' . date('Y-m-d_H-i-s') . '.csv';
+        $handle = fopen('php://temp', 'r+');
+
+        foreach ($csvContent as $row) {
+            fputcsv($handle, $row);
+        }
+
+        rewind($handle);
+        $csvData = stream_get_contents($handle);
+        fclose($handle);
+
+        return response($csvData)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
+
+    public function exportPDF(Request $request)
+    {
+        $query = PurchaseRequest::with(['supplier', 'user', 'items'])
+            ->whereIn('status', ['po_generated', 'completed'])
+            ->orderBy('po_generated_at', 'desc');
+
+        // Apply the same filters as index method
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('pr_number', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('po_number', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('supplier', function ($supplierQuery) use ($searchTerm) {
+                        $supplierQuery->where('supplier_name', 'like', '%' . $searchTerm . '%');
+                    })
+                    ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
+                        $userQuery->where('first_name', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('middle_name', 'like', '%' . $searchTerm . '%');
+                    });
+            });
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('po_generated_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('po_generated_at', '<=', $request->date_to);
+        }
+
+        // Get all filtered results (no pagination)
+        $purchaseRequests = $query->get();
+
+        // Generate PDF using DomPDF
+        $pdf = Pdf::loadView('exports.po_generation_pdf', compact('purchaseRequests'));
+
+        $filename = 'po_generation_' . date('Y-m-d_H-i-s') . '.pdf';
+        return $pdf->download($filename);
     }
 }
