@@ -49,6 +49,18 @@
             padding: 4px 8px;
         }
 
+        .text-left {
+            text-align: left;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
         .signature-label {
             font-size: 0.9rem;
         }
@@ -89,9 +101,9 @@
                 <th style="width: 10%;">Stock/ Property No.</th>
                 <th style="width: 5%;">Unit</th>
                 <th>Description</th>
-                <th style="width: 5%;">Quantity</th>
-                <th style="width: 15%;">Unit Cost</th>
-                <th style="width: 15%;">Total Cost</th>
+                <th style="width: 5%; text-align: center;">Quantity</th>
+                <th style="width: 15%; text-align: right;">Unit Cost</th>
+                <th style="width: 15%; text-align: right;">Total Cost</th>
             </tr>
             <!-- Item Rows -->
             @if ($purchaseRequest->items && $purchaseRequest->items->count() > 0)
@@ -112,7 +124,7 @@
                 @endforeach
                 <!-- Total Row -->
                 <tr>
-                    <td colspan="5" class="text-right"><strong>TOTAL AMOUNT:</strong></td>
+                    <td colspan="5" class="text-left"><strong>TOTAL AMOUNT:</strong></td>
                     <td class="text-right"><strong>₱{{ number_format($purchaseRequest->total, 2) }}</strong></td>
                 </tr>
             @else

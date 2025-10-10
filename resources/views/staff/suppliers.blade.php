@@ -31,6 +31,10 @@
                                 <tr>
                                     <th
                                         class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        #
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Supplier Name
                                     </th>
                                     <th
@@ -64,8 +68,12 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach ($suppliers as $supplier)
+                                @foreach ($suppliers as $index => $supplier)
                                     <tr>
+                                        <td
+                                            class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center font-medium">
+                                            {{ ($suppliers->currentPage() - 1) * $suppliers->perPage() + $index + 1 }}
+                                        </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                             {{ $supplier->supplier_name }}
                                         </td>
@@ -110,17 +118,85 @@
                         </table>
                     </div>
 
-                    <!-- Pagination -->
-                    <div class="flex items-center justify-between mt-4">
-                        <div class="text-sm text-gray-700">
-                            Showing {{ $suppliers->firstItem() ?? 0 }} to
-                            {{ $suppliers->lastItem() ?? 0 }}
-                            of {{ $suppliers->total() }} results
+                    <!-- Custom Pagination - Only show when there are more than 10 items -->
+                    @if ($suppliers->total() > 10)
+                        <div class="flex justify-center mt-6">
+                            <div class="flex items-center space-x-1">
+                                @if ($suppliers->onFirstPage())
+                                    <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 19l-7-7 7-7"></path>
+                                        </svg>
+                                    </span>
+                                @else
+                                    <a href="{{ $suppliers->appends(request()->query())->previousPageUrl() }}"
+                                        class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 19l-7-7 7-7"></path>
+                                        </svg>
+                                    </a>
+                                @endif
+
+                                @php
+                                    $start = max(1, $suppliers->currentPage() - 2);
+                                    $end = min($suppliers->lastPage(), $suppliers->currentPage() + 2);
+
+                                    if ($end - $start < 4) {
+                                        if ($start == 1) {
+                                            $end = min($suppliers->lastPage(), $start + 4);
+                                        } else {
+                                            $start = max(1, $end - 4);
+                                        }
+                                    }
+                                @endphp
+
+                                @if ($start > 1)
+                                    <a href="{{ $suppliers->appends(request()->query())->url(1) }}"
+                                        class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">1</a>
+                                    @if ($start > 2)
+                                        <span class="px-2 py-2 text-gray-400">...</span>
+                                    @endif
+                                @endif
+
+                                @for ($page = $start; $page <= $end; $page++)
+                                    @if ($page == $suppliers->currentPage())
+                                        <span
+                                            class="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md">{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $suppliers->appends(request()->query())->url($page) }}"
+                                            class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $page }}</a>
+                                    @endif
+                                @endfor
+
+                                @if ($end < $suppliers->lastPage())
+                                    @if ($end < $suppliers->lastPage() - 1)
+                                        <span class="px-2 py-2 text-gray-400">...</span>
+                                    @endif
+                                    <a href="{{ $suppliers->appends(request()->query())->url($suppliers->lastPage()) }}"
+                                        class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $suppliers->lastPage() }}</a>
+                                @endif
+
+                                @if ($suppliers->hasMorePages())
+                                    <a href="{{ $suppliers->appends(request()->query())->nextPageUrl() }}"
+                                        class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </a>
+                                @else
+                                    <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </span>
+                                @endif
+                            </div>
                         </div>
-                        <div class="flex items-center space-x-2">
-                            {{ $suppliers->links() }}
-                        </div>
-                    </div>
+                    @endif
                 @else
                     <div class="text-center py-8">
                         <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor"

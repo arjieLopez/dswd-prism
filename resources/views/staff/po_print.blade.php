@@ -89,13 +89,14 @@
         </tr>
         <tr>
             <td colspan="2" class="bold">Place of Delivery :</td>
-            <td>{{ $purchaseRequest->place_of_delivery }}</td>
+            <td>{{ $purchaseRequest->delivery_address ?? ($purchaseRequest->place_of_delivery ?? '') }}</td>
             <td class="bold">Delivery Term :</td>
             <td colspan="2">{{ $purchaseRequest->delivery_term }}</td>
         </tr>
         <tr>
             <td colspan="2" class="bold">Date of Delivery :</td>
-            <td>{{ $purchaseRequest->date_of_delivery }}</td>
+            <td>{{ $purchaseRequest->date_of_delivery ? \Carbon\Carbon::parse($purchaseRequest->date_of_delivery)->format('F j, Y') : '' }}
+            </td>
             <td class="bold">Payment Term :</td>
             <td colspan="2">{{ $purchaseRequest->payment_term }}</td>
         </tr>
@@ -103,32 +104,114 @@
             <th width="10%">Stock/Property No.</th>
             <th width="8%">Unit</th>
             <th width="40%">Description</th>
-            <th width="8%">Quantity</th>
-            <th width="12%">Unit Cost</th>
-            <th width="12%">Amount</th>
+            <th width="8%" class="center">Quantity</th>
+            <th width="12%" class="right">Unit Cost</th>
+            <th width="12%" class="right">Amount</th>
         </tr>
-        @php
-            $descriptions = preg_split('/\r\n|\r|\n/', $purchaseRequest->item_description);
-        @endphp
-        @foreach ($descriptions as $i => $desc)
+        @if ($purchaseRequest->items && $purchaseRequest->items->count() > 0)
+            @foreach ($purchaseRequest->items as $item)
+                @php
+                    $descriptions = preg_split('/\r\n|\r|\n/', $item->item_description);
+                @endphp
+                @foreach ($descriptions as $i => $desc)
+                    <tr>
+                        <td class="center"></td>
+                        <td class="center">{{ $i == 0 ? $item->unit : '' }}</td>
+                        <td>{{ $desc }}</td>
+                        <td class="center">{{ $i == 0 ? $item->quantity : '' }}</td>
+                        <td class="right">{{ $i == 0 ? '₱' . number_format($item->unit_cost, 2) : '' }}</td>
+                        <td class="right">{{ $i == 0 ? '₱' . number_format($item->total_cost, 2) : '' }}</td>
+                    </tr>
+                @endforeach
+            @endforeach
+        @else
             <tr>
-                <td class="text-center"></td>
-                <td class="text-center">{{ $i == 0 ? $purchaseRequest->unit : '' }}</td>
-                <td>{{ $desc }}</td>
-                <td class="text-center">{{ $i == 0 ? $purchaseRequest->quantity : '' }}</td>
-                <td class="text-right">{{ $i == 0 ? '₱' . number_format($purchaseRequest->unit_cost, 2) : '' }}
-                </td>
-                <td class="text-right">{{ $i == 0 ? '₱' . number_format($purchaseRequest->total_cost, 2) : '' }}
-                </td>
+                <td colspan="6" class="center">No items found</td>
             </tr>
-        @endforeach
+        @endif
         <tr>
             <td colspan="6" class="center">***** NOTHING FOLLOWS *****</td>
         </tr>
         <tr>
             <td colspan="2" class="center bold">(Total Amount in Words)</td>
-            <td colspan="3"></td>
-            <td class="right bold">₱{{ number_format($purchaseRequest->total_cost, 2) }}</td>
+            <td colspan="3">
+                @php
+                    function numberToWords($number)
+                    {
+                        $ones = [
+                            0 => '',
+                            1 => 'ONE',
+                            2 => 'TWO',
+                            3 => 'THREE',
+                            4 => 'FOUR',
+                            5 => 'FIVE',
+                            6 => 'SIX',
+                            7 => 'SEVEN',
+                            8 => 'EIGHT',
+                            9 => 'NINE',
+                            10 => 'TEN',
+                            11 => 'ELEVEN',
+                            12 => 'TWELVE',
+                            13 => 'THIRTEEN',
+                            14 => 'FOURTEEN',
+                            15 => 'FIFTEEN',
+                            16 => 'SIXTEEN',
+                            17 => 'SEVENTEEN',
+                            18 => 'EIGHTEEN',
+                            19 => 'NINETEEN',
+                        ];
+
+                        $tens = [
+                            0 => '',
+                            2 => 'TWENTY',
+                            3 => 'THIRTY',
+                            4 => 'FORTY',
+                            5 => 'FIFTY',
+                            6 => 'SIXTY',
+                            7 => 'SEVENTY',
+                            8 => 'EIGHTY',
+                            9 => 'NINETY',
+                        ];
+
+                        if ($number < 20) {
+                            return $ones[$number];
+                        } elseif ($number < 100) {
+                            return $tens[intval($number / 10)] . ($number % 10 != 0 ? ' ' . $ones[$number % 10] : '');
+                        } elseif ($number < 1000) {
+                            return $ones[intval($number / 100)] .
+                                ' HUNDRED' .
+                                ($number % 100 != 0 ? ' ' . numberToWords($number % 100) : '');
+                        } elseif ($number < 1000000) {
+                            return numberToWords(intval($number / 1000)) .
+                                ' THOUSAND' .
+                                ($number % 1000 != 0 ? ' ' . numberToWords($number % 1000) : '');
+                        } elseif ($number < 1000000000) {
+                            return numberToWords(intval($number / 1000000)) .
+                                ' MILLION' .
+                                ($number % 1000000 != 0 ? ' ' . numberToWords($number % 1000000) : '');
+                        }
+                        return 'NUMBER TOO LARGE';
+                    }
+
+                    $total = $purchaseRequest->total ?? 0;
+                    $pesos = floor($total);
+                    $centavos = round(($total - $pesos) * 100);
+
+                    $totalInWords = '';
+                    if ($pesos > 0) {
+                        $totalInWords = numberToWords($pesos) . ' PESOS';
+                    }
+                    if ($centavos > 0) {
+                        $totalInWords .= ($pesos > 0 ? ' AND ' : '') . numberToWords($centavos) . ' CENTAVOS';
+                    }
+                    if ($pesos == 0 && $centavos == 0) {
+                        $totalInWords = 'ZERO PESOS';
+                    }
+                    $totalInWords .= ' ONLY';
+                @endphp
+                {{ $totalInWords }}
+            </td>
+            <td class="right bold">₱{{ number_format($purchaseRequest->total, 2) }}</td>
         </tr>
         <tr>
             <td colspan="6" style="border-top:1px solid #222;">
