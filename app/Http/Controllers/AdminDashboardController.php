@@ -12,82 +12,85 @@ use Carbon\Carbon;
 
 class AdminDashboardController extends Controller
 {
-    public function show()
+    public function show(Request $request)
     {
-        // Get current year data for chart
-        $currentYear = Carbon::now()->year;
-        $labels = [];
-        $prData = [];
-        $poData = [];
+        // Get filter type and dates
+        $filterType = $request->get('filter_type', 'this_month');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
 
-        // Generate data for last 6 months
-        for ($i = 5; $i >= 0; $i--) {
-            $date = Carbon::now()->subMonths($i);
-            $labels[] = $date->format('M');
-
-            // Count PRs for this month
-            $prCount = PurchaseRequest::whereYear('created_at', $date->year)
-                ->whereMonth('created_at', $date->month)
-                ->count();
-            $prData[] = $prCount;
-
-            // Count POs for this month
-            // $poCount = PurchaseRequest::whereYear('created_at', $date->year)
-            //     ->whereMonth('created_at', $date->month)
-            //     ->where('status', 'po_generated')
-            //     ->count();
-            // $poData[] = $poCount;
-
-            // Count POs Generated for this month
-            $poCount = PurchaseRequest::whereYear('po_generated_at', $date->year)
-                ->whereMonth('po_generated_at', $date->month)
-                ->count();
-            $poData[] = $poCount;
+        // Set date range based on filter type
+        if ($filterType === 'this_month') {
+            $currentMonth = Carbon::now();
+            $startDate = $currentMonth->copy()->startOfMonth();
+            $endDate = $currentMonth->copy()->endOfMonth();
+        } elseif ($filterType === 'previous_month') {
+            $currentMonth = Carbon::now()->subMonth();
+            $startDate = $currentMonth->copy()->startOfMonth();
+            $endDate = $currentMonth->copy()->endOfMonth();
+        } elseif ($filterType === 'custom' && $dateFrom && $dateTo) {
+            $startDate = Carbon::createFromFormat('Y-m-d', $dateFrom)->startOfDay();
+            $endDate = Carbon::createFromFormat('Y-m-d', $dateTo)->endOfDay();
+            $currentMonth = $startDate; // For reference
+        } else {
+            // Default to this month
+            $currentMonth = Carbon::now();
+            $startDate = $currentMonth->copy()->startOfMonth();
+            $endDate = $currentMonth->copy()->endOfMonth();
         }
 
-        // Get total counts
-        $totalPRs = PurchaseRequest::count();
-        $totalPOs = PurchaseRequest::where('status', 'po_generated')->count();
+        // Get current year data for chart - now filtered based on date range
+        $chartData = $this->getChartData($filterType, $startDate, $endDate);
+        $labels = $chartData['labels'];
+        $prData = $chartData['prData'];
+        $poData = $chartData['poData'];
 
-        // Get previous month counts for percentage calculation
-        $lastMonth = Carbon::now()->subMonth();
-        $lastMonthPRs = PurchaseRequest::whereYear('created_at', $lastMonth->year)
-            ->whereMonth('created_at', $lastMonth->month)
+        // Get filtered counts and totals for cards - only approved, po_generated, and completed
+        $prCount = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
-        $lastMonthPOs = PurchaseRequest::whereYear('po_generated_at', $lastMonth->year)
-            ->whereMonth('po_generated_at', $lastMonth->month)
-            ->count();
+        $prTotal = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->sum('total');
 
-        $currentMonthPRs = PurchaseRequest::whereYear('created_at', Carbon::now()->year)
-            ->whereMonth('created_at', Carbon::now()->month)
+        $poCount = PurchaseRequest::whereBetween('po_generated_at', [$startDate, $endDate])
+            ->whereNotNull('po_generated_at')
             ->count();
-        $currentMonthPOs = PurchaseRequest::whereYear('po_generated_at', Carbon::now()->year)
-            ->whereMonth('po_generated_at', Carbon::now()->month)
+        $poTotal = PurchaseRequest::whereBetween('po_generated_at', [$startDate, $endDate])
+            ->whereNotNull('po_generated_at')
+            ->sum('total');
+
+        // Get previous period counts for percentage calculation
+        $previousStartDate = $startDate->copy()->subMonth();
+        $previousEndDate = $endDate->copy()->subMonth();
+
+        $previousPrCount = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+            ->whereBetween('created_at', [$previousStartDate, $previousEndDate])
+            ->count();
+        $previousPoCount = PurchaseRequest::whereBetween('po_generated_at', [$previousStartDate, $previousEndDate])
+            ->whereNotNull('po_generated_at')
             ->count();
 
         // Calculate percentage changes
-        if ($lastMonthPRs == 0 && $currentMonthPRs > 0) {
+        if ($previousPrCount == 0 && $prCount > 0) {
             $prPercentageChange = 100;
-        } elseif ($lastMonthPRs == 0 && $currentMonthPRs == 0) {
+        } elseif ($previousPrCount == 0 && $prCount == 0) {
             $prPercentageChange = 0;
-        } elseif ($lastMonthPRs > 0 && $currentMonthPRs == 0) {
+        } elseif ($previousPrCount > 0 && $prCount == 0) {
             $prPercentageChange = -100;
         } else {
-            $prPercentageChange = round((($currentMonthPRs - $lastMonthPRs) / $lastMonthPRs) * 100);
+            $prPercentageChange = round((($prCount - $previousPrCount) / $previousPrCount) * 100);
         }
 
-        if ($lastMonthPOs == 0 && $currentMonthPOs > 0) {
+        if ($previousPoCount == 0 && $poCount > 0) {
             $poPercentageChange = 100;
-        } elseif ($lastMonthPOs == 0 && $currentMonthPOs == 0) {
+        } elseif ($previousPoCount == 0 && $poCount == 0) {
             $poPercentageChange = 0;
-        } elseif ($lastMonthPOs > 0 && $currentMonthPOs == 0) {
+        } elseif ($previousPoCount > 0 && $poCount == 0) {
             $poPercentageChange = -100;
         } else {
-            $poPercentageChange = round((($currentMonthPOs - $lastMonthPOs) / $lastMonthPOs) * 100);
+            $poPercentageChange = round((($poCount - $previousPoCount) / $previousPoCount) * 100);
         }
-
-        // $prPercentageChange = $lastMonthPRs > 0 ? round((($currentMonthPRs - $lastMonthPRs) / $lastMonthPRs) * 100) : 0;
-        // $poPercentageChange = $lastMonthPOs > 0 ? round((($currentMonthPOs - $lastMonthPOs) / $lastMonthPOs) * 100) : 0;
 
         // Get recent activities (combine PRs and POs)
         $recentActivities = collect();
@@ -138,13 +141,13 @@ class AdminDashboardController extends Controller
             'labels',
             'prData',
             'poData',
-            'totalPRs',
-            'totalPOs',
+            'prCount',
+            'poCount',
+            'prTotal',
+            'poTotal',
             'prPercentageChange',
             'poPercentageChange',
-            'recentActivities',
-            'prCount',
-            'poCount'
+            'recentActivities'
         ));
     }
 
@@ -172,5 +175,122 @@ class AdminDashboardController extends Controller
             'po_generated' => 'bg-purple-100 text-purple-800',
             default => 'bg-gray-100 text-gray-800'
         };
+    }
+
+    private function getChartData($filterType, $startDate, $endDate)
+    {
+        $labels = [];
+        $prData = [];
+        $poData = [];
+
+        if ($filterType === 'this_month' || $filterType === 'previous_month') {
+            // Default 6 months view
+            for ($i = 5; $i >= 0; $i--) {
+                $date = Carbon::now()->subMonths($i);
+                $labels[] = $date->format('M');
+
+                $prData[] = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+                    ->whereYear('created_at', $date->year)
+                    ->whereMonth('created_at', $date->month)
+                    ->count();
+
+                $poData[] = PurchaseRequest::whereYear('po_generated_at', $date->year)
+                    ->whereMonth('po_generated_at', $date->month)
+                    ->whereNotNull('po_generated_at')
+                    ->count();
+            }
+        } elseif ($filterType === 'custom') {
+            // Calculate the difference in months
+            $monthsDiff = $startDate->diffInMonths($endDate);
+
+            if ($monthsDiff == 0) {
+                // Single month - show that month and 5 months before
+                $targetMonth = $startDate->copy();
+                for ($i = 5; $i >= 0; $i--) {
+                    $date = $targetMonth->copy()->subMonths($i);
+                    $labels[] = $date->format('M Y');
+
+                    $prData[] = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+                        ->whereYear('created_at', $date->year)
+                        ->whereMonth('created_at', $date->month)
+                        ->count();
+
+                    $poData[] = PurchaseRequest::whereYear('po_generated_at', $date->year)
+                        ->whereMonth('po_generated_at', $date->month)
+                        ->whereNotNull('po_generated_at')
+                        ->count();
+                }
+            } elseif ($monthsDiff <= 12) {
+                // Less than or equal to 12 months - show monthly data from start to end
+                $currentDate = $startDate->copy()->startOfMonth();
+                $endMonth = $endDate->copy()->endOfMonth();
+
+                while ($currentDate <= $endMonth) {
+                    $labels[] = $currentDate->format('M Y');
+
+                    $prData[] = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+                        ->whereYear('created_at', $currentDate->year)
+                        ->whereMonth('created_at', $currentDate->month)
+                        ->count();
+
+                    $poData[] = PurchaseRequest::whereYear('po_generated_at', $currentDate->year)
+                        ->whereMonth('po_generated_at', $currentDate->month)
+                        ->whereNotNull('po_generated_at')
+                        ->count();
+
+                    $currentDate->addMonth();
+                }
+            } else {
+                // More than 12 months - show by year with 6-month spans
+                $startYear = $startDate->year;
+                $endYear = $endDate->year;
+
+                for ($year = $startYear; $year <= $endYear; $year++) {
+                    // First half of the year (Jan-Jun)
+                    $firstHalfStart = Carbon::create($year, 1, 1);
+                    $firstHalfEnd = Carbon::create($year, 6, 30)->endOfDay();
+
+                    if ($firstHalfStart <= $endDate && $firstHalfEnd >= $startDate) {
+                        $labels[] = $year . ' H1';
+
+                        $prData[] = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+                            ->whereBetween('created_at', [
+                                max($firstHalfStart, $startDate),
+                                min($firstHalfEnd, $endDate)
+                            ])->count();
+
+                        $poData[] = PurchaseRequest::whereBetween('po_generated_at', [
+                            max($firstHalfStart, $startDate),
+                            min($firstHalfEnd, $endDate)
+                        ])->whereNotNull('po_generated_at')->count();
+                    }
+
+                    // Second half of the year (Jul-Dec)
+                    $secondHalfStart = Carbon::create($year, 7, 1);
+                    $secondHalfEnd = Carbon::create($year, 12, 31)->endOfDay();
+
+                    if ($secondHalfStart <= $endDate && $secondHalfEnd >= $startDate) {
+                        $labels[] = $year . ' H2';
+
+                        $prData[] = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+                            ->whereBetween('created_at', [
+                                max($secondHalfStart, $startDate),
+                                min($secondHalfEnd, $endDate)
+                            ])->count();
+
+                        $poData[] = PurchaseRequest::whereBetween('po_generated_at', [
+                            max($secondHalfStart, $startDate),
+                            min($secondHalfEnd, $endDate)
+                        ])->whereNotNull('po_generated_at')->count();
+                    }
+                }
+            }
+        }
+
+        return [
+            'labels' => $labels,
+            'prData' => $prData,
+            'poData' => $poData,
+        ];
     }
 }

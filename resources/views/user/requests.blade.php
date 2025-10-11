@@ -525,33 +525,33 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">PR Number</label>
+                        <label class="block text-sm font-bold text-gray-700">PR Number</label>
                         <p id="view-pr-number" class="mt-1 text-sm text-gray-900"></p>
                         <p id="view-pr-id" style="display:none;"></p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Date</label>
+                        <label class="block text-sm font-bold text-gray-700">Date</label>
                         <p id="view-pr-date" class="mt-1 text-sm text-gray-900"></p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Entity Name</label>
+                        <label class="block text-sm font-bold text-gray-700">Entity Name</label>
                         <p id="view-entity-name" class="mt-1 text-sm text-gray-900"></p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Fund Cluster</label>
+                        <label class="block text-sm font-bold text-gray-700">Fund Cluster</label>
                         <p id="view-fund-cluster" class="mt-1 text-sm text-gray-900"></p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Office Section</label>
+                        <label class="block text-sm font-bold text-gray-700">Office Section</label>
                         <p id="view-office-section" class="mt-1 text-sm text-gray-900"></p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                        <label class="block text-sm font-bold text-gray-700">Status</label>
                         <span id="view-status"
                             class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full"></span>
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Items</label>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Items</label>
                         <div
                             style="max-height: 220px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
                             <table class="min-w-full divide-y divide-gray-200 text-sm" id="view-items-table">
@@ -571,19 +571,19 @@
                         </div>
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700">Delivery Address</label>
+                        <label class="block text-sm font-bold text-gray-700">Delivery Address</label>
                         <p id="view-delivery-address" class="mt-1 text-sm text-gray-900"></p>
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700">Purpose</label>
+                        <label class="block text-sm font-bold text-gray-700">Purpose</label>
                         <p id="view-purpose" class="mt-1 text-sm text-gray-900"></p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Requested By</label>
+                        <label class="block text-sm font-bold text-gray-700">Requested By</label>
                         <p id="view-requested-by" class="mt-1 text-sm text-gray-900"></p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Delivery Period</label>
+                        <label class="block text-sm font-bold text-gray-700">Delivery Period</label>
                         <p id="view-delivery-period" class="mt-1 text-sm text-gray-900"></p>
                     </div>
                 </div>

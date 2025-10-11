@@ -560,6 +560,37 @@
         </div>
     </x-modal>
 
+    <!-- Rejection Reason Modal -->
+    <x-modal name="reject-reason-modal">
+        <div class="p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Reject Purchase Request</h3>
+
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 mb-3">Are you sure you want to reject this purchase request? Please
+                    provide a reason for rejection.</p>
+
+                <label for="rejection-reason" class="block text-sm font-medium text-gray-700 mb-2">
+                    Rejection Reason <span class="text-red-500">*</span>
+                </label>
+                <textarea id="rejection-reason" name="rejection_reason" rows="4"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+                    placeholder="Please provide a detailed reason for rejecting this purchase request..." required></textarea>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg"
+                    onclick="closeRejectModal()">
+                    Cancel
+                </button>
+                <button type="button" id="confirm-reject-btn"
+                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg"
+                    onclick="confirmReject()">
+                    Reject Request
+                </button>
+            </div>
+        </div>
+    </x-modal>
+
     <script>
         function openViewModal(prId) {
             console.log('Opening modal for PR ID:', prId);
@@ -686,7 +717,16 @@
             const rejectBtn = document.getElementById('modal-reject-btn');
             const prId = rejectBtn.getAttribute('data-pr-id');
             if (prId) {
-                rejectPR(prId);
+                // Store the PR ID for use in the rejection modal
+                document.getElementById('confirm-reject-btn').setAttribute('data-pr-id', prId);
+
+                // Close the view modal and open the rejection reason modal
+                closeViewModal();
+                setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent('open-modal', {
+                        detail: 'reject-reason-modal'
+                    }));
+                }, 100);
             }
         }
 
@@ -715,29 +755,53 @@
             }
         }
 
-        function rejectPR(prId) {
-            if (confirm('Are you sure you want to reject this purchase request?')) {
-                fetch(`/staff/pr-review/${prId}/reject`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'Content-Type': 'application/json',
-                        },
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Purchase Request rejected successfully!');
-                            location.reload();
-                        } else {
-                            alert('Error: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Error rejecting purchase request');
-                    });
+        function closeRejectModal() {
+            // Clear the rejection reason
+            document.getElementById('rejection-reason').value = '';
+
+            // Close the modal
+            window.dispatchEvent(new CustomEvent('close-modal', {
+                detail: 'reject-reason-modal'
+            }));
+        }
+
+        function confirmReject() {
+            const prId = document.getElementById('confirm-reject-btn').getAttribute('data-pr-id');
+            const reason = document.getElementById('rejection-reason').value.trim();
+
+            if (!reason) {
+                alert('Please provide a reason for rejection.');
+                return;
             }
+
+            rejectPR(prId, reason);
+        }
+
+        function rejectPR(prId, reason = null) {
+            fetch(`/staff/pr-review/${prId}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        reason: reason
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Purchase Request rejected successfully!');
+                        closeRejectModal();
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error rejecting purchase request');
+                });
         }
 
         function generatePOFromModal() {

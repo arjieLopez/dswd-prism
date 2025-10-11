@@ -7,7 +7,9 @@ use App\Models\User;
 use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class UserManagementController extends Controller
 {
@@ -155,5 +157,154 @@ class UserManagementController extends Controller
 
         $status = $user->email_verified_at ? 'activated' : 'deactivated';
         return redirect()->route('admin.user_management')->with('success', "User {$status} successfully.");
+    }
+
+    public function exportXlsx(Request $request)
+    {
+        $query = User::query();
+
+        // Apply same filters as index method
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where(DB::raw("CONCAT(first_name, ' ', IFNULL(middle_name, ''), ' ', last_name)"), 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role') && $request->role !== 'all') {
+            $query->where('role', $request->role);
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            if ($request->status === 'active') {
+                $query->whereNotNull('email_verified_at');
+            } else {
+                $query->whereNull('email_verified_at');
+            }
+        }
+
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        if ($sortBy === 'name') {
+            $query->orderByRaw("CONCAT(first_name, ' ', IFNULL(middle_name, ''), ' ', last_name) $sortOrder");
+        } else {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        $users = $query->get();
+
+        // Create CSV content
+        $csvContent = [];
+        $csvContent[] = [
+            '#',
+            'Name',
+            'Email Address',
+            'Role',
+            'Status',
+            'Designation',
+            'Employee ID',
+            'Office',
+            'Date Created'
+        ];
+
+        foreach ($users as $index => $user) {
+            $fullName = $user->first_name . ($user->middle_name ? ' ' . $user->middle_name : '') . ' ' . $user->last_name;
+            $status = $user->email_verified_at ? 'Active' : 'Inactive';
+
+            $csvContent[] = [
+                $index + 1,
+                $fullName,
+                $user->email,
+                ucfirst($user->role),
+                $status,
+                $user->designation ?? '',
+                $user->employee_id ?? '',
+                $user->office ?? '',
+                $user->created_at->format('M j, Y')
+            ];
+        }
+
+        // Create CSV file
+        $filename = 'users_' . date('Y-m-d_H-i-s') . '.csv';
+        $handle = fopen('php://temp', 'r+');
+
+        foreach ($csvContent as $row) {
+            fputcsv($handle, $row);
+        }
+
+        rewind($handle);
+        $csvData = stream_get_contents($handle);
+        fclose($handle);
+
+        return response($csvData)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
+    public function exportPdf(Request $request)
+    {
+        $query = User::query();
+
+        // Apply same filters as index method
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where(DB::raw("CONCAT(first_name, ' ', IFNULL(middle_name, ''), ' ', last_name)"), 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role') && $request->role !== 'all') {
+            $query->where('role', $request->role);
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            if ($request->status === 'active') {
+                $query->whereNotNull('email_verified_at');
+            } else {
+                $query->whereNull('email_verified_at');
+            }
+        }
+
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        if ($sortBy === 'name') {
+            $query->orderByRaw("CONCAT(first_name, ' ', IFNULL(middle_name, ''), ' ', last_name) $sortOrder");
+        } else {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        $users = $query->get();
+
+        // Prepare filter summary
+        $filterSummary = [];
+        if ($request->filled('search')) {
+            $filterSummary[] = 'Search: "' . $request->search . '"';
+        }
+        if ($request->filled('role') && $request->role !== 'all') {
+            $filterSummary[] = 'Role: ' . ucfirst($request->role);
+        }
+        if ($request->filled('status') && $request->status !== 'all') {
+            $filterSummary[] = 'Status: ' . ucfirst($request->status);
+        }
+        if ($request->filled('sort_by')) {
+            $sortDisplay = ucfirst(str_replace('_', ' ', $request->sort_by));
+            $orderDisplay = $request->get('sort_order', 'desc') === 'desc' ? 'Descending' : 'Ascending';
+            $filterSummary[] = 'Sort: ' . $sortDisplay . ' (' . $orderDisplay . ')';
+        }
+
+        $data = [
+            'users' => $users,
+            'filterSummary' => $filterSummary,
+            'totalUsers' => $users->count(),
+            'exportDate' => now()->format('F j, Y g:i A')
+        ];
+
+        $pdf = Pdf::loadView('exports.users_pdf', $data);
+        $pdf->setPaper('a4', 'landscape');
+
+        return $pdf->download('users_' . date('Y_m_d_H_i_s') . '.pdf');
     }
 }

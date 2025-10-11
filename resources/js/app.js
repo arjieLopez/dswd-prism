@@ -142,6 +142,11 @@ document.getElementById("export-xlsx")?.addEventListener("click", function () {
         formData.append("date_from", urlParams.get("date_from"));
     if (urlParams.get("date_to"))
         formData.append("date_to", urlParams.get("date_to"));
+    if (urlParams.get("role")) formData.append("role", urlParams.get("role"));
+    if (urlParams.get("sort_by"))
+        formData.append("sort_by", urlParams.get("sort_by"));
+    if (urlParams.get("sort_order"))
+        formData.append("sort_order", urlParams.get("sort_order"));
 
     // Add CSRF token
     const csrfToken = document
@@ -160,6 +165,16 @@ document.getElementById("export-xlsx")?.addEventListener("click", function () {
     } else if (currentPath.includes("po-generation")) {
         exportUrl = "/staff/po-generation/export/xlsx";
         filenamePrefix = "po_generation";
+    } else if (currentPath.includes("admin/reports")) {
+        exportUrl = "/admin/reports/export";
+        filenamePrefix = "reports";
+        formData.append("format", "xlsx");
+    } else if (currentPath.includes("admin/user-management")) {
+        exportUrl = "/admin/user-management/export/xlsx";
+        filenamePrefix = "users";
+    } else if (currentPath.includes("admin/audit-logs")) {
+        exportUrl = "/admin/audit-logs/export/xlsx";
+        filenamePrefix = "audit_logs";
     }
 
     // Create and submit form
@@ -172,11 +187,15 @@ document.getElementById("export-xlsx")?.addEventListener("click", function () {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
+
+            // Use correct file extension based on export type
+            let fileExtension = ".csv"; // All exports now use CSV format as standard
+
             a.download =
                 filenamePrefix +
                 "_" +
                 new Date().toISOString().slice(0, 19).replace(/:/g, "-") +
-                ".csv";
+                fileExtension;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -205,6 +224,11 @@ document.getElementById("export-pdf")?.addEventListener("click", function () {
         formData.append("date_from", urlParams.get("date_from"));
     if (urlParams.get("date_to"))
         formData.append("date_to", urlParams.get("date_to"));
+    if (urlParams.get("role")) formData.append("role", urlParams.get("role"));
+    if (urlParams.get("sort_by"))
+        formData.append("sort_by", urlParams.get("sort_by"));
+    if (urlParams.get("sort_order"))
+        formData.append("sort_order", urlParams.get("sort_order"));
 
     // Add CSRF token
     const csrfToken = document
@@ -223,6 +247,16 @@ document.getElementById("export-pdf")?.addEventListener("click", function () {
     } else if (currentPath.includes("po-generation")) {
         exportUrl = "/staff/po-generation/export/pdf";
         filenamePrefix = "po_generation";
+    } else if (currentPath.includes("admin/reports")) {
+        exportUrl = "/admin/reports/export";
+        filenamePrefix = "reports";
+        formData.append("format", "pdf");
+    } else if (currentPath.includes("admin/user-management")) {
+        exportUrl = "/admin/user-management/export/pdf";
+        filenamePrefix = "users";
+    } else if (currentPath.includes("admin/audit-logs")) {
+        exportUrl = "/admin/audit-logs/export/pdf";
+        filenamePrefix = "audit_logs";
     }
 
     // Create and submit form

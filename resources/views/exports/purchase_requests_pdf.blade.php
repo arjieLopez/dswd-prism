@@ -56,6 +56,7 @@
             font-weight: bold;
             font-size: 9px;
             color: #2d3748;
+            text-align: center;
         }
 
         .text-center {
@@ -196,20 +197,22 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 12%;">PR Number</th>
-                    <th style="width: 14%;">Entity Name</th>
-                    <th style="width: 12%;">Fund Cluster</th>
-                    <th style="width: 14%;">Office/Section</th>
-                    <th style="width: 18%;">Purpose</th>
-                    <th style="width: 12%;">Total Amount</th>
-                    <th style="width: 10%;">Status</th>
-                    <th style="width: 12%;">Date Created</th>
+                    <th style="width: 6%;">#</th>
+                    <th style="width: 11%;">PR Number</th>
+                    <th style="width: 13%;">Entity Name</th>
+                    <th style="width: 11%;">Fund Cluster</th>
+                    <th style="width: 13%;">Office/Section</th>
+                    <th style="width: 17%;">Purpose</th>
+                    <th style="width: 11%;">Total Amount</th>
+                    <th style="width: 9%;">Status</th>
+                    <th style="width: 11%;">Date Created</th>
                     <th style="width: 6%;">Items</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($purchaseRequests as $pr)
+                @foreach ($purchaseRequests as $index => $pr)
                     <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
                         <td class="text-center">{{ $pr->pr_number }}</td>
                         <td class="wrapped-text">{{ $pr->entity_name }}</td>
                         <td class="wrapped-text">{{ $pr->fund_cluster }}</td>

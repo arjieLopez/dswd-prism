@@ -35,15 +35,20 @@ Route::get('/dashboard', function () {
 Route::get('/admin', [AdminDashboardController::class, 'show'])->middleware(['auth', 'verified', 'twofactor'])->name('admin');
 Route::get('/admin/reports', [App\Http\Controllers\ReportsController::class, 'index'])->middleware(['auth', 'verified'])->name('admin.reports');
 Route::post('/admin/reports/export', [App\Http\Controllers\ReportsController::class, 'export'])->middleware(['auth', 'verified'])->name('admin.reports.export');
+Route::get('/admin/reports/pr/{id}/data', [App\Http\Controllers\ReportsController::class, 'getPRData'])->middleware(['auth', 'verified'])->name('admin.reports.pr.data');
+Route::get('/admin/reports/po/{id}/data', [App\Http\Controllers\ReportsController::class, 'getPOData'])->middleware(['auth', 'verified'])->name('admin.reports.po.data');
 // User Management Routes
 Route::get('/admin/user-management', [App\Http\Controllers\UserManagementController::class, 'index'])->middleware(['auth', 'verified'])->name('admin.user_management');
 Route::post('/admin/user-management', [App\Http\Controllers\UserManagementController::class, 'store'])->middleware(['auth', 'verified'])->name('admin.user_management.store');
 Route::put('/admin/user-management/{user}', [App\Http\Controllers\UserManagementController::class, 'update'])->middleware(['auth', 'verified'])->name('admin.user_management.update');
 Route::delete('/admin/user-management/{user}', [App\Http\Controllers\UserManagementController::class, 'destroy'])->middleware(['auth', 'verified'])->name('admin.user_management.destroy');
 Route::patch('/admin/user-management/{user}/toggle-status', [App\Http\Controllers\UserManagementController::class, 'toggleStatus'])->middleware(['auth', 'verified'])->name('admin.user_management.toggle-status');
+Route::post('/admin/user-management/export/xlsx', [App\Http\Controllers\UserManagementController::class, 'exportXlsx'])->middleware(['auth', 'verified'])->name('admin.user_management.export.xlsx');
+Route::post('/admin/user-management/export/pdf', [App\Http\Controllers\UserManagementController::class, 'exportPdf'])->middleware(['auth', 'verified'])->name('admin.user_management.export.pdf');
 // Audit Logs Routes
 Route::get('/admin/audit-logs', [App\Http\Controllers\AuditLogsController::class, 'index'])->middleware(['auth', 'verified'])->name('admin.audit_logs');
-Route::post('/admin/audit-logs/export', [App\Http\Controllers\AuditLogsController::class, 'export'])->middleware(['auth', 'verified'])->name('admin.audit_logs.export');
+Route::post('/admin/audit-logs/export/xlsx', [App\Http\Controllers\AuditLogsController::class, 'exportXlsx'])->middleware(['auth', 'verified'])->name('admin.audit_logs.export.xlsx');
+Route::post('/admin/audit-logs/export/pdf', [App\Http\Controllers\AuditLogsController::class, 'exportPdf'])->middleware(['auth', 'verified'])->name('admin.audit_logs.export.pdf');
 
 Route::get('/staff', [App\Http\Controllers\GSODashboardController::class, 'show'])->middleware(['auth', 'verified', 'twofactor'])->name('staff');
 Route::get('/staff/po-generation', function () {

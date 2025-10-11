@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PR Review Export</title>
+    <title>DSWD-PRISM Users Export</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -76,29 +76,14 @@
             text-transform: uppercase;
         }
 
-        .status-approved {
+        .status-active {
             background-color: #c6f6d5;
             color: #22543d;
         }
 
-        .status-pending {
-            background-color: #fef5e7;
-            color: #744210;
-        }
-
-        .status-rejected {
+        .status-inactive {
             background-color: #fed7d7;
-            color: #742a2a;
-        }
-
-        .status-po-generated {
-            background-color: #bee3f8;
-            color: #2a4365;
-        }
-
-        .status-completed {
-            background-color: #d6f5d6;
-            color: #22543d;
+            color: #c53030;
         }
 
         .footer {
@@ -158,15 +143,41 @@
             word-break: break-word;
             max-width: 120px;
         }
+
+        .filters-section {
+            background-color: #f7fafc;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+        }
+
+        .filters-section h3 {
+            font-size: 11px;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+            color: #2d3748;
+        }
+
+        .filter-item {
+            font-size: 9px;
+            margin: 3px 0;
+            color: #4a5568;
+        }
+
+        .filter-label {
+            font-weight: bold;
+            color: #2d3748;
+        }
     </style>
 </head>
 
 <body>
     <div class="header">
-        <h1>DSWD-PRISM - PR Review Export</h1>
-        <h2>Purchase Requests Review Report</h2>
+        <h1>DSWD-PRISM - Users Export</h1>
+        <h2>User Management Report</h2>
         <div style="font-size: 9px; color: #666;">
-            Generated on: {{ now()->format('F j, Y g:i A') }}
+            Generated on: {{ $exportDate }}
         </div>
     </div>
 
@@ -174,66 +185,63 @@
         <h3>Export Summary</h3>
         <div class="summary-grid">
             <div class="summary-row">
-                <div class="summary-cell summary-label">Total Records:</div>
-                <div class="summary-cell">{{ $purchaseRequests->count() }}</div>
-                <div class="summary-cell summary-label">Pending PRs:</div>
-                <div class="summary-cell">{{ $purchaseRequests->where('status', 'pending')->count() }}</div>
+                <div class="summary-cell summary-label">Total Users:</div>
+                <div class="summary-cell">{{ $totalUsers }}</div>
+                <div class="summary-cell summary-label">Active Users:</div>
+                <div class="summary-cell">{{ $users->where('email_verified_at', '!=', null)->count() }}</div>
             </div>
             <div class="summary-row">
-                <div class="summary-cell summary-label">Approved PRs:</div>
-                <div class="summary-cell">{{ $purchaseRequests->where('status', 'approved')->count() }}</div>
-                <div class="summary-cell summary-label">Rejected PRs:</div>
-                <div class="summary-cell">{{ $purchaseRequests->where('status', 'rejected')->count() }}</div>
+                <div class="summary-cell summary-label">Inactive Users:</div>
+                <div class="summary-cell">{{ $users->where('email_verified_at', null)->count() }}</div>
+                <div class="summary-cell summary-label">Export Date:</div>
+                <div class="summary-cell">{{ $exportDate }}</div>
             </div>
         </div>
     </div>
 
-    @if ($purchaseRequests->count() > 0)
+    @if ($users->count() > 0)
         <table>
             <thead>
                 <tr>
                     <th style="width: 6%;">#</th>
-                    <th style="width: 11%;">PR Number</th>
-                    <th style="width: 13%;">Requestor</th>
-                    <th style="width: 13%;">Entity Name</th>
-                    <th style="width: 11%;">Office/Section</th>
-                    <th style="width: 17%;">Purpose</th>
-                    <th style="width: 11%;">Total Amount</th>
-                    <th style="width: 9%;">Status</th>
-                    <th style="width: 11%;">Date Created</th>
-                    <th style="width: 6%;">Items</th>
+                    <th style="width: 20%;">Name</th>
+                    <th style="width: 18%;">Email Address</th>
+                    <th style="width: 10%;">Role</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 14%;">Designation</th>
+                    <th style="width: 11%;">Employee ID</th>
+                    <th style="width: 11%;">Office</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($purchaseRequests as $index => $pr)
+                @foreach ($users as $index => $user)
+                    @php
+                        $fullName =
+                            $user->first_name .
+                            ($user->middle_name ? ' ' . $user->middle_name : '') .
+                            ' ' .
+                            $user->last_name;
+                        $status = $user->email_verified_at ? 'Active' : 'Inactive';
+                        $statusClass = $user->email_verified_at ? 'status-active' : 'status-inactive';
+                    @endphp
                     <tr>
                         <td class="text-center">{{ $index + 1 }}</td>
-                        <td class="text-center">{{ $pr->pr_number }}</td>
-                        <td class="wrapped-text">
-                            {{ $pr->user->first_name }}
-                            @if ($pr->user->middle_name)
-                                {{ $pr->user->middle_name }}
-                            @endif
-                            {{ $pr->user->last_name }}
-                        </td>
-                        <td class="wrapped-text">{{ $pr->entity_name }}</td>
-                        <td class="wrapped-text">{{ $pr->office_section }}</td>
-                        <td class="wrapped-text">{{ $pr->purpose }}</td>
-                        <td class="text-right">₱{{ number_format($pr->total, 2) }}</td>
+                        <td class="wrapped-text">{{ $fullName }}</td>
+                        <td class="wrapped-text">{{ $user->email }}</td>
+                        <td class="text-center">{{ ucfirst($user->role) }}</td>
                         <td class="text-center">
-                            <span class="status-badge status-{{ str_replace('_', '-', $pr->status) }}">
-                                {{ ucfirst(str_replace('_', ' ', $pr->status)) }}
-                            </span>
+                            <span class="status-badge {{ $statusClass }}">{{ $status }}</span>
                         </td>
-                        <td class="text-center">{{ $pr->created_at->format('M j, Y') }}</td>
-                        <td class="text-center">{{ $pr->items->count() ?? 0 }}</td>
+                        <td class="wrapped-text">{{ $user->designation ?? '-' }}</td>
+                        <td class="text-center">{{ $user->employee_id ?? '-' }}</td>
+                        <td class="wrapped-text">{{ $user->office ?? '-' }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     @else
         <div class="no-data">
-            No purchase requests found matching the specified criteria.
+            No users found matching the specified criteria.
         </div>
     @endif
 

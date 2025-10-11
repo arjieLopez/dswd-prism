@@ -69,12 +69,53 @@ if ($filterType === 'this_month') {
 
 ### Pagination with Filter Preservation
 
-Use `appends(request()->query())` to maintain filter parameters across pagination:
+Use `appends(request()->query())` to maintain filter parameters across pagination. All list views use custom pagination that only shows when more than 10 items exist:
 
 ```blade
-{{ $items->appends(request()->query())->links() }}
-// Custom pagination with preserved filters
-<a href="{{ $items->appends(request()->query())->url($page) }}">
+<!-- Custom Pagination Pattern (used in suppliers, PR review, PO generation, user requests) -->
+@if ($items->total() > 10)
+    <div class="flex justify-center mt-6">
+        <div class="flex items-center space-x-1">
+            <!-- Previous/Next buttons with SVG icons -->
+            @if ($items->onFirstPage())
+                <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </span>
+            @else
+                <a href="{{ $items->appends(request()->query())->previousPageUrl() }}"
+                   class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                    <!-- SVG icon -->
+                </a>
+            @endif
+
+            <!-- Page number logic with ellipsis -->
+            @php
+                $start = max(1, $items->currentPage() - 2);
+                $end = min($items->lastPage(), $items->currentPage() + 2);
+                // Smart pagination logic to show 5 pages when possible
+            @endphp
+
+            <!-- Page links preserve filters -->
+            <a href="{{ $items->appends(request()->query())->url($page) }}"
+               class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md">
+        </div>
+    </div>
+@endif
+```
+
+### Counter Column Pattern
+
+All list tables include sequential numbering that works across pagination:
+
+```blade
+<!-- Table counter that preserves pagination -->
+{{ ($items->currentPage() - 1) * $items->perPage() + $index + 1 }}
+<!-- For @foreach($items as $index => $item) loops -->
+
+{{ ($items->currentPage() - 1) * $items->perPage() + $loop->iteration }}
+<!-- For @foreach without key when using $loop variable -->
 ```
 
 ### Status Color System
@@ -147,17 +188,12 @@ function openViewModal(prId) {
 
 ### Export Functionality Pattern
 
-All list views implement consistent export dropdown with XLSX/PDF options:
+All list views implement consistent export dropdown with XLSX/PDF options using global JavaScript in `app.js`:
 
 ```javascript
-// Export dropdown toggle pattern
-document.getElementById("export-btn").addEventListener("click", function (e) {
-    e.stopPropagation();
-    document.getElementById("export-dropdown").classList.toggle("hidden");
-});
-
-// Export with current filters preserved
-document.getElementById("export-xlsx").addEventListener("click", function () {
+// Global export functionality pattern (in app.js)
+// Automatically detects current page and routes to appropriate export endpoint
+document.getElementById("export-xlsx")?.addEventListener("click", function () {
     const urlParams = new URLSearchParams(window.location.search);
     const formData = new FormData();
 
@@ -169,16 +205,24 @@ document.getElementById("export-xlsx").addEventListener("click", function () {
     if (urlParams.get("date_from"))
         formData.append("date_from", urlParams.get("date_from"));
 
-    // Add CSRF token
+    // Route detection for different pages
+    const currentPath = window.location.pathname;
+    let exportUrl = "/purchase-requests/export/xlsx";
+    if (currentPath.includes("pr-review"))
+        exportUrl = "/staff/pr-review/export/xlsx";
+    else if (currentPath.includes("po-generation"))
+        exportUrl = "/staff/po-generation/export/xlsx";
+
+    // CSRF token and file download logic
     const csrfToken = document
         .querySelector('meta[name="csrf-token"]')
         ?.getAttribute("content");
     if (csrfToken) formData.append("_token", csrfToken);
 
-    fetch("/staff/pr-review/export/xlsx", { method: "POST", body: formData })
+    fetch(exportUrl, { method: "POST", body: formData })
         .then((response) => response.blob())
         .then((blob) => {
-            // Download file
+            // Auto-download with timestamp
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
@@ -188,10 +232,31 @@ document.getElementById("export-xlsx").addEventListener("click", function () {
                 ".xlsx";
             document.body.appendChild(a);
             a.click();
+            // Cleanup
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
         });
 });
+```
+
+```blade
+<!-- Standard export dropdown HTML (copy this pattern) -->
+<div class="relative inline-block text-left">
+    <button id="export-btn" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md">
+        <i class="iconify w-4 h-4 mr-2" data-icon="material-symbols:upload"></i>
+        Export
+    </button>
+    <div id="export-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+        <button id="export-xlsx" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+            <i class="iconify w-4 h-4 mr-2" data-icon="vscode-icons:file-type-excel"></i>
+            Export as XLSX
+        </button>
+        <button id="export-pdf" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+            <i class="iconify w-4 h-4 mr-2" data-icon="vscode-icons:file-type-pdf2"></i>
+            Export as PDF
+        </button>
+    </div>
+</div>
 ```
 
 ### AJAX Pattern with CSRF
@@ -254,12 +319,79 @@ ActivityService::logPrApproved($prNumber, $staffName);
 ActivityService::logPoGenerated($prNumber, $poNumber);
 ```
 
+### Number to Words Pattern
+
+For PDF documents requiring amount in words (particularly PO print layouts):
+
+```php
+@php
+    function numberToWords($number) {
+        $ones = array(
+            0 => '', 1 => 'ONE', 2 => 'TWO', 3 => 'THREE', 4 => 'FOUR', 5 => 'FIVE',
+            6 => 'SIX', 7 => 'SEVEN', 8 => 'EIGHT', 9 => 'NINE', 10 => 'TEN',
+            11 => 'ELEVEN', 12 => 'TWELVE', 13 => 'THIRTEEN', 14 => 'FOURTEEN', 15 => 'FIFTEEN',
+            16 => 'SIXTEEN', 17 => 'SEVENTEEN', 18 => 'EIGHTEEN', 19 => 'NINETEEN'
+        );
+
+        $tens = array(
+            0 => '', 2 => 'TWENTY', 3 => 'THIRTY', 4 => 'FORTY', 5 => 'FIFTY',
+            6 => 'SIXTY', 7 => 'SEVENTY', 8 => 'EIGHTY', 9 => 'NINETY'
+        );
+
+        if ($number < 20) {
+            return $ones[$number];
+        } elseif ($number < 100) {
+            return $tens[intval($number / 10)] . ($number % 10 != 0 ? ' ' . $ones[$number % 10] : '');
+        } elseif ($number < 1000) {
+            return $ones[intval($number / 100)] . ' HUNDRED' . ($number % 100 != 0 ? ' ' . numberToWords($number % 100) : '');
+        } elseif ($number < 1000000) {
+            return numberToWords(intval($number / 1000)) . ' THOUSAND' . ($number % 1000 != 0 ? ' ' . numberToWords($number % 1000) : '');
+        } elseif ($number < 1000000000) {
+            return numberToWords(intval($number / 1000000)) . ' MILLION' . ($number % 1000000 != 0 ? ' ' . numberToWords($number % 1000000) : '');
+        }
+        return 'NUMBER TOO LARGE';
+    }
+
+    $total = $purchaseRequest->total ?? 0;
+    $pesos = floor($total);
+    $centavos = round(($total - $pesos) * 100);
+
+    $totalInWords = '';
+    if ($pesos > 0) {
+        $totalInWords = numberToWords($pesos) . ' PESOS';
+    }
+    if ($centavos > 0) {
+        $totalInWords .= ($pesos > 0 ? ' AND ' : '') . numberToWords($centavos) . ' CENTAVOS';
+    }
+    if ($pesos == 0 && $centavos == 0) {
+        $totalInWords = 'ZERO PESOS';
+    }
+    $totalInWords .= ' ONLY';
+@endphp
+{{ $totalInWords }}
+```
+
 ### User Name Display Pattern
 
 Consistent full name formatting throughout views:
 
 ```php
 Auth::user()->first_name . (Auth::user()->middle_name ? ' ' . Auth::user()->middle_name : '') . ' ' . Auth::user()->last_name
+```
+
+### Date Formatting Pattern
+
+Consistent date formatting across the application:
+
+```php
+// For display dates (October 10, 2025 format)
+{{ $item->date_field ? \Carbon\Carbon::parse($item->date_field)->format('F j, Y') : '' }}
+
+// For form dates (YYYY-MM-DD format)
+{{ $item->date_field ? $item->date_field->format('Y-m-d') : '' }}
+
+// For timestamps with time
+{{ $item->updated_at->format('M j, Y g:i A') }}
 ```
 
 ## Database Relationships
@@ -369,6 +501,18 @@ $poGenerated = PurchaseRequest::where('status', 'po_generated')
 // Correct: Completed card counts only completed status
 $completed = PurchaseRequest::where('status', 'completed')
     ->whereBetween('updated_at', [$startDate, $endDate])->count();
+```
+
+### Field Mapping Consistency
+
+Ensure consistent field mapping across templates and controllers:
+
+```php
+// Common field mappings to watch for
+$pr->total (not $pr->total_amount)
+$pr->po_generated_at (not $pr->po_date)
+$pr->delivery_address ?? $pr->place_of_delivery
+$pr->items (relationship, not single item)
 ```
 
 ### Dashboard Variables

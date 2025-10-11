@@ -140,7 +140,7 @@ class PRReviewController extends Controller
         try {
             $purchaseRequest->update(['status' => 'rejected']);
 
-            // Add this line:
+            // Log staff Activity:
             ActivityService::logPrRejected(
                 $purchaseRequest->pr_number,
                 auth()->user()->first_name .
@@ -149,6 +149,14 @@ class PRReviewController extends Controller
                     auth()->user()->last_name,
                 request('reason')
             );
+
+            // Notify the requesting user
+            \App\Models\UserActivity::create([
+                'user_id' => $purchaseRequest->user_id,
+                'action' => 'rejected_pr',
+                'description' => 'Your Purchase Request (PR No. ' . $purchaseRequest->pr_number . ') has been rejected.' . (request('reason') ? ' Reason: ' . request('reason') : ''),
+                'pr_number' => $purchaseRequest->pr_number,
+            ]);
 
             return response()->json(['success' => true, 'message' => 'Purchase Request rejected successfully!']);
         } catch (\Exception $e) {

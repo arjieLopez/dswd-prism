@@ -81,6 +81,7 @@
             font-weight: bold;
             font-size: 9px;
             color: #2d3748;
+            text-align: center;
         }
 
         .text-center {
@@ -216,20 +217,22 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 10%;">PR Number</th>
-                    <th style="width: 14%;">Requestor</th>
-                    <th style="width: 17%;">Purpose</th>
-                    <th style="width: 12%;">Total Amount</th>
-                    <th style="width: 10%;">Status</th>
-                    <th style="width: 12%;">PO Number</th>
-                    <th style="width: 14%;">Supplier</th>
-                    <th style="width: 11%;">PO Generated</th>
+                    <th style="width: 6%;">#</th>
+                    <th style="width: 9%;">PR Number</th>
+                    <th style="width: 13%;">Requestor</th>
+                    <th style="width: 16%;">Purpose</th>
+                    <th style="width: 11%;">Total Amount</th>
+                    <th style="width: 9%;">Status</th>
+                    <th style="width: 11%;">PO Number</th>
+                    <th style="width: 13%;">Supplier</th>
+                    <th style="width: 10%;">PO Generated</th>
                     <th style="width: 6%;">Items</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($purchaseRequests as $pr)
+                @foreach ($purchaseRequests as $index => $pr)
                     <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
                         <td class="text-center">{{ $pr->pr_number }}</td>
                         <td class="wrapped-text">
                             {{ $pr->user->first_name }}

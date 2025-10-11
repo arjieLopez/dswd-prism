@@ -25,6 +25,7 @@
 
         th {
             background: #f2f2f2;
+            text-align: center;
         }
     </style>
 </head>
@@ -34,6 +35,7 @@
     <table>
         <thead>
             <tr>
+                <th>#</th>
                 <th>PR Number</th>
                 <th>File Name</th>
                 <th>File Type</th>
@@ -43,8 +45,9 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($documents as $doc)
+            @foreach ($documents as $index => $doc)
                 <tr>
+                    <td>{{ $index + 1 }}</td>
                     <td>{{ $doc->pr_number }}</td>
                     <td>{{ $doc->original_filename }}</td>
                     <td>{{ strtoupper($doc->file_type) }}</td>

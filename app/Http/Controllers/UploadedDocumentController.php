@@ -29,13 +29,15 @@ class UploadedDocumentController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set header
-        $headers = ['PR Number', 'File Name', 'File Type', 'File Size', 'Upload Date', 'Notes'];
+        $headers = ['#', 'PR Number', 'File Name', 'File Type', 'File Size', 'Upload Date', 'Notes'];
         $sheet->fromArray($headers, NULL, 'A1');
 
         // Fill data
         $row = 2;
+        $index = 1;
         foreach ($documents as $doc) {
             $sheet->fromArray([
+                $index,
                 $doc->pr_number,
                 $doc->original_filename,
                 strtoupper($doc->file_type),
@@ -44,6 +46,7 @@ class UploadedDocumentController extends Controller
                 $doc->notes,
             ], NULL, 'A' . $row);
             $row++;
+            $index++;
         }
 
         // Output to browser
