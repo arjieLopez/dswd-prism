@@ -132,6 +132,17 @@ class ActivityService
         );
     }
 
+    public static function logPrSubmitted($prNumber, $entityName)
+    {
+        return self::log(
+            'submitted_pr',
+            "Submitted Purchase Request for review",
+            $prNumber,
+            null,
+            ['entity_name' => $entityName]
+        );
+    }
+
     public static function logPrApproved($prNumber, $approvedBy)
     {
         return self::log(

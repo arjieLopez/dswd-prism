@@ -279,7 +279,31 @@ class PurchaseRequestController extends Controller
         $purchaseRequest->status = 'pending';
         $purchaseRequest->save();
 
-        // Optionally log activity here
+        // Log activity for the submitting user
+        ActivityService::logPrSubmitted($purchaseRequest->pr_number, $purchaseRequest->entity_name);
+
+        // Notify all staff users about the new PR submission
+        $staffUsers = \App\Models\User::where('role', 'staff')->get();
+
+        foreach ($staffUsers as $staffUser) {
+            \App\Models\UserActivity::create([
+                'user_id' => $staffUser->id,
+                'action' => 'pr_submitted_notification',
+                'description' => 'New Purchase Request submitted by ' .
+                    auth()->user()->first_name .
+                    (auth()->user()->middle_name ? ' ' . auth()->user()->middle_name : '') .
+                    ' ' . auth()->user()->last_name .
+                    ' - ' . $purchaseRequest->pr_number,
+                'pr_number' => $purchaseRequest->pr_number,
+                'details' => [
+                    'submitter_name' => auth()->user()->first_name .
+                        (auth()->user()->middle_name ? ' ' . auth()->user()->middle_name : '') .
+                        ' ' . auth()->user()->last_name,
+                    'entity_name' => $purchaseRequest->entity_name,
+                    'total' => $purchaseRequest->total,
+                ]
+            ]);
+        }
 
         return response()->json(['success' => true, 'message' => 'Purchase Request submitted successfully!']);
     }

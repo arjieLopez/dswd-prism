@@ -45,9 +45,11 @@ class UserActivity extends Model
             // Purchase Requests
             'created_pr' => 'mdi:file-plus',
             'updated_pr' => 'mdi:file-edit',
+            'submitted_pr' => 'mdi:file-send',
             'approved_pr' => 'mdi:file-check',
             'rejected_pr' => 'mdi:file-remove',
             'deleted_pr' => 'mdi:file-delete',
+            'pr_submitted_notification' => 'mdi:bell-alert',
 
             // Purchase Orders
             'generated_po' => 'mdi:file-document-plus',
@@ -92,9 +94,11 @@ class UserActivity extends Model
             // Purchase Requests
             'created_pr' => 'text-green-600 bg-green-100',
             'updated_pr' => 'text-blue-600 bg-blue-100',
+            'submitted_pr' => 'text-yellow-600 bg-yellow-100',
             'approved_pr' => 'text-green-600 bg-green-100',
             'rejected_pr' => 'text-red-600 bg-red-100',
             'deleted_pr' => 'text-red-600 bg-red-100',
+            'pr_submitted_notification' => 'text-yellow-600 bg-yellow-100',
 
             // Purchase Orders
             'generated_po' => 'text-purple-600 bg-purple-100',
