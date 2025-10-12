@@ -12,6 +12,24 @@ class TwoFactorCodeController extends Controller
      */
     public function show()
     {
+        $user = auth()->user();
+
+        // If user doesn't need 2FA verification, redirect to appropriate dashboard
+        if (!$user->needsTwoFactorVerification()) {
+            // Clear any expired codes
+            if ($user->hasExpiredTwoFactorCode()) {
+                $user->clearTwoFactorCode();
+            }
+
+            if ($user->role == 'admin') {
+                return redirect()->route('admin');
+            } elseif ($user->role == 'staff') {
+                return redirect()->route('staff');
+            } else {
+                return redirect()->route('user');
+            }
+        }
+
         return view('auth.verify');
     }
 
@@ -39,13 +57,25 @@ class TwoFactorCodeController extends Controller
 
         $user = auth()->user();
 
-        $result = $user->twofactor_code === $request->input('twofactor_code') &&
-            now()->lessThanOrEqualTo($user->twofactor_code_expires_at);
+        // Check if user has a 2FA code set
+        if (!$user->twofactor_code) {
+            return back()->with('error', 'No two-factor code found. Please request a new code.');
+        }
 
-        if ($result) {
+        // Check if code has expired
+        if (now()->greaterThan($user->twofactor_code_expires_at)) {
+            $user->clearTwoFactorCode();
+            return back()->with('error', 'Two-factor code has expired. Please request a new code.');
+        }
 
+        // Verify the code
+        $isValidCode = $user->twofactor_code === $request->input('twofactor_code');
+
+        if ($isValidCode) {
+            // Clear the 2FA code after successful verification
             $user->clearTwoFactorCode();
 
+            // Redirect based on user role
             if ($user->role == 'admin') {
                 return redirect()->route('admin');
             } elseif ($user->role == 'staff') {
@@ -54,7 +84,7 @@ class TwoFactorCodeController extends Controller
                 return redirect()->route('user');
             }
         } else {
-            return back()->with('error', 'Try Again');
+            return back()->with('error', 'Invalid two-factor code. Please try again.');
         }
     }
 }

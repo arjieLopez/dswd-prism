@@ -15,10 +15,25 @@ class TwoFactorMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(auth()->check() && (auth()->user()->twofactor_code && now()->lessThanOrEqualTo(auth()->user()->twofactor_code_expires_at))) {
-            // If the user has a valid two-factor code, allow the request to proceed
+        // Check if user is authenticated
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $user = auth()->user();
+
+        // Check if user needs 2FA verification
+        if ($user->needsTwoFactorVerification()) {
+            // User needs to verify their 2FA code first
             return redirect()->route('verify.show');
         }
+
+        // If user has an expired 2FA code, clear it
+        if ($user->hasExpiredTwoFactorCode()) {
+            $user->clearTwoFactorCode();
+        }
+
+        // Allow the request to proceed if no 2FA verification is needed
         return $next($request);
     }
 }

@@ -71,6 +71,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user needs 2FA verification
+     */
+    public function needsTwoFactorVerification()
+    {
+        return $this->twofactor_code && now()->lessThanOrEqualTo($this->twofactor_code_expires_at);
+    }
+
+    /**
+     * Check if user has expired 2FA code
+     */
+    public function hasExpiredTwoFactorCode()
+    {
+        return $this->twofactor_code && now()->greaterThan($this->twofactor_code_expires_at);
+    }
+
+    /**
      * Check if user is active
      */
     public function isActive()
