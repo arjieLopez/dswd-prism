@@ -7,15 +7,19 @@
     </x-slot>
 
     <!-- Main Content -->
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="mb-6">
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    {{ __('Create New Purchase Request') }}
-                </h2>
-            </div>
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+    <div class="py-8">
+        <div class="w-full px-4 sm:px-6 lg:px-8 space-y-6">
+            <div class="bg-white overflow-visible shadow-sm sm:rounded-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                        {{ __('Create New Purchase Request') }}
+                    </h2>
+                    <a href="{{ route('user.requests') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        ← Back to My Requests
+                    </a>
+                </div>
+
+                <div class="space-y-6">
                     <form method="POST" action="{{ route('purchase-requests.store') }}" enctype="multipart/form-data"
                         class="space-y-6">
                         @csrf
@@ -27,7 +31,7 @@
                                     Name <span class="text-red-500">*</span></label>
                                 <input type="text" name="entity_name" id="entity_name"
                                     value="{{ old('entity_name') }}" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                             </div>
 
                             <div>
@@ -35,7 +39,7 @@
                                     Cluster <span class="text-red-500">*</span></label>
                                 <input type="text" name="fund_cluster" id="fund_cluster"
                                     value="{{ old('fund_cluster') }}" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                             </div>
 
                             <div>
@@ -44,7 +48,7 @@
                                         class="text-red-500">*</span></label>
                                 <input type="text" name="office_section" id="office_section"
                                     value="{{ old('office_section', auth()->user()->office) }}" required readonly
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                             </div>
 
                             <div>
@@ -53,7 +57,7 @@
                                         class="text-red-500">*</span></label>
                                 <input type="text" name="responsibility_center_code" id="responsibility_center_code"
                                     value="{{ old('responsibility_center_code') }}" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                             </div>
 
                             <div>
@@ -61,7 +65,7 @@
                                         class="text-red-500">*</span></label>
                                 <input type="date" name="date" id="date"
                                     value="{{ old('date', date('Y-m-d')) }}" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                             </div>
 
                             <div>
@@ -69,7 +73,7 @@
                                     class="block text-sm font-medium text-gray-700">STOC/Property No.</label>
                                 <input type="text" name="stoc_property_no" id="stoc_property_no"
                                     value="{{ old('stoc_property_no') }}"
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                             </div>
                         </div>
 
@@ -83,7 +87,7 @@
                                             <label class="block text-sm font-medium text-gray-700">Unit <span
                                                     class="text-red-500">*</span></label>
                                             <select name="unit[]" required
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                                 <option value="">Select unit</option>
 
                                                 <!-- Basic -->
@@ -135,20 +139,20 @@
                                             <label class="block text-sm font-medium text-gray-700">Quantity <span
                                                     class="text-red-500">*</span></label>
                                             <input type="number" name="quantity[]" min="1" required
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700">Unit Cost (₱) <span
                                                     class="text-red-500">*</span></label>
                                             <input type="number" name="unit_cost[]" min="0" step="0.01"
                                                 required
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                         </div>
                                         <div class="md:col-span-3 mt-2">
                                             <label class="block text-sm font-medium text-gray-700">Item Description
                                                 <span class="text-red-500">*</span></label>
                                             <textarea name="item_description[]" rows="3" required
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"></textarea>
                                         </div>
                                         <div class="md:col-span-3 mt-2 flex justify-end">
                                             <button type="button"
@@ -198,7 +202,7 @@
                                             class="text-red-500">*</span></label>
                                     <input type="text" name="delivery_period" id="delivery_period"
                                         value="{{ old('delivery_period') }}" required
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                 </div>
 
                                 <div>
@@ -206,7 +210,7 @@
                                         class="block text-sm font-medium text-gray-700">Delivery Address <span
                                             class="text-red-500">*</span></label>
                                     <textarea name="delivery_address" id="delivery_address" rows="3" required
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ old('delivery_address') }}</textarea>
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">{{ old('delivery_address') }}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -216,7 +220,7 @@
                             <label for="purpose" class="block text-sm font-medium text-gray-700">Purpose <span
                                     class="text-red-500">*</span></label>
                             <textarea name="purpose" id="purpose" rows="3" required
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ old('purpose') }}</textarea>
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">{{ old('purpose') }}</textarea>
                         </div>
 
                         <!-- Requested By -->
@@ -230,7 +234,7 @@
                                     <input type="text" name="requested_by_name" id="requested_by_name"
                                         value="{{ old('requested_by_name', auth()->user()->first_name . (auth()->user()->middle_name ? ' ' . auth()->user()->middle_name : '') . ' ' . auth()->user()->last_name) }}"
                                         required readonly
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                 </div>
 
                                 <div>
@@ -241,7 +245,7 @@
                                         id="requested_by_designation"
                                         value="{{ old('requested_by_designation', auth()->user()->designation) }}"
                                         required readonly
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                 </div>
 
                                 {{-- <div>
@@ -289,72 +293,71 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const itemsContainer = document.getElementById('items-container');
-            const addItemBtn = document.getElementById('add-item-btn');
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const itemsContainer = document.getElementById('items-container');
+                const addItemBtn = document.getElementById('add-item-btn');
 
-            // Function to update remove button visibility
-            function updateRemoveButtons() {
-                const itemFields = itemsContainer.querySelectorAll('.item-fields');
-                itemFields.forEach((item, index) => {
-                    const removeBtn = item.querySelector('.remove-item-btn');
-                    if (itemFields.length > 1) {
-                        removeBtn.style.display = 'inline-block';
-                    } else {
-                        removeBtn.style.display = 'none';
-                    }
+                // Function to update remove button visibility
+                function updateRemoveButtons() {
+                    const itemFields = itemsContainer.querySelectorAll('.item-fields');
+                    itemFields.forEach((item, index) => {
+                        const removeBtn = item.querySelector('.remove-item-btn');
+                        if (itemFields.length > 1) {
+                            removeBtn.style.display = 'inline-block';
+                        } else {
+                            removeBtn.style.display = 'none';
+                        }
+                    });
+                }
+
+                // Function to create a new item
+                function createNewItem() {
+                    const firstItem = itemsContainer.querySelector('.item-fields');
+                    const newItem = firstItem.cloneNode(true);
+
+                    // Clear all input values
+                    newItem.querySelectorAll('input, textarea, select').forEach(input => {
+                        if (input.type === 'select-one') {
+                            input.selectedIndex = 0;
+                        } else {
+                            input.value = '';
+                        }
+                    });
+
+                    // Add event listener to the remove button
+                    const removeBtn = newItem.querySelector('.remove-item-btn');
+                    removeBtn.addEventListener('click', function() {
+                        if (itemsContainer.querySelectorAll('.item-fields').length > 1) {
+                            newItem.remove();
+                            updateRemoveButtons();
+                        }
+                    });
+
+                    return newItem;
+                }
+
+                // Add event listener to existing remove button
+                const existingRemoveBtn = itemsContainer.querySelector('.remove-item-btn');
+                if (existingRemoveBtn) {
+                    existingRemoveBtn.addEventListener('click', function() {
+                        if (itemsContainer.querySelectorAll('.item-fields').length > 1) {
+                            existingRemoveBtn.closest('.item-fields').remove();
+                            updateRemoveButtons();
+                        }
+                    });
+                }
+
+                // Add item button functionality
+                addItemBtn.addEventListener('click', function() {
+                    const newItem = createNewItem();
+                    itemsContainer.appendChild(newItem);
+                    updateRemoveButtons();
                 });
-            }
 
-            // Function to create a new item
-            function createNewItem() {
-                const firstItem = itemsContainer.querySelector('.item-fields');
-                const newItem = firstItem.cloneNode(true);
-
-                // Clear all input values
-                newItem.querySelectorAll('input, textarea, select').forEach(input => {
-                    if (input.type === 'select-one') {
-                        input.selectedIndex = 0;
-                    } else {
-                        input.value = '';
-                    }
-                });
-
-                // Add event listener to the remove button
-                const removeBtn = newItem.querySelector('.remove-item-btn');
-                removeBtn.addEventListener('click', function() {
-                    if (itemsContainer.querySelectorAll('.item-fields').length > 1) {
-                        newItem.remove();
-                        updateRemoveButtons();
-                    }
-                });
-
-                return newItem;
-            }
-
-            // Add event listener to existing remove button
-            const existingRemoveBtn = itemsContainer.querySelector('.remove-item-btn');
-            if (existingRemoveBtn) {
-                existingRemoveBtn.addEventListener('click', function() {
-                    if (itemsContainer.querySelectorAll('.item-fields').length > 1) {
-                        existingRemoveBtn.closest('.item-fields').remove();
-                        updateRemoveButtons();
-                    }
-                });
-            }
-
-            // Add item button functionality
-            addItemBtn.addEventListener('click', function() {
-                const newItem = createNewItem();
-                itemsContainer.appendChild(newItem);
+                // Initial update of remove button visibility
                 updateRemoveButtons();
             });
-
-            // Initial update of remove button visibility
-            updateRemoveButtons();
-        });
-    </script>
+        </script>
 </x-page-layout>

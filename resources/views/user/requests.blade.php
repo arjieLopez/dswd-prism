@@ -1086,7 +1086,7 @@
                         // Show or hide the complete button
                         const completeBtn = document.getElementById('complete-btn');
                         if (completeBtn) {
-                            if (data.status === 'approved' || data.status === 'po_generated') {
+                            if (data.status === 'po_generated') {
                                 completeBtn.classList.remove('hidden');
                                 completeBtn.setAttribute('data-pr-id', prId);
                             } else {
