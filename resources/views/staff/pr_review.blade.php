@@ -45,7 +45,16 @@
                             <input type="hidden" name="date_to" value="{{ request('date_to') }}">
                         @endif
                         <button type="submit"
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+                            class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-2 px-4 rounded-lg
+                                   hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                   active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
                             Search
                         </button>
                     </form>
@@ -53,7 +62,12 @@
                     <div class="flex items-center gap-2">
                         <div class="relative" x-data="{ open: false, activeTab: 'status' }">
                             <button @click="open = !open"
-                                class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100 active:bg-gray-200">
+                                class="relative flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white
+                                       hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:border-gray-400 hover:shadow-lg hover:scale-105
+                                       active:from-gray-100 active:to-gray-200 active:scale-95 active:shadow-inner
+                                       transition-all duration-200 ease-in-out transform
+                                       before:absolute before:inset-0 before:bg-gray-600 before:opacity-0 before:rounded-lg
+                                       hover:before:opacity-5 active:before:opacity-10 before:transition-opacity before:duration-200">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6h18M4 14h16M4 18h16">
@@ -157,12 +171,35 @@
 
                                         <div class="flex gap-2 pt-2">
                                             <button type="submit"
-                                                class="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                                                class="relative flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm
+                                                       hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                                       active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                                       transition-all duration-200 ease-in-out transform
+                                                       before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                                       hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
+                                                </svg>
                                                 Apply Filter
                                             </button>
                                             @if (request('date_from') || request('date_to'))
                                                 <a href="{{ route('staff.pr_review', array_filter(['search' => request('search'), 'status' => request('status')])) }}"
-                                                    class="flex-1 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg text-sm text-center">
+                                                    class="relative flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm text-center
+                                                           hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                                                           active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                                                           transition-all duration-200 ease-in-out transform inline-block
+                                                           before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                                           hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                                                    <svg class="w-3 h-3 inline mr-1" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                                        </path>
+                                                    </svg>
                                                     Clear Dates
                                                 </a>
                                             @endif
@@ -173,7 +210,12 @@
                         </div>
                         <div class="relative" id="export-dropdown-container">
                             <button type="button" id="export-btn"
-                                class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition active:bg-green-300">
+                                class="relative flex items-center px-4 py-2 bg-gradient-to-r from-green-100 to-green-200 text-green-700 rounded-lg font-semibold
+                                       hover:from-green-500 hover:to-green-600 hover:text-white hover:shadow-lg hover:scale-105
+                                       active:from-green-600 active:to-green-700 active:scale-95 active:shadow-inner
+                                       transition-all duration-200 ease-in-out transform
+                                       before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                       hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
                                 <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                     class="size-5 mr-3">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -332,7 +374,19 @@
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
                                             <button onclick="openViewModal({{ $pr->id }})"
-                                                class="bg-blue-500 hover:bg-blue-700 active:bg-blue-900 text-white px-3 py-1 rounded text-sm font-medium w-28">
+                                                class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-lg text-sm font-medium w-28
+                                                       hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                                       active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                                       transition-all duration-200 ease-in-out transform
+                                                       before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                                       hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                                    </path>
+                                                </svg>
                                                 View
                                             </button>
                                         </td>
@@ -543,24 +597,61 @@
             <div class="mt-6 flex justify-end items-center space-x-2">
                 <!-- Approve button - will be shown/hidden based on status -->
                 <button type="button" id="modal-approve-btn"
-                    class="hidden bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg"
+                    class="hidden relative bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-2 px-4 rounded-lg
+                           hover:from-green-600 hover:to-green-700 hover:shadow-lg hover:scale-105
+                           active:from-green-700 active:to-green-800 active:scale-95 active:shadow-inner
+                           transition-all duration-200 ease-in-out transform
+                           before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                           hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200"
                     onclick="approveFromModal()">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                        </path>
+                    </svg>
                     Approve
                 </button>
                 <!-- Reject button - will be shown/hidden based on status -->
                 <button type="button" id="modal-reject-btn"
-                    class="hidden bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg"
+                    class="hidden relative bg-gradient-to-r from-red-500 to-red-600 text-white font-bold py-2 px-4 rounded-lg
+                           hover:from-red-600 hover:to-red-700 hover:shadow-lg hover:scale-105
+                           active:from-red-700 active:to-red-800 active:scale-95 active:shadow-inner
+                           transition-all duration-200 ease-in-out transform
+                           before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                           hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200"
                     onclick="rejectFromModal()">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
                     Reject
                 </button>
                 <!-- Generate PO button - will be shown/hidden based on status -->
                 <button type="button" id="modal-generate-po-btn"
-                    class="hidden bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg"
+                    class="hidden relative bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-2 px-4 rounded-lg
+                           hover:from-green-700 hover:to-green-800 hover:shadow-lg hover:scale-105
+                           active:from-green-800 active:to-green-900 active:scale-95 active:shadow-inner
+                           transition-all duration-200 ease-in-out transform
+                           before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                           hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200"
                     onclick="generatePOFromModal()">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
                     Generate PO
                 </button>
-                <button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg"
+                <button type="button"
+                    class="relative bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-2 px-4 rounded-lg
+                           hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                           active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                           transition-all duration-200 ease-in-out transform
+                           before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                           hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200"
                     onclick="closeViewModal()">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
                     Close
                 </button>
             </div>
@@ -585,12 +676,27 @@
             </div>
 
             <div class="flex justify-end space-x-3">
-                <button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg"
+                <button type="button"
+                    class="relative bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-2 px-4 rounded-lg
+                           hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                           active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                           transition-all duration-200 ease-in-out transform
+                           before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                           hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200"
                     onclick="closeRejectModal()">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
                     Cancel
                 </button>
                 <button type="button" id="confirm-reject-btn"
-                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg"
+                    class="relative bg-gradient-to-r from-red-600 to-red-700 text-white font-bold py-2 px-4 rounded-lg
+                           hover:from-red-700 hover:to-red-800 hover:shadow-lg hover:scale-105
+                           active:from-red-800 active:to-red-900 active:scale-95 active:shadow-inner
+                           transition-all duration-200 ease-in-out transform
+                           before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                           hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200"
                     onclick="confirmReject()">
                     Reject Request
                 </button>

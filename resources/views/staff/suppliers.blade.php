@@ -15,7 +15,12 @@
                         {{ __('Supplier Management') }}
                     </h2>
                     <button onclick="openAddModal()"
-                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
+                        class="relative bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2
+                               hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:scale-105
+                               active:from-blue-800 active:to-blue-900 active:scale-95 active:shadow-inner
+                               transition-all duration-200 ease-in-out transform
+                               before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                               hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -103,12 +108,46 @@
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
                                             <div class="flex space-x-2 justify-center">
                                                 <button onclick="openEditModal({{ $supplier->id }})"
-                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium">
+                                                    class="relative bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 py-1 rounded-lg text-sm font-medium
+                                                           hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:scale-105
+                                                           active:from-blue-800 active:to-blue-900 active:scale-95 active:shadow-inner
+                                                           transition-all duration-200 ease-in-out transform
+                                                           before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                                           hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                                                    <svg class="w-3 h-3 inline mr-1" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                        </path>
+                                                    </svg>
                                                     Edit
                                                 </button>
                                                 <button onclick="toggleSupplierStatus({{ $supplier->id }})"
-                                                    class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm font-medium">
-                                                    {{ $supplier->status === 'active' ? 'Deactivate' : 'Activate' }}
+                                                    class="relative bg-gradient-to-r {{ $supplier->status === 'active' ? 'from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 active:from-yellow-700 active:to-yellow-800' : 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 active:from-green-700 active:to-green-800' }} text-white px-3 py-1 rounded-lg text-sm font-medium
+                                                           hover:shadow-lg hover:scale-105 active:scale-95 active:shadow-inner
+                                                           transition-all duration-200 ease-in-out transform
+                                                           before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                                           hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                                                    @if ($supplier->status === 'active')
+                                                        <svg class="w-3 h-3 inline mr-1" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18 12M6 6l12 12">
+                                                            </path>
+                                                        </svg>
+                                                        Deactivate
+                                                    @else
+                                                        <svg class="w-3 h-3 inline mr-1" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                                                            </path>
+                                                        </svg>
+                                                        Activate
+                                                    @endif
                                                 </button>
                                             </div>
                                         </td>
@@ -188,7 +227,8 @@
                                     </a>
                                 @else
                                     <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M9 5l7 7-7 7"></path>
                                         </svg>
@@ -267,11 +307,31 @@
                     </div>
                     <div class="flex justify-end space-x-3 mt-6">
                         <button type="button" onclick="closeAddModal()"
-                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                            class="relative bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-2 px-4 rounded-lg
+                                   hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                                   active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
                             Cancel
                         </button>
                         <button type="submit"
-                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            class="relative bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-2 px-4 rounded-lg
+                                   hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:scale-105
+                                   active:from-blue-800 active:to-blue-900 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
                             Add Supplier
                         </button>
                     </div>
@@ -330,11 +390,29 @@
                     </div>
                     <div class="flex justify-end space-x-3 mt-6">
                         <button type="button" onclick="closeEditModal()"
-                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                            class="relative bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-2 px-4 rounded-lg
+                                   hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                                   active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
                             Cancel
                         </button>
                         <button type="submit"
-                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            class="relative bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-2 px-4 rounded-lg
+                                   hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:scale-105
+                                   active:from-blue-800 active:to-blue-900 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
                             Update Supplier
                         </button>
                     </div>

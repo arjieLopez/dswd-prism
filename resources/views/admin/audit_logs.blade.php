@@ -44,7 +44,16 @@
                             <input type="hidden" name="date_to" value="{{ request('date_to') }}">
                         @endif
                         <button type="submit"
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+                            class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-2 px-4 rounded-lg
+                                   hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                   active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
                             Search
                         </button>
                     </form>
@@ -52,7 +61,12 @@
                     <div class="flex items-center gap-2">
                         <div class="relative" x-data="{ open: false, activeTab: 'action' }">
                             <button @click="open = !open"
-                                class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100 active:bg-gray-200">
+                                class="relative flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white
+                                       hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:border-gray-400 hover:shadow-lg hover:scale-105
+                                       active:from-gray-100 active:to-gray-200 active:scale-95 active:shadow-inner
+                                       transition-all duration-200 ease-in-out transform
+                                       before:absolute before:inset-0 before:bg-gray-600 before:opacity-0 before:rounded-lg
+                                       hover:before:opacity-5 active:before:opacity-10 before:transition-opacity before:duration-200">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6h18M4 14h16M4 18h16">
@@ -182,12 +196,22 @@
 
                                         <div class="flex gap-2 pt-2">
                                             <button type="submit"
-                                                class="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                                                class="relative flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm
+                                                       hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                                       active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                                       transition-all duration-200 ease-in-out transform
+                                                       before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                                       hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
                                                 Apply Filter
                                             </button>
                                             @if (request('date_from') || request('date_to'))
                                                 <a href="{{ route('admin.audit_logs', array_filter(['search' => request('search'), 'action' => request('action'), 'role' => request('role')])) }}"
-                                                    class="flex-1 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg text-sm text-center">
+                                                    class="relative flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm text-center
+                                                           hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                                                           active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                                                           transition-all duration-200 ease-in-out transform
+                                                           before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                                           hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
                                                     Clear Dates
                                                 </a>
                                             @endif
@@ -199,7 +223,12 @@
 
                         <div class="relative" id="export-dropdown-container">
                             <button type="button" id="export-btn"
-                                class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition active:bg-green-300">
+                                class="relative flex items-center px-4 py-2 bg-gradient-to-r from-green-100 to-green-200 text-green-700 rounded-lg font-semibold
+                                       hover:from-green-500 hover:to-green-600 hover:text-white hover:shadow-lg hover:scale-105
+                                       active:from-green-600 active:to-green-700 active:scale-95 active:shadow-inner
+                                       transition-all duration-200 ease-in-out transform
+                                       before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                       hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
                                 <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                     class="size-5 mr-3">
                                     <path stroke-linecap="round" stroke-linejoin="round"

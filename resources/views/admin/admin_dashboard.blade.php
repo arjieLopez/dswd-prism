@@ -16,7 +16,12 @@
                 <div id="filter-dropdown" class="relative" x-data="{ open: false, showDatePicker: false }"
                     @open-date-picker.window="open = false; setTimeout(() => showDatePicker = true, 100)">
                     <button @click="open = !open"
-                        class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        class="relative flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white
+                               hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:border-gray-400 hover:shadow-lg hover:scale-105
+                               active:from-gray-100 active:to-gray-200 active:scale-95 active:shadow-inner
+                               transition-all duration-200 ease-in-out transform
+                               before:absolute before:inset-0 before:bg-gray-600 before:opacity-0 before:rounded-lg
+                               hover:before:opacity-5 active:before:opacity-10 before:transition-opacity before:duration-200">
                         <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
@@ -101,11 +106,31 @@
 
                                 <div class="flex justify-end space-x-2 mt-6">
                                     <button @click="showDatePicker = false"
-                                        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                                        class="relative bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-2 px-4 rounded-lg
+                                               hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                                               active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                                               transition-all duration-200 ease-in-out transform
+                                               before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                               hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
                                         Cancel
                                     </button>
                                     <button onclick="applyCustomDates()"
-                                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                        class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-2 px-4 rounded-lg
+                                               hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                               active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                               transition-all duration-200 ease-in-out transform
+                                               before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                               hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
                                         Apply
                                     </button>
                                 </div>

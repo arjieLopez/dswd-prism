@@ -16,7 +16,12 @@
                 </h2>
                 <div>
                     <button
-                        class="bg-green-500 hover:bg-green-700 active:bg-green-900 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2"
+                        class="relative bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2
+                               hover:from-green-600 hover:to-green-700 hover:shadow-lg hover:scale-105
+                               active:from-green-700 active:to-green-800 active:scale-95 active:shadow-inner
+                               transition-all duration-200 ease-in-out transform
+                               before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                               hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200"
                         onclick="openAddUserModal()">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
@@ -56,7 +61,16 @@
                             <input type="hidden" name="sort_order" value="{{ request('sort_order') }}">
                         @endif
                         <button type="submit"
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+                            class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-2 px-4 rounded-lg
+                                   hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                   active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
                             Search
                         </button>
                     </form>
@@ -64,7 +78,12 @@
                     <div class="flex items-center gap-2">
                         <div class="relative" x-data="{ open: false, activeTab: 'role' }">
                             <button @click="open = !open"
-                                class="flex items-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100 active:bg-gray-200">
+                                class="relative flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white
+                                       hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:border-gray-400 hover:shadow-lg hover:scale-105
+                                       active:from-gray-100 active:to-gray-200 active:scale-95 active:shadow-inner
+                                       transition-all duration-200 ease-in-out transform
+                                       before:absolute before:inset-0 before:bg-gray-600 before:opacity-0 before:rounded-lg
+                                       hover:before:opacity-5 active:before:opacity-10 before:transition-opacity before:duration-200">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6h18M4 14h16M4 18h16">
@@ -231,12 +250,35 @@
 
                                         <div class="flex gap-2 pt-2">
                                             <button type="submit"
-                                                class="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                                                class="relative flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm
+                                                       hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                                       active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                                       transition-all duration-200 ease-in-out transform
+                                                       before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                                       hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
+                                                </svg>
                                                 Apply Sort
                                             </button>
                                             @if (request('sort_by') || request('sort_order'))
                                                 <a href="{{ route('admin.user_management', array_filter(['search' => request('search'), 'role' => request('role'), 'status' => request('status')])) }}"
-                                                    class="flex-1 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg text-sm text-center">
+                                                    class="relative flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm text-center
+                                                           hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                                                           active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                                                           transition-all duration-200 ease-in-out transform
+                                                           before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                                           hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200 inline-block">
+                                                    <svg class="w-3 h-3 inline mr-1" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                                        </path>
+                                                    </svg>
                                                     Clear Sort
                                                 </a>
                                             @endif
@@ -247,7 +289,12 @@
                         </div>
                         <div class="relative" id="export-dropdown-container">
                             <button type="button" id="export-btn"
-                                class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold hover:bg-green-200 transition active:bg-green-300">
+                                class="relative flex items-center px-4 py-2 bg-gradient-to-r from-green-100 to-green-200 text-green-700 rounded-lg font-semibold
+                                       hover:from-green-500 hover:to-green-600 hover:text-white hover:shadow-lg hover:scale-105
+                                       active:from-green-600 active:to-green-700 active:scale-95 active:shadow-inner
+                                       transition-all duration-200 ease-in-out transform
+                                       before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                       hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
                                 <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                     class="size-5 mr-3">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -375,7 +422,12 @@
                                     <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
                                         <div class="flex items-center justify-center space-x-2">
                                             <button
-                                                class="bg-blue-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-blue-600 transition view-user-btn"
+                                                class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold 
+                                                       hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105 
+                                                       active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                                       transition-all duration-200 ease-in-out transform view-user-btn
+                                                       before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                                       hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200"
                                                 data-user-id="{{ $user->id }}"
                                                 data-first-name="{{ $user->first_name }}"
                                                 data-middle-name="{{ $user->middle_name }}"
@@ -385,10 +437,22 @@
                                                 data-employee-id="{{ $user->employee_id }}"
                                                 data-office="{{ $user->office }}" data-status="{{ $user->status }}"
                                                 data-created-at="{{ $user->created_at }}">
+                                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                                    </path>
+                                                </svg>
                                                 View
                                             </button>
                                             <button
-                                                class="bg-gray-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-gray-600 transition edit-user-btn"
+                                                class="relative bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-lg text-xs font-semibold 
+                                                       hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105 
+                                                       active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                                                       transition-all duration-200 ease-in-out transform edit-user-btn
+                                                       before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                                       hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200"
                                                 data-user-id="{{ $user->id }}"
                                                 data-first-name="{{ $user->first_name }}"
                                                 data-middle-name="{{ $user->middle_name }}"
@@ -397,6 +461,13 @@
                                                 data-designation="{{ $user->designation }}"
                                                 data-employee-id="{{ $user->employee_id }}"
                                                 data-office="{{ $user->office }}">
+                                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                    </path>
+                                                </svg>
                                                 Edit
                                             </button>
                                             @if ($user->id !== auth()->id())
@@ -613,11 +684,31 @@
 
                     <div class="flex items-center justify-end space-x-3">
                         <button type="button" onclick="closeAddUserModal()"
-                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            class="relative bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-2 px-4 rounded-lg
+                                   hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                                   active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform focus:outline-none
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
                             Cancel
                         </button>
                         <button type="submit"
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-2 px-4 rounded-lg
+                                   hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                   active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform focus:outline-none
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
                             Add User
                         </button>
                     </div>
@@ -687,12 +778,32 @@
                         @csrf
                         @method('PATCH')
                         <button type="button" id="viewUserStatusBtn" onclick="confirmStatusToggle()"
-                            class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded font-semibold transition">
+                            class="relative bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-4 py-2 rounded-lg font-semibold
+                                   hover:from-yellow-600 hover:to-yellow-700 hover:shadow-lg hover:scale-105
+                                   active:from-yellow-700 active:to-yellow-800 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18 12M6 6l12 12">
+                                </path>
+                            </svg>
                             Deactivate
                         </button>
                     </form>
                     <button onclick="closeViewUserModal()"
-                        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        class="relative bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-2 px-4 rounded-lg
+                               hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                               active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                               transition-all duration-200 ease-in-out transform focus:outline-none
+                               before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                               hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
                         Close
                     </button>
                 </div>
@@ -789,11 +900,32 @@
 
                     <div class="flex items-center justify-end space-x-3">
                         <button type="button" onclick="closeEditUserModal()"
-                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            class="relative bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-2 px-4 rounded-lg
+                                   hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                                   active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform focus:outline-none
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
                             Cancel
                         </button>
                         <button type="submit"
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-2 px-4 rounded-lg
+                                   hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                   active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform focus:outline-none
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                </path>
+                            </svg>
                             Update User
                         </button>
                     </div>
@@ -877,13 +1009,37 @@
                 statusForm.style.display = 'inline';
                 statusForm.action = `/admin/user-management/${userId}/toggle-status`;
                 if (status.toLowerCase() === 'active') {
-                    statusBtn.textContent = 'Deactivate';
-                    statusBtn.className =
-                        'bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded font-semibold transition';
+                    statusBtn.innerHTML = `
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18 12M6 6l12 12"></path>
+                        </svg>
+                        Deactivate
+                    `;
+                    statusBtn.className = `
+                        relative bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-4 py-2 rounded-lg font-semibold
+                        hover:from-yellow-600 hover:to-yellow-700 hover:shadow-lg hover:scale-105
+                        active:from-yellow-700 active:to-yellow-800 active:scale-95 active:shadow-inner
+                        transition-all duration-200 ease-in-out transform
+                        before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                        hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200
+                    `.replace(/\s+/g, ' ').trim();
                 } else {
-                    statusBtn.textContent = 'Activate';
-                    statusBtn.className =
-                        'bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-semibold transition';
+                    statusBtn.innerHTML = `
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Activate
+                    `;
+                    statusBtn.className = `
+                        relative bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg font-semibold
+                        hover:from-green-600 hover:to-green-700 hover:shadow-lg hover:scale-105
+                        active:from-green-700 active:to-green-800 active:scale-95 active:shadow-inner
+                        transition-all duration-200 ease-in-out transform
+                        before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                        hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200
+                    `.replace(/\s+/g, ' ').trim();
                 }
             }
         }

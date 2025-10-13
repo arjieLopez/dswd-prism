@@ -97,9 +97,33 @@
                     </div>
 
                     <div class="flex items-center gap-4">
-                        {{-- Check the implementation of the button --}}
-                        <x-primary-button>{{ __('Upload Scanned Copy') }}</x-primary-button>
-                        <a href="{{ route('user.requests') }}" class="text-gray-600 hover:text-gray-800">Cancel</a>
+                        <button type="submit"
+                            class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-2 px-4 rounded-lg
+                                   hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                   active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                </path>
+                            </svg>
+                            Upload Scanned Copy
+                        </button>
+                        <a href="{{ route('user.requests') }}"
+                            class="relative bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-2 px-4 rounded-lg
+                                  hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                                  active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                                  transition-all duration-200 ease-in-out transform
+                                  before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                  hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            Cancel
+                        </a>
                     </div>
                 </form>
             </div>

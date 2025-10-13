@@ -80,7 +80,18 @@
                                         <p class="text-xs text-gray-500">File selected successfully</p>
                                     </div>
                                     <button type="button" @click="fileName = null; $refs.fileInput.value = ''"
-                                        class="text-xs text-red-600 hover:text-red-800">
+                                        class="relative bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold py-1 px-2 rounded
+                                               hover:from-red-600 hover:to-red-700 hover:shadow-lg hover:scale-105
+                                               active:from-red-700 active:to-red-800 active:scale-95 active:shadow-inner
+                                               transition-all duration-200 ease-in-out transform
+                                               before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded
+                                               hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                                        <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                            </path>
+                                        </svg>
                                         Remove file
                                     </button>
                                 </div>
@@ -97,10 +108,33 @@
                         <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                     </div>
                     <div class="flex items-center gap-4">
-                        {{-- Check the implementation of the button --}}
-                        <x-primary-button>{{ __('Upload Document') }}</x-primary-button>
+                        <button type="submit"
+                            class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-2 px-4 rounded-lg
+                                   hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                   active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                   transition-all duration-200 ease-in-out transform
+                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                </path>
+                            </svg>
+                            Upload Document
+                        </button>
                         <a href="{{ route('staff.po_generation') }}"
-                            class="text-gray-600 hover:text-gray-800">Cancel</a>
+                            class="relative bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-2 px-4 rounded-lg
+                                  hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                                  active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                                  transition-all duration-200 ease-in-out transform
+                                  before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                  hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            Cancel
+                        </a>
                     </div>
                 </form>
             </div>
