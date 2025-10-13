@@ -375,35 +375,28 @@
                                     <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
                                         <div class="flex items-center justify-center space-x-2">
                                             <button
-                                                class="bg-blue-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-blue-600 transition"
-                                                onclick="openViewUserModal(
-                            {{ $user->id }},
-                            '{{ $user->first_name }}',
-                            '{{ $user->middle_name }}',
-                            '{{ $user->last_name }}',
-                            '{{ $user->email }}',
-                            '{{ $user->role }}',
-                            '{{ $user->designation }}',
-                            '{{ $user->employee_id }}',
-                            '{{ $user->office }}',
-                            '{{ $user->status }}',
-                            '{{ $user->created_at }}'
-                        )">
+                                                class="bg-blue-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-blue-600 transition view-user-btn"
+                                                data-user-id="{{ $user->id }}"
+                                                data-first-name="{{ $user->first_name }}"
+                                                data-middle-name="{{ $user->middle_name }}"
+                                                data-last-name="{{ $user->last_name }}"
+                                                data-email="{{ $user->email }}" data-role="{{ $user->role }}"
+                                                data-designation="{{ $user->designation }}"
+                                                data-employee-id="{{ $user->employee_id }}"
+                                                data-office="{{ $user->office }}" data-status="{{ $user->status }}"
+                                                data-created-at="{{ $user->created_at }}">
                                                 View
                                             </button>
                                             <button
-                                                class="bg-gray-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-gray-600 transition"
-                                                onclick="openEditUserModal(
-                            {{ $user->id }},
-                            '{{ $user->first_name }}',
-                            '{{ $user->middle_name }}',
-                            '{{ $user->last_name }}',
-                            '{{ $user->email }}',
-                            '{{ $user->role }}',
-                            '{{ $user->designation }}',
-                            '{{ $user->employee_id }}',
-                            '{{ $user->office }}'
-                        )">
+                                                class="bg-gray-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-gray-600 transition edit-user-btn"
+                                                data-user-id="{{ $user->id }}"
+                                                data-first-name="{{ $user->first_name }}"
+                                                data-middle-name="{{ $user->middle_name }}"
+                                                data-last-name="{{ $user->last_name }}"
+                                                data-email="{{ $user->email }}" data-role="{{ $user->role }}"
+                                                data-designation="{{ $user->designation }}"
+                                                data-employee-id="{{ $user->employee_id }}"
+                                                data-office="{{ $user->office }}">
                                                 Edit
                                             </button>
                                             @if ($user->id !== auth()->id())
@@ -693,7 +686,7 @@
                     <form id="viewUserStatusForm" method="POST" style="display:inline;">
                         @csrf
                         @method('PATCH')
-                        <button type="submit" id="viewUserStatusBtn"
+                        <button type="button" id="viewUserStatusBtn" onclick="confirmStatusToggle()"
                             class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded font-semibold transition">
                             Deactivate
                         </button>
@@ -821,6 +814,47 @@
             document.getElementById('addUserModal').querySelector('form').reset();
         }
 
+        // Event listeners for View and Edit buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            // View button event listeners
+            document.querySelectorAll('.view-user-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.dataset.userId;
+                    const firstName = this.dataset.firstName;
+                    const middleName = this.dataset.middleName;
+                    const lastName = this.dataset.lastName;
+                    const email = this.dataset.email;
+                    const role = this.dataset.role;
+                    const designation = this.dataset.designation;
+                    const employeeId = this.dataset.employeeId;
+                    const office = this.dataset.office;
+                    const status = this.dataset.status;
+                    const createdAt = this.dataset.createdAt;
+
+                    openViewUserModal(userId, firstName, middleName, lastName, email, role,
+                        designation, employeeId, office, status, createdAt);
+                });
+            });
+
+            // Edit button event listeners
+            document.querySelectorAll('.edit-user-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.dataset.userId;
+                    const firstName = this.dataset.firstName;
+                    const middleName = this.dataset.middleName;
+                    const lastName = this.dataset.lastName;
+                    const email = this.dataset.email;
+                    const role = this.dataset.role;
+                    const designation = this.dataset.designation;
+                    const employeeId = this.dataset.employeeId;
+                    const office = this.dataset.office;
+
+                    openEditUserModal(userId, firstName, middleName, lastName, email, role,
+                        designation, employeeId, office);
+                });
+            });
+        });
+
         // View User Modal Functions
         function openViewUserModal(userId, firstName, middleName, lastName, email, role, designation, employeeId, office,
             status, created_at) {
@@ -829,9 +863,9 @@
                 lastName;
             document.getElementById('view_email').textContent = email;
             document.getElementById('view_role').textContent = role.charAt(0).toUpperCase() + role.slice(1);
-            document.getElementById('view_designation').textContent = designation;
-            document.getElementById('view_employee_id').textContent = employeeId;
-            document.getElementById('view_office').textContent = office;
+            document.getElementById('view_designation').textContent = designation || '-';
+            document.getElementById('view_employee_id').textContent = employeeId || '-';
+            document.getElementById('view_office').textContent = office || '-';
             document.getElementById('view_status').textContent = status;
             document.getElementById('view_created_at').textContent = created_at;
 
@@ -858,14 +892,14 @@
         function openEditUserModal(userId, firstName, middleName, lastName, email, role, designation, employeeId, office) {
             document.getElementById('editUserModal').classList.remove('hidden');
             document.getElementById('editUserForm').action = `/admin/user-management/${userId}`;
-            document.getElementById('edit_first_name').value = firstName;
-            document.getElementById('edit_middle_name').value = middleName;
-            document.getElementById('edit_last_name').value = lastName;
-            document.getElementById('edit_email').value = email;
-            document.getElementById('edit_role').value = role;
-            document.getElementById('edit_designation').value = designation;
-            document.getElementById('edit_employee_id').value = employeeId;
-            document.getElementById('edit_office').value = office;
+            document.getElementById('edit_first_name').value = firstName || '';
+            document.getElementById('edit_middle_name').value = middleName || '';
+            document.getElementById('edit_last_name').value = lastName || '';
+            document.getElementById('edit_email').value = email || '';
+            document.getElementById('edit_role').value = role || '';
+            document.getElementById('edit_designation').value = designation || '';
+            document.getElementById('edit_employee_id').value = employeeId || '';
+            document.getElementById('edit_office').value = office || '';
         }
 
         function closeEditUserModal() {
@@ -1000,6 +1034,148 @@
         @if ($errors->any())
             showErrorAlert('{{ $errors->first() }}');
         @endif
+
+        // Confirmation dialog for status toggle
+        function confirmStatusToggle() {
+            const statusBtn = document.getElementById('viewUserStatusBtn');
+            const action = statusBtn.textContent.trim();
+            const form = document.getElementById('viewUserStatusForm');
+
+            let message = '';
+            if (action === 'Deactivate') {
+                message =
+                    'Are you sure you want to deactivate this user? They will be immediately logged out of all sessions.';
+            } else {
+                message = 'Are you sure you want to activate this user?';
+            }
+
+            showModernConfirmation(message, function() {
+                form.submit();
+            });
+        }
+
+        function showModernConfirmation(message, onConfirm) {
+            const confirmDiv = document.createElement('div');
+            confirmDiv.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(4px);
+                z-index: 99999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.2s ease-out;
+            `;
+
+            const modalDiv = document.createElement('div');
+            modalDiv.style.cssText = `
+                background: white;
+                padding: 32px 28px;
+                border-radius: 16px;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+                max-width: 440px;
+                width: 90%;
+                text-align: center;
+                animation: slideIn 0.3s ease-out;
+                transform-origin: center center;
+            `;
+
+            modalDiv.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <div style="width: 64px; height: 64px; margin: 0 auto 16px; background: linear-gradient(135deg, #FEF3C7, #F59E0B); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <svg style="width: 32px; height: 32px; color: #D97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <h3 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 600; color: #1F2937;">Confirm Action</h3>
+                    <p style="margin: 0; color: #6B7280; font-size: 15px; line-height: 1.5;">${message}</p>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button id="modern-confirm-yes" style="
+                        padding: 12px 24px;
+                        background: linear-gradient(135deg, #EF4444, #DC2626);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 14px;
+                        transition: all 0.2s ease;
+                        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+                    " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(239, 68, 68, 0.4)'"
+                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.3)'">
+                        Yes, Confirm
+                    </button>
+                    <button id="modern-confirm-no" style="
+                        padding: 12px 24px;
+                        background: linear-gradient(135deg, #6B7280, #4B5563);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 14px;
+                        transition: all 0.2s ease;
+                        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+                    " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(107, 114, 128, 0.4)'"
+                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(107, 114, 128, 0.3)'">
+                        Cancel
+                    </button>
+                </div>
+            `;
+
+            confirmDiv.appendChild(modalDiv);
+            document.body.appendChild(confirmDiv);
+
+            // Add CSS animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideIn {
+                    from { 
+                        opacity: 0; 
+                        transform: scale(0.8) translateY(-20px); 
+                    }
+                    to { 
+                        opacity: 1; 
+                        transform: scale(1) translateY(0); 
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Event listeners
+            document.getElementById('modern-confirm-yes').onclick = () => {
+                confirmDiv.remove();
+                onConfirm();
+            };
+
+            document.getElementById('modern-confirm-no').onclick = () => {
+                confirmDiv.style.animation = 'fadeOut 0.2s ease-in';
+                setTimeout(() => confirmDiv.remove(), 200);
+            };
+
+            confirmDiv.onclick = (e) => {
+                if (e.target === confirmDiv) {
+                    confirmDiv.style.animation = 'fadeOut 0.2s ease-in';
+                    setTimeout(() => confirmDiv.remove(), 200);
+                }
+            };
+
+            // Cleanup style when modal closes
+            setTimeout(() => {
+                if (style.parentNode) {
+                    style.remove();
+                }
+            }, 5000);
+        }
 
         // // Close modals when clicking outside
         // window.onclick = function(event) {

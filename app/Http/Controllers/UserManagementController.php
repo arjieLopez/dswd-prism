@@ -8,6 +8,7 @@ use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rules;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -144,6 +145,7 @@ class UserManagementController extends Controller
         }
 
         $oldStatus = $user->email_verified_at ? 'active' : 'inactive';
+        $willBeDeactivated = $user->email_verified_at !== null; // User will be deactivated if currently active
 
         $user->update([
             'email_verified_at' => $user->email_verified_at ? null : now(),
@@ -153,10 +155,26 @@ class UserManagementController extends Controller
 
         $newStatus = $user->email_verified_at ? 'active' : 'inactive';
 
+        // If user was deactivated, log the action
+        if ($willBeDeactivated) {
+            // Note: With file-based sessions, the CheckUserStatus middleware
+            // will automatically log out inactive users on their next request
+
+            // Log the forced logout action
+            ActivityService::logUserLogout($user->id, $user->first_name . ' ' . ($user->middle_name ? $user->middle_name . ' ' : '') . $user->last_name);
+        }
+
         ActivityService::logUserStatusChanged($user->id, $user->first_name . ' ' . ($user->middle_name ? $user->middle_name . ' ' : '') . $user->last_name, $oldStatus, $newStatus);
 
         $status = $user->email_verified_at ? 'activated' : 'deactivated';
-        return redirect()->route('admin.user_management')->with('success', "User {$status} successfully.");
+
+        if ($user->email_verified_at) {
+            $message = "User {$status} successfully.";
+        } else {
+            $message = "User {$status} successfully. They will be automatically logged out on their next request.";
+        }
+
+        return redirect()->route('admin.user_management')->with('success', $message);
     }
 
     public function exportXlsx(Request $request)
