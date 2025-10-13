@@ -342,7 +342,7 @@
                                             {{ $counter++ }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                            {{ $log->created_at->format('M d, Y H:i') }}
+                                            {{ $log->created_at->format('F j, Y g:i A') }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                             {{ $log->user_name }}

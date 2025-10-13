@@ -130,7 +130,7 @@ class AuditLogsController extends Controller
 
             $csvContent[] = [
                 $index + 1,
-                $log->created_at->format('M d, Y H:i'),
+                $log->created_at->format('F j, Y g:i A'),
                 $log->user_name,
                 ucfirst($log->user_role),
                 $actionText

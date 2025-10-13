@@ -97,7 +97,7 @@ class POGenerationController extends Controller
             'requesting_unit' => $purchaseRequest->user
                 ? ($purchaseRequest->user->first_name . ($purchaseRequest->user->middle_name ? ' ' . $purchaseRequest->user->middle_name : '') . ' ' . $purchaseRequest->user->last_name)
                 : 'Unknown',
-            'created_at' => $purchaseRequest->created_at->format('M d, Y H:i'),
+            'created_at' => $purchaseRequest->created_at->format('M d, Y'),
             'po_number' => $purchaseRequest->po_number,
             'supplier_id' => $purchaseRequest->supplier_id,
             'supplier_name' => $purchaseRequest->supplier ? $purchaseRequest->supplier->supplier_name : null,

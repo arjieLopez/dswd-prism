@@ -292,6 +292,10 @@
                                     </th>
                                     <th
                                         class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Total Amount
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Status
                                     </th>
                                     <th
@@ -311,11 +315,14 @@
                                             {{ $pr->pr_number }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                            {{ $pr->created_at->format('M d, Y H:i') }}
+                                            {{ $pr->created_at->format('M d, Y') }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                             {{ $pr->user->first_name }}{{ $pr->user->middle_name ? ' ' . $pr->user->middle_name : '' }}
                                             {{ $pr->user->last_name }}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            ₱{{ number_format($pr->total ?? 0, 2) }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-center">
                                             <span

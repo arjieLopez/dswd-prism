@@ -85,7 +85,7 @@ class PRReviewController extends Controller
                 'requesting_unit' => $purchaseRequest->user
                     ? ($purchaseRequest->user->first_name . ($purchaseRequest->user->middle_name ? ' ' . $purchaseRequest->user->middle_name : '') . ' ' . $purchaseRequest->user->last_name)
                     : 'Unknown',
-                'created_at' => $purchaseRequest->created_at->format('M d, Y H:i'),
+                'created_at' => $purchaseRequest->created_at->format('M d, Y'),
                 'items' => $purchaseRequest->items->map(function ($item) {
                     return [
                         'unit' => $item->unit,

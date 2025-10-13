@@ -228,7 +228,7 @@
                 @foreach ($auditLogs as $index => $log)
                     <tr>
                         <td class="text-center">{{ $index + 1 }}</td>
-                        <td class="text-center">{{ $log->created_at->format('M d, Y H:i') }}</td>
+                        <td class="text-center">{{ $log->created_at->format('F j, Y g:i A') }}</td>
                         <td class="wrapped-text">{{ $log->user_name }}</td>
                         <td class="text-center">
                             @php

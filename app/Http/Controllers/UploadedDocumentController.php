@@ -42,7 +42,7 @@ class UploadedDocumentController extends Controller
                 $doc->original_filename,
                 strtoupper($doc->file_type),
                 $doc->file_size_formatted,
-                $doc->created_at->format('M d, Y H:i'),
+                $doc->created_at->format('M d, Y'),
                 $doc->notes,
             ], NULL, 'A' . $row);
             $row++;

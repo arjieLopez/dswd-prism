@@ -345,7 +345,7 @@
                                             {{ $pr->pr_number }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                            {{ $pr->created_at->format('M d, Y H:i') }}
+                                            {{ $pr->created_at->format('M d, Y') }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-center">
                                             <span

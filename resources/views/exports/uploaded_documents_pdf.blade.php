@@ -52,7 +52,7 @@
                     <td>{{ $doc->original_filename }}</td>
                     <td>{{ strtoupper($doc->file_type) }}</td>
                     <td>{{ $doc->file_size_formatted }}</td>
-                    <td>{{ $doc->created_at->format('M d, Y H:i') }}</td>
+                    <td>{{ $doc->created_at->format('M d, Y') }}</td>
                     <td>{{ $doc->notes }}</td>
                 </tr>
             @endforeach
