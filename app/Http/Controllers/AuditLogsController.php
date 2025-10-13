@@ -25,10 +25,13 @@ class AuditLogsController extends Controller
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function ($q) use ($search) {
-                    $q->where(DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name) as user_name"), 'like', "%{$search}%")
+                    $q->where(DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name)"), 'like', "%{$search}%")
                         ->orWhere('user_activities.description', 'like', "%{$search}%")
                         ->orWhere('user_activities.pr_number', 'like', "%{$search}%")
-                        ->orWhere('users.role', 'like', "%{$search}%");
+                        ->orWhere('users.role', 'like', "%{$search}%")
+                        ->orWhere('users.first_name', 'like', "%{$search}%")
+                        ->orWhere('users.last_name', 'like', "%{$search}%")
+                        ->orWhere('user_activities.action', 'like', "%{$search}%");
                 });
             }
 
@@ -64,12 +67,13 @@ class AuditLogsController extends Controller
 
             return view('admin.audit_logs', compact('auditLogs', 'actions', 'roles', 'recentActivities'));
         } catch (\Exception $e) {
-            // If there's an error, return empty results
-            $auditLogs = collect([])->paginate(10);
+            // If there's an error, return empty results using an empty query
+            $auditLogs = UserActivity::whereRaw('1 = 0')->paginate(10); // Empty query that can be paginated
             $actions = collect([]);
             $roles = collect([]);
+            $recentActivities = collect([]);
 
-            return view('admin.audit_logs', compact('auditLogs', 'actions', 'roles'));
+            return view('admin.audit_logs', compact('auditLogs', 'actions', 'roles', 'recentActivities'));
         }
     }
 
@@ -90,7 +94,10 @@ class AuditLogsController extends Controller
                 $q->where(DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name)"), 'like', "%{$search}%")
                     ->orWhere('user_activities.description', 'like', "%{$search}%")
                     ->orWhere('user_activities.pr_number', 'like', "%{$search}%")
-                    ->orWhere('users.role', 'like', "%{$search}%");
+                    ->orWhere('users.role', 'like', "%{$search}%")
+                    ->orWhere('users.first_name', 'like', "%{$search}%")
+                    ->orWhere('users.last_name', 'like', "%{$search}%")
+                    ->orWhere('user_activities.action', 'like', "%{$search}%");
             });
         }
 
@@ -171,7 +178,10 @@ class AuditLogsController extends Controller
                 $q->where(DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name)"), 'like', "%{$search}%")
                     ->orWhere('user_activities.description', 'like', "%{$search}%")
                     ->orWhere('user_activities.pr_number', 'like', "%{$search}%")
-                    ->orWhere('users.role', 'like', "%{$search}%");
+                    ->orWhere('users.role', 'like', "%{$search}%")
+                    ->orWhere('users.first_name', 'like', "%{$search}%")
+                    ->orWhere('users.last_name', 'like', "%{$search}%")
+                    ->orWhere('user_activities.action', 'like', "%{$search}%");
             });
         }
 

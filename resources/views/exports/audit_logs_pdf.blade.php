@@ -148,32 +148,6 @@
             word-break: break-word;
             max-width: 120px;
         }
-
-        .filters-section {
-            background-color: #f7fafc;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
-            border-radius: 5px;
-        }
-
-        .filters-section h3 {
-            font-size: 11px;
-            font-weight: bold;
-            margin: 0 0 8px 0;
-            color: #2d3748;
-        }
-
-        .filter-item {
-            font-size: 9px;
-            margin: 3px 0;
-            color: #4a5568;
-        }
-
-        .filter-label {
-            font-weight: bold;
-            color: #2d3748;
-        }
     </style>
 </head>
 
@@ -185,15 +159,6 @@
             Generated on: {{ $exportDate }}
         </div>
     </div>
-
-    @if (!empty($filterSummary))
-        <div class="filters-section">
-            <h3>Applied Filters:</h3>
-            @foreach ($filterSummary as $filter)
-                <div class="filter-item">{{ $filter }}</div>
-            @endforeach
-        </div>
-    @endif
 
     <div class="summary">
         <h3>Export Summary</h3>
