@@ -15,6 +15,7 @@ DSWD-PRISM is a Laravel 10 procurement system for the Department of Social Welfa
 -   **Users**: Three roles - `admin`, `staff` (GSO), and `user` (requestor)
 -   **PODocuments**: Uploaded PO documents with file management
 -   **UploadedDocuments**: Scanned PR documents attached to purchase requests
+-   **UserActivity**: Notification system for tracking all system actions
 
 ### Key Business Logic
 
@@ -31,18 +32,94 @@ DSWD-PRISM is a Laravel 10 procurement system for the Department of Social Welfa
 
 ### Critical Controllers & Their Responsibilities
 
--   `PurchaseRequestController`: User CRUD operations, submit/withdraw/complete actions
+-   `PurchaseRequestController`: User CRUD operations, submit/withdraw/complete actions, **staff notifications**
 -   `PRReviewController`: Staff approval/rejection workflow with export functionality
 -   `POGenerationController`: Convert approved PRs to POs, manage supplier assignment, edit/print POs
 -   `PODocumentController`: Handle PO document uploads/downloads/deletion
 -   `UploadedDocumentController`: Manage scanned document uploads with export features
--   `SupplierController`: Supplier CRUD operations with status management
+-   `SupplierController`: Supplier CRUD operations with **consistent alert feedback**
 -   `UserManagementController`: Admin user management with role/status controls
 -   `GSODashboardController`: Statistics and overview for GSO staff with date filtering
 -   `UserDashboardController`: User-specific dashboard with month/custom date filtering
--   `ActivityService`: Centralized activity logging across the system
+-   `ActivityService`: Centralized activity logging and **notification creation**
 
 ## Development Patterns
+
+### **CRITICAL: Standardized Alert System**
+
+**ALL pages must use the same JavaScript alert functions** - never use basic `alert()` or inconsistent styling:
+
+```javascript
+// Required on every page that shows user feedback
+function showSuccessAlert(message) {
+    const alertDiv = document.createElement("div");
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #10B981;
+        color: white;
+        padding: 16px 20px;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        z-index: 99999;
+        font-weight: 500;
+        font-size: 16px;
+        text-align: center;
+        min-width: 300px;
+        max-width: 400px;
+    `;
+    alertDiv.textContent = message;
+
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "×";
+    closeBtn.style.cssText = `
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        line-height: 1;
+    `;
+    closeBtn.onclick = () => alertDiv.remove();
+    alertDiv.appendChild(closeBtn);
+
+    document.body.appendChild(alertDiv);
+    setTimeout(() => alertDiv.parentNode && alertDiv.remove(), 3000);
+}
+
+function showErrorAlert(message) {
+    // Same structure but background: #EF4444 for red
+}
+```
+
+**Alert Integration Patterns:**
+
+-   **Laravel session messages**: Convert to JavaScript alerts in Blade templates
+-   **AJAX responses**: Always call `showSuccessAlert(data.message)` on success
+-   **Form submissions**: Show success alert then delayed reload: `setTimeout(() => location.reload(), 1500)`
+
+### Notification System Pattern
+
+When users submit PRs, **automatically notify all staff**:
+
+```php
+// In PurchaseRequestController submit method
+$staffUsers = User::where('role', 'staff')->get();
+foreach ($staffUsers as $staff) {
+    UserActivity::create([
+        'user_id' => $staff->id,
+        'action' => 'pr_submitted_notification',
+        'details' => "New PR {$pr->pr_number} submitted by {$user->first_name} {$user->last_name}",
+        'related_type' => 'App\Models\PurchaseRequest',
+        'related_id' => $pr->id,
+    ]);
+}
+```
 
 ### Dashboard Filtering Pattern
 
@@ -190,6 +267,26 @@ function openViewModal(prId) {
 
 All list views implement consistent export dropdown with XLSX/PDF options using global JavaScript in `app.js`:
 
+```blade
+<!-- Standard export dropdown HTML (copy this pattern) -->
+<div class="relative inline-block text-left">
+    <button id="export-btn" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md">
+        <i class="iconify w-4 h-4 mr-2" data-icon="material-symbols:upload"></i>
+        Export
+    </button>
+    <div id="export-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+        <button id="export-xlsx" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+            <i class="iconify w-4 h-4 mr-2" data-icon="vscode-icons:file-type-excel"></i>
+            Export as XLSX
+        </button>
+        <button id="export-pdf" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+            <i class="iconify w-4 h-4 mr-2" data-icon="vscode-icons:file-type-pdf2"></i>
+            Export as PDF
+        </button>
+    </div>
+</div>
+```
+
 ```javascript
 // Global export functionality pattern (in app.js)
 // Automatically detects current page and routes to appropriate export endpoint
@@ -261,7 +358,7 @@ document.getElementById("export-xlsx")?.addEventListener("click", function () {
 
 ### AJAX Pattern with CSRF
 
-All AJAX requests must include CSRF token:
+All AJAX requests must include CSRF token and use standardized alerts:
 
 ```javascript
 // Standard AJAX pattern for form submissions
@@ -278,12 +375,58 @@ fetch(`/staff/pr-review/${prId}/approve`, {
     .then((response) => response.json())
     .then((data) => {
         if (data.success) {
-            alert("Success message");
-            location.reload(); // or redirect
+            showSuccessAlert(data.message);
+            setTimeout(() => location.reload(), 1500); // Show alert before reload
         } else {
-            alert("Error: " + data.message);
+            showErrorAlert(data.message || "An error occurred");
         }
+    })
+    .catch((error) => {
+        showErrorAlert("Network error occurred");
     });
+```
+
+### Professional Confirmation Modal Pattern
+
+Replace basic `confirm()` dialogs with styled confirmation modals:
+
+```javascript
+// Professional confirmation for critical actions (supplier status, etc.)
+function showConfirmationModal(message, onConfirm) {
+    const confirmDiv = document.createElement("div");
+    confirmDiv.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 99999;
+        display: flex; align-items: center; justify-content: center;
+    `;
+
+    const modalDiv = document.createElement("div");
+    modalDiv.style.cssText = `
+        background: white; padding: 24px; border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 400px; text-align: center;
+    `;
+
+    modalDiv.innerHTML = `
+        <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600;">Confirm Action</h3>
+        <p style="margin: 0 0 24px 0; color: #666;">${message}</p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button id="confirm-yes" style="padding: 8px 16px; background: #EF4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Yes</button>
+            <button id="confirm-no" style="padding: 8px 16px; background: #6B7280; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+        </div>
+    `;
+
+    confirmDiv.appendChild(modalDiv);
+    document.body.appendChild(confirmDiv);
+
+    document.getElementById("confirm-yes").onclick = () => {
+        confirmDiv.remove();
+        onConfirm();
+    };
+    document.getElementById("confirm-no").onclick = () => confirmDiv.remove();
+    confirmDiv.onclick = (e) => {
+        if (e.target === confirmDiv) confirmDiv.remove();
+    };
+}
 ```
 
 ### Supplier Auto-fill Pattern
@@ -310,13 +453,30 @@ function updateSupplierInfo() {
 @endforeach
 ```
 
-### Activity Logging
+### Activity Logging & Notifications
 
-Always use `ActivityService` for audit trails:
+Always use `ActivityService` for audit trails and notifications:
 
 ```php
 ActivityService::logPrApproved($prNumber, $staffName);
 ActivityService::logPoGenerated($prNumber, $poNumber);
+ActivityService::logPrSubmitted($prNumber, $userName);
+```
+
+**UserActivity** model serves dual purpose:
+
+-   Audit logging for administrator reports
+-   Notification system for user bell icons (filter by `user_id` for notifications)
+
+```php
+// Creating notifications for specific users
+UserActivity::create([
+    'user_id' => $targetUserId, // Who receives the notification
+    'action' => 'pr_submitted_notification',
+    'details' => "New PR {$prNumber} submitted",
+    'related_type' => 'App\Models\PurchaseRequest',
+    'related_id' => $prId,
+]);
 ```
 
 ### Number to Words Pattern
@@ -369,6 +529,21 @@ For PDF documents requiring amount in words (particularly PO print layouts):
     $totalInWords .= ' ONLY';
 @endphp
 {{ $totalInWords }}
+```
+
+### Date Formatting Pattern
+
+Consistent date formatting across the application:
+
+```php
+// For display dates (October 10, 2025 format)
+{{ $item->date_field ? \Carbon\Carbon::parse($item->date_field)->format('F j, Y') : '' }}
+
+// For form dates (YYYY-MM-DD format)
+{{ $item->date_field ? $item->date_field->format('Y-m-d') : '' }}
+
+// For timestamps with time (audit logs only)
+{{ $item->updated_at->format('M j, Y g:i A') }}
 ```
 
 ### User Name Display Pattern
@@ -614,3 +789,40 @@ function openCustomDatePicker() {
     }
 }
 ```
+
+## 🚨 CRITICAL GUIDELINES FOR AI AGENTS
+
+### **Database & Implementation Safety**
+
+-   **NO DATABASE CHANGES**: Never create migrations, seeders, or modify database structure
+-   **NO CONTROLLER ROUTES**: Do not add new routes without explicit user permission
+-   **CHECK EXISTING CODE**: Always search for existing implementations before adding methods
+-   **CONSISTENCY FIRST**: Reference similar files to maintain design patterns and avoid redundancy
+
+### **Code Review Process**
+
+```bash
+# Always check if method/pattern exists before implementing
+1. Search for similar functionality: grep -r "methodName" app/
+2. Check related controllers for existing patterns
+3. Review similar blade templates for UI consistency
+4. Verify alert system usage matches established patterns
+```
+
+## 🎯 AI Agent Quick Reference
+
+**MUST-USE Patterns (Never Deviate):**
+
+1. **Alert System**: Use `showSuccessAlert()` / `showErrorAlert()` - NEVER basic `alert()`
+2. **Notifications**: Auto-notify staff on PR submissions via `UserActivity`
+3. **Date Format**: `F j, Y` for display, `Y-m-d` for forms, `M j, Y g:i A` for audit logs only
+4. **AJAX Flow**: `showSuccessAlert(data.message)` → `setTimeout(() => location.reload(), 1500)`
+5. **Confirmations**: Custom styled modals, not `confirm()`
+6. **Design Consistency**: Ensure uniform styling, spacing, and behavior across ALL files
+
+**Key Files for Reference:**
+
+-   `resources/views/user/requests.blade.php` - Master alert implementation
+-   `app/Services/ActivityService.php` - Notification patterns
+-   `app/Http/Controllers/PurchaseRequestController.php` - Staff notification logic
+-   `resources/views/staff/suppliers.blade.php` - Confirmation modal example

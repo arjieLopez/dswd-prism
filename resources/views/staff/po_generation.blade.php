@@ -930,40 +930,44 @@
         }
 
         function deletePODocument(documentId) {
-            if (confirm('Are you sure you want to delete this PO document?')) {
-                console.log('Deleting PO document with ID:', documentId);
+            showModernConfirmation(
+                'Are you sure you want to delete this PO document?',
+                function() {
+                    console.log('Deleting PO document with ID:', documentId);
 
-                fetch(`/po-documents/${documentId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(response => {
-                        console.log('Delete response status:', response.status);
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Delete response data:', data);
-                        if (data.success) {
-                            // Show success message
-                            showSuccessAlert('PO Document deleted successfully!');
-                            // Reload the page to update the table
-                            location.reload();
-                        } else {
-                            showErrorAlert('Error: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showErrorAlert('An error occurred while deleting the document: ' + error.message);
-                    });
-            }
+                    fetch(`/po-documents/${documentId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                    'content'),
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            console.log('Delete response status:', response.status);
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('Delete response data:', data);
+                            if (data.success) {
+                                // Show success message
+                                showSuccessAlert('PO Document deleted successfully!');
+                                // Reload the page to update the table
+                                location.reload();
+                            } else {
+                                showErrorAlert('Error: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showErrorAlert('An error occurred while deleting the document: ' + error.message);
+                        });
+                }
+            );
         }
 
         function showSuccessAlert(message) {
@@ -1056,6 +1060,129 @@
                     alertDiv.remove();
                 }
             }, 3000);
+        }
+
+        function showModernConfirmation(message, onConfirm) {
+            const confirmDiv = document.createElement('div');
+            confirmDiv.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(4px);
+                z-index: 99999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.2s ease-out;
+            `;
+
+            const modalDiv = document.createElement('div');
+            modalDiv.style.cssText = `
+                background: white;
+                padding: 32px 28px;
+                border-radius: 16px;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+                max-width: 440px;
+                width: 90%;
+                text-align: center;
+                animation: slideIn 0.3s ease-out;
+                transform-origin: center center;
+            `;
+
+            modalDiv.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <div style="width: 64px; height: 64px; margin: 0 auto 16px; background: linear-gradient(135deg, #FEF3C7, #F59E0B); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <svg style="width: 32px; height: 32px; color: #D97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <h3 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 600; color: #1F2937;">Confirm Action</h3>
+                    <p style="margin: 0; color: #6B7280; font-size: 15px; line-height: 1.5;">${message}</p>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button id="modern-confirm-yes" style="
+                        padding: 12px 24px;
+                        background: linear-gradient(135deg, #EF4444, #DC2626);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 14px;
+                        transition: all 0.2s ease;
+                        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+                    " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(239, 68, 68, 0.4)'"
+                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.3)'">
+                        Yes, Confirm
+                    </button>
+                    <button id="modern-confirm-no" style="
+                        padding: 12px 24px;
+                        background: linear-gradient(135deg, #6B7280, #4B5563);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 14px;
+                        transition: all 0.2s ease;
+                        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+                    " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(107, 114, 128, 0.4)'"
+                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(107, 114, 128, 0.3)'">
+                        Cancel
+                    </button>
+                </div>
+            `;
+
+            confirmDiv.appendChild(modalDiv);
+            document.body.appendChild(confirmDiv);
+
+            // Add CSS animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideIn {
+                    from { 
+                        opacity: 0; 
+                        transform: scale(0.8) translateY(-20px); 
+                    }
+                    to { 
+                        opacity: 1; 
+                        transform: scale(1) translateY(0); 
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Event listeners
+            document.getElementById('modern-confirm-yes').onclick = () => {
+                confirmDiv.remove();
+                onConfirm();
+            };
+
+            document.getElementById('modern-confirm-no').onclick = () => {
+                confirmDiv.style.animation = 'fadeOut 0.2s ease-in';
+                setTimeout(() => confirmDiv.remove(), 200);
+            };
+
+            confirmDiv.onclick = (e) => {
+                if (e.target === confirmDiv) {
+                    confirmDiv.style.animation = 'fadeOut 0.2s ease-in';
+                    setTimeout(() => confirmDiv.remove(), 200);
+                }
+            };
+
+            // Cleanup style when modal closes
+            setTimeout(() => {
+                if (style.parentNode) {
+                    style.remove();
+                }
+            }, 5000);
         }
     </script>
 

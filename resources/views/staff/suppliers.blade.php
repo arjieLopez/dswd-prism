@@ -378,7 +378,7 @@
         }
 
         function toggleSupplierStatus(supplierId) {
-            // Show confirmation with consistent styling
+            // Create modern confirmation modal with animations
             const confirmDiv = document.createElement('div');
             confirmDiv.style.cssText = `
                 position: fixed;
@@ -386,38 +386,115 @@
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0,0,0,0.5);
+                background: rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(4px);
                 z-index: 99999;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                opacity: 0;
+                transition: opacity 0.3s ease-in-out;
+                padding: 20px;
             `;
 
             const modalDiv = document.createElement('div');
             modalDiv.style.cssText = `
                 background: white;
-                padding: 24px;
-                border-radius: 8px;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                max-width: 400px;
+                padding: 32px;
+                border-radius: 16px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                max-width: 420px;
+                width: 100%;
                 text-align: center;
+                transform: scale(0.95);
+                transition: transform 0.3s ease-in-out;
+                border: 1px solid rgba(0, 0, 0, 0.05);
             `;
 
             modalDiv.innerHTML = `
-                <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600;">Confirm Status Change</h3>
-                <p style="margin: 0 0 24px 0; color: #666;">Are you sure you want to change the supplier status?</p>
+                <div style="margin-bottom: 20px;">
+                    <div style="
+                        width: 64px;
+                        height: 64px;
+                        background: linear-gradient(135deg, #FEF3C7 0%, #FCD34D 100%);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto 16px auto;
+                        box-shadow: 0 10px 25px rgba(252, 211, 77, 0.3);
+                    ">
+                        <svg style="width: 28px; height: 28px; color: #D97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 style="
+                        margin: 0 0 12px 0; 
+                        font-size: 20px; 
+                        font-weight: 700; 
+                        color: #1F2937;
+                        letter-spacing: -0.025em;
+                    ">Confirm Status Change</h3>
+                    <p style="
+                        margin: 0 0 28px 0; 
+                        color: #6B7280; 
+                        font-size: 15px; 
+                        line-height: 1.6;
+                        font-weight: 400;
+                    ">Are you sure you want to change this supplier's status? This action will affect their availability in the system.</p>
+                </div>
                 <div style="display: flex; gap: 12px; justify-content: center;">
-                    <button id="confirm-yes" style="padding: 8px 16px; background: #EF4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Yes</button>
-                    <button id="confirm-no" style="padding: 8px 16px; background: #6B7280; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                    <button id="confirm-no" style="
+                        padding: 12px 24px; 
+                        background: #F9FAFB; 
+                        color: #374151; 
+                        border: 1px solid #D1D5DB;
+                        border-radius: 8px; 
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 14px;
+                        transition: all 0.2s ease;
+                        min-width: 100px;
+                    " onmouseover="this.style.background='#F3F4F6'; this.style.borderColor='#9CA3AF';" 
+                       onmouseout="this.style.background='#F9FAFB'; this.style.borderColor='#D1D5DB';">
+                        Cancel
+                    </button>
+                    <button id="confirm-yes" style="
+                        padding: 12px 24px; 
+                        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+                        color: white; 
+                        border: none;
+                        border-radius: 8px; 
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 14px;
+                        box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.3);
+                        transition: all 0.2s ease;
+                        min-width: 100px;
+                    " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px 0 rgba(239, 68, 68, 0.4)';" 
+                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px 0 rgba(239, 68, 68, 0.3)';">
+                        Confirm
+                    </button>
                 </div>
             `;
 
             confirmDiv.appendChild(modalDiv);
             document.body.appendChild(confirmDiv);
 
+            // Animate in
+            requestAnimationFrame(() => {
+                confirmDiv.style.opacity = '1';
+                modalDiv.style.transform = 'scale(1)';
+            });
+
             // Handle confirmation
             document.getElementById('confirm-yes').onclick = () => {
-                confirmDiv.remove();
+                // Animate out
+                confirmDiv.style.opacity = '0';
+                modalDiv.style.transform = 'scale(0.95)';
+                setTimeout(() => confirmDiv.remove(), 300);
 
                 fetch(`/suppliers/${supplierId}/toggle-status`, {
                         method: 'POST',
@@ -446,15 +523,38 @@
             };
 
             document.getElementById('confirm-no').onclick = () => {
-                confirmDiv.remove();
+                // Animate out
+                confirmDiv.style.opacity = '0';
+                modalDiv.style.transform = 'scale(0.95)';
+                setTimeout(() => confirmDiv.remove(), 300);
             };
 
-            // Close on background click
+            // Close on background click with animation
             confirmDiv.onclick = (e) => {
                 if (e.target === confirmDiv) {
-                    confirmDiv.remove();
+                    confirmDiv.style.opacity = '0';
+                    modalDiv.style.transform = 'scale(0.95)';
+                    setTimeout(() => confirmDiv.remove(), 300);
                 }
             };
+
+            // Prevent modal from closing when clicking inside the modal
+            modalDiv.onclick = (e) => {
+                e.stopPropagation();
+            };
+
+            // Close with Escape key
+            const escapeHandler = (e) => {
+                if (e.key === 'Escape') {
+                    confirmDiv.style.opacity = '0';
+                    modalDiv.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        confirmDiv.remove();
+                        document.removeEventListener('keydown', escapeHandler);
+                    }, 300);
+                }
+            };
+            document.addEventListener('keydown', escapeHandler);
         }
 
         // Add Supplier Form Submission
