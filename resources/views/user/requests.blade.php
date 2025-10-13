@@ -1050,7 +1050,7 @@
                 if (prId) {
                     window.open(`/purchase-requests/${prId}/print`, '_blank');
                 } else {
-                    alert('PR ID not found.');
+                    showErrorAlert('PR ID not found.');
                 }
             }
 

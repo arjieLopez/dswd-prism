@@ -696,7 +696,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error loading PO details: ' + error.message);
+                    showErrorAlert('Error loading PO details: ' + error.message);
                 });
         }
 
@@ -706,7 +706,7 @@
             if (poId) {
                 window.open(`/staff/po-generation/${poId}/print`, '_blank');
             } else {
-                alert('PO ID not found.');
+                showErrorAlert('PO ID not found.');
             }
         }
 
@@ -716,7 +716,7 @@
             if (poNumber) {
                 window.location.href = `/po-documents/upload?po_number=${encodeURIComponent(poNumber)}`;
             } else {
-                alert('PO Number not found.');
+                showErrorAlert('PO Number not found.');
             }
         }
 
@@ -893,15 +893,15 @@
                             .then(response => response.json())
                             .then(result => {
                                 if (result.success) {
-                                    alert('PO updated successfully!');
+                                    showSuccessAlert('PO updated successfully!');
                                     closeEditPOModal();
                                     location.reload();
                                 } else {
-                                    alert('Error: ' + (result.message || 'Failed to update PO.'));
+                                    showErrorAlert('Error: ' + (result.message || 'Failed to update PO.'));
                                 }
                             })
                             .catch(error => {
-                                alert('Error updating PO: ' + error.message);
+                                showErrorAlert('Error updating PO: ' + error.message);
                             });
                     };
 
@@ -919,7 +919,7 @@
                 })
                 .catch(error => {
                     console.error('Edit modal error:', error);
-                    alert('Error loading PO details: ' + error.message);
+                    showErrorAlert('Error loading PO details: ' + error.message);
                 });
         }
 
@@ -952,18 +952,110 @@
                         console.log('Delete response data:', data);
                         if (data.success) {
                             // Show success message
-                            alert('PO Document deleted successfully!');
+                            showSuccessAlert('PO Document deleted successfully!');
                             // Reload the page to update the table
                             location.reload();
                         } else {
-                            alert('Error: ' + data.message);
+                            showErrorAlert('Error: ' + data.message);
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('An error occurred while deleting the document: ' + error.message);
+                        showErrorAlert('An error occurred while deleting the document: ' + error.message);
                     });
             }
+        }
+
+        function showSuccessAlert(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #10B981;
+                color: white;
+                padding: 16px 20px;
+                border-radius: 8px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 99999;
+                font-weight: 500;
+                font-size: 16px;
+                text-align: center;
+                min-width: 300px;
+                max-width: 400px;
+            `;
+            alertDiv.textContent = message;
+
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '×';
+            closeBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 10px;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 18px;
+                cursor: pointer;
+                line-height: 1;
+            `;
+            closeBtn.onclick = () => alertDiv.remove();
+            alertDiv.appendChild(closeBtn);
+
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+
+        function showErrorAlert(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #EF4444;
+                color: white;
+                padding: 16px 20px;
+                border-radius: 8px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 99999;
+                font-weight: 500;
+                font-size: 16px;
+                text-align: center;
+                min-width: 300px;
+                max-width: 400px;
+            `;
+            alertDiv.textContent = message;
+
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '×';
+            closeBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 10px;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 18px;
+                cursor: pointer;
+                line-height: 1;
+            `;
+            closeBtn.onclick = () => alertDiv.remove();
+            alertDiv.appendChild(closeBtn);
+
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
         }
     </script>
 

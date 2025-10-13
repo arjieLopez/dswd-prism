@@ -282,31 +282,6 @@
                     </div>
                 </div>
 
-                <!-- Success/Error Messages -->
-                @if (session('success'))
-                    <div id="success-message"
-                        class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if (session('error'))
-                    <div id="error-message"
-                        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
-                @if ($errors->any())
-                    <div id="error-list" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                        <ul class="list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
                 <!-- Active Filters Display -->
                 @if (request('search') || request('role') || request('status') || request('sort_by'))
                     <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -918,17 +893,113 @@
             }
         }
 
-        // Auto-hide success/error messages after 4 seconds
-        setTimeout(function() {
-            const successMsg = document.getElementById('success-message');
-            if (successMsg) successMsg.style.display = 'none';
+        // JavaScript alert functions - consistent with all other pages
+        function showSuccessAlert(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #10B981;
+                color: white;
+                padding: 16px 20px;
+                border-radius: 8px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 99999;
+                font-weight: 500;
+                font-size: 16px;
+                text-align: center;
+                min-width: 300px;
+                max-width: 400px;
+            `;
+            alertDiv.textContent = message;
 
-            const errorMsg = document.getElementById('error-message');
-            if (errorMsg) errorMsg.style.display = 'none';
+            // Add close button
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '×';
+            closeBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 10px;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 18px;
+                cursor: pointer;
+                line-height: 1;
+            `;
+            closeBtn.onclick = () => alertDiv.remove();
+            alertDiv.appendChild(closeBtn);
 
-            const errorList = document.getElementById('error-list');
-            if (errorList) errorList.style.display = 'none';
-        }, 4000);
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+
+        function showErrorAlert(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #EF4444;
+                color: white;
+                padding: 16px 20px;
+                border-radius: 8px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 99999;
+                font-weight: 500;
+                font-size: 16px;
+                text-align: center;
+                min-width: 300px;
+                max-width: 400px;
+            `;
+            alertDiv.textContent = message;
+
+            // Add close button
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '×';
+            closeBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 10px;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 18px;
+                cursor: pointer;
+                line-height: 1;
+            `;
+            closeBtn.onclick = () => alertDiv.remove();
+            alertDiv.appendChild(closeBtn);
+
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+
+        // Check for Laravel session messages and show as JavaScript alerts
+        @if (session('success'))
+            showSuccessAlert('{{ session('success') }}');
+        @endif
+
+        @if (session('error'))
+            showErrorAlert('{{ session('error') }}');
+        @endif
+
+        @if ($errors->any())
+            showErrorAlert('{{ $errors->first() }}');
+        @endif
 
         // // Close modals when clicking outside
         // window.onclick = function(event) {

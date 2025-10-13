@@ -463,12 +463,12 @@
             const dateTo = document.getElementById('date-to').value;
 
             if (!dateFrom || !dateTo) {
-                alert('Please select both from and to dates');
+                showErrorAlert('Please select both from and to dates');
                 return;
             }
 
             if (new Date(dateFrom) > new Date(dateTo)) {
-                alert('From date cannot be later than to date');
+                showErrorAlert('From date cannot be later than to date');
                 return;
             }
 
@@ -484,6 +484,99 @@
             url.searchParams.set('date_to', dateTo);
 
             window.location.href = url.toString();
+        }
+
+        // Standardized alert functions - consistent with all other pages
+        function showSuccessAlert(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #10B981;
+                color: white;
+                padding: 16px 20px;
+                border-radius: 8px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 99999;
+                font-weight: 500;
+                font-size: 16px;
+                text-align: center;
+                min-width: 300px;
+                max-width: 400px;
+            `;
+            alertDiv.textContent = message;
+
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '×';
+            closeBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 10px;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 18px;
+                cursor: pointer;
+                line-height: 1;
+            `;
+            closeBtn.onclick = () => alertDiv.remove();
+            alertDiv.appendChild(closeBtn);
+
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+
+        function showErrorAlert(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #EF4444;
+                color: white;
+                padding: 16px 20px;
+                border-radius: 8px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 99999;
+                font-weight: 500;
+                font-size: 16px;
+                text-align: center;
+                min-width: 300px;
+                max-width: 400px;
+            `;
+            alertDiv.textContent = message;
+
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '×';
+            closeBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 10px;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 18px;
+                cursor: pointer;
+                line-height: 1;
+            `;
+            closeBtn.onclick = () => alertDiv.remove();
+            alertDiv.appendChild(closeBtn);
+
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
         }
     </script>
 
