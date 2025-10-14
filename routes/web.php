@@ -20,17 +20,38 @@ use App\Http\Controllers\UploadedDocumentController;
 */
 
 Route::get('/welcome', function () {
+    if (auth()->check()) {
+        // Redirect to dashboard based on role
+        $role = auth()->user()->role;
+        if ($role === 'admin') {
+            return redirect()->route('admin');
+        } elseif ($role === 'staff') {
+            return redirect()->route('staff');
+        } elseif ($role === 'user') {
+            return redirect()->route('user');
+        }
+    }
     return view('welcome');
 });
 
 Route::get('/', function () {
+    if (auth()->check()) {
+        $role = auth()->user()->role;
+        if ($role === 'admin') {
+            return redirect()->route('admin');
+        } elseif ($role === 'staff') {
+            return redirect()->route('staff');
+        } elseif ($role === 'user') {
+            return redirect()->route('user');
+        }
+    }
     return view('auth.login');
     // return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified', 'twofactor'])->name('dashboard');
+// Route::get('/dashboard', function () {
+//     return view('dashboard');
+// })->middleware(['auth', 'verified', 'twofactor'])->name('dashboard');
 
 Route::get('/admin', [AdminDashboardController::class, 'show'])->middleware(['auth', 'verified', 'twofactor', 'role:admin'])->name('admin');
 Route::get('/admin/reports', [App\Http\Controllers\ReportsController::class, 'index'])->middleware(['auth', 'verified', 'twofactor', 'role:admin'])->name('admin.reports');
