@@ -60,12 +60,12 @@
                             </div>
                         @endforeach
                     </div>
-                    {{-- <div class="px-4 py-2 border-t border-gray-200">
-                        <a href="{{ route('user.requests') }}"
+                    <div class="px-4 py-2 border-t border-gray-200">
+                        <a href="{{ route('notifications.all') }}"
                             class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                            View all activities →
+                            View all notifications →
                         </a>
-                    </div> --}}
+                    </div>
                 @else
                     <div class="px-4 py-8 text-center">
                         <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor"

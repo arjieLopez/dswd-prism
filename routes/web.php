@@ -153,3 +153,6 @@ Route::get("verify/resend", [TwoFactorCodeController::class, 'resend'])->name('v
 Route::post("verify", [TwoFactorCodeController::class, 'verify'])->name('verify');
 
 require __DIR__ . '/auth.php';
+
+// Notifications page for all roles
+Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.all')->middleware(['auth']);
