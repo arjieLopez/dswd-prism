@@ -292,172 +292,191 @@
                 @endif
 
                 <!-- Table -->
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    #</th>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Type</th>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Document
-                                    Number</th>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Department
-                                </th>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status</th>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Amount</th>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @php $counter = ($reports->currentPage() - 1) * $reports->perPage() + 1; @endphp
-                            @forelse ($reports as $report)
+                @if ($reports->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
                                 <tr>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                        {{ $counter++ }}</td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                        {{ $report->type }}</td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                        {{ $report->document_number }}</td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                        {{ $report->department }}</td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-center">
-                                        @if ($report->type === 'PO')
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                PO Generated
-                                            </span>
-                                        @else
-                                            <span
-                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $report->status_color }}">
-                                                {{ $report->status_display }}
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">₱
-                                        {{ number_format($report->amount, 2) }}</td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
-                                        <button
-                                            onclick="viewReport({{ $report->id }}, '{{ $report->type }}', '{{ $report->status }}')"
-                                            class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-lg text-sm font-medium w-28
-                                                   hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
-                                                   active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
-                                                   transition-all duration-200 ease-in-out transform
-                                                   before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
-                                                   hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
-                                            <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                                                </path>
-                                            </svg>
-                                            View
-                                        </button>
-                                    </td>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        #</th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Type</th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Document Number</th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Department</th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status</th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Amount</th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Action</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="px-4 py-8 text-center text-gray-500">
-                                        No reports found
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Custom Pagination - Only show when there are more than 10 items -->
-                @if ($reports->total() > 10)
-                    <div class="flex justify-center mt-6">
-                        <div class="flex items-center space-x-1">
-                            @if ($reports->onFirstPage())
-                                <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 19l-7-7 7-7"></path>
-                                    </svg>
-                                </span>
-                            @else
-                                <a href="{{ $reports->appends(request()->query())->previousPageUrl() }}"
-                                    class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 19l-7-7 7-7"></path>
-                                    </svg>
-                                </a>
-                            @endif
-
-                            @php
-                                $start = max(1, $reports->currentPage() - 2);
-                                $end = min($reports->lastPage(), $reports->currentPage() + 2);
-
-                                if ($end - $start < 4) {
-                                    if ($start == 1) {
-                                        $end = min($reports->lastPage(), $start + 4);
-                                    } else {
-                                        $start = max(1, $end - 4);
-                                    }
-                                }
-                            @endphp
-
-                            @if ($start > 1)
-                                <a href="{{ $reports->appends(request()->query())->url(1) }}"
-                                    class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">1</a>
-                                @if ($start > 2)
-                                    <span class="px-2 py-2 text-gray-400">...</span>
-                                @endif
-                            @endif
-
-                            @for ($page = $start; $page <= $end; $page++)
-                                @if ($page == $reports->currentPage())
-                                    <span
-                                        class="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md">{{ $page }}</span>
-                                @else
-                                    <a href="{{ $reports->appends(request()->query())->url($page) }}"
-                                        class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $page }}</a>
-                                @endif
-                            @endfor
-
-                            @if ($end < $reports->lastPage())
-                                @if ($end < $reports->lastPage() - 1)
-                                    <span class="px-2 py-2 text-gray-400">...</span>
-                                @endif
-                                <a href="{{ $reports->appends(request()->query())->url($reports->lastPage()) }}"
-                                    class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $reports->lastPage() }}</a>
-                            @endif
-
-                            @if ($reports->hasMorePages())
-                                <a href="{{ $reports->appends(request()->query())->nextPageUrl() }}"
-                                    class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </a>
-                            @else
-                                <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </span>
-                            @endif
-                        </div>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @php $counter = ($reports->currentPage() - 1) * $reports->perPage() + 1; @endphp
+                                @foreach ($reports as $report)
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                            {{ $counter++ }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            {{ $report->type }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            {{ $report->document_number }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            {{ $report->department }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-center">
+                                            @if ($report->type === 'PO')
+                                                <span
+                                                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">PO
+                                                    Generated</span>
+                                            @else
+                                                <span
+                                                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $report->status_color }}">{{ $report->status_display }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            ₱{{ number_format($report->amount, 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
+                                            <button
+                                                onclick="viewReport({{ $report->id }}, '{{ $report->type }}', '{{ $report->status }}')"
+                                                class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-lg text-sm font-medium w-28
+                                                       hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                                       active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                                       transition-all duration-200 ease-in-out transform
+                                                       before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                                       hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                                    </path>
+                                                </svg>
+                                                View
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
+                @else
+                    <div class="text-center py-12">
+                        @if (request('search') || request('status') || request('date_from') || request('date_to'))
+                            <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No results
+                                found{{ request('search') ? ' for "' . request('search') . '"' : '' }}</h3>
+                            <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filter criteria.</p>
+                        @else
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No reports found</h3>
+                            <p class="mt-1 text-sm text-gray-500">No reports are available for the selected criteria.
+                            </p>
+                        @endif
+                    </div>
+
+                    <!-- Custom Pagination - Only show when there are more than 10 items -->
+                    @if ($reports->total() > 10)
+                        <div class="flex justify-center mt-6">
+                            <div class="flex items-center space-x-1">
+                                @if ($reports->onFirstPage())
+                                    <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 19l-7-7 7-7"></path>
+                                        </svg>
+                                    </span>
+                                @else
+                                    <a href="{{ $reports->appends(request()->query())->previousPageUrl() }}"
+                                        class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 19l-7-7 7-7"></path>
+                                        </svg>
+                                    </a>
+                                @endif
+
+                                @php
+                                    $start = max(1, $reports->currentPage() - 2);
+                                    $end = min($reports->lastPage(), $reports->currentPage() + 2);
+
+                                    if ($end - $start < 4) {
+                                        if ($start == 1) {
+                                            $end = min($reports->lastPage(), $start + 4);
+                                        } else {
+                                            $start = max(1, $end - 4);
+                                        }
+                                    }
+                                @endphp
+
+                                @if ($start > 1)
+                                    <a href="{{ $reports->appends(request()->query())->url(1) }}"
+                                        class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">1</a>
+                                    @if ($start > 2)
+                                        <span class="px-2 py-2 text-gray-400">...</span>
+                                    @endif
+                                @endif
+
+                                @for ($page = $start; $page <= $end; $page++)
+                                    @if ($page == $reports->currentPage())
+                                        <span
+                                            class="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md">{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $reports->appends(request()->query())->url($page) }}"
+                                            class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $page }}</a>
+                                    @endif
+                                @endfor
+
+                                @if ($end < $reports->lastPage())
+                                    @if ($end < $reports->lastPage() - 1)
+                                        <span class="px-2 py-2 text-gray-400">...</span>
+                                    @endif
+                                    <a href="{{ $reports->appends(request()->query())->url($reports->lastPage()) }}"
+                                        class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $reports->lastPage() }}</a>
+                                @endif
+
+                                @if ($reports->hasMorePages())
+                                    <a href="{{ $reports->appends(request()->query())->nextPageUrl() }}"
+                                        class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </a>
+                                @else
+                                    <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
                 @endif
             </div>
 

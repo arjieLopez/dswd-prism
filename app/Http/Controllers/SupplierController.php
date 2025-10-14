@@ -8,10 +8,47 @@ use App\Services\ActivityService;
 
 class SupplierController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $suppliers = Supplier::orderBy('created_at', 'desc')
-            ->paginate(10);
+        $query = Supplier::query();
+
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('supplier_name', 'like', "%{$search}%")
+                    ->orWhere('tin', 'like', "%{$search}%")
+                    ->orWhere('address', 'like', "%{$search}%")
+                    ->orWhere('contact_person', 'like', "%{$search}%")
+                    ->orWhere('contact_number', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Status filter
+        if ($request->filled('status') && in_array($request->input('status'), ['active', 'inactive'])) {
+            $query->where('status', $request->input('status'));
+        }
+
+        // Date filter
+        if ($request->filled('date_from') && $request->filled('date_to')) {
+            $dateFrom = $request->input('date_from');
+            $dateTo = $request->input('date_to');
+            $query->whereBetween('created_at', [
+                $dateFrom . ' 00:00:00',
+                $dateTo . ' 23:59:59'
+            ]);
+        } elseif ($request->filled('date_from')) {
+            $dateFrom = $request->input('date_from');
+            $query->where('created_at', '>=', $dateFrom . ' 00:00:00');
+        } elseif ($request->filled('date_to')) {
+            $dateTo = $request->input('date_to');
+            $query->where('created_at', '<=', $dateTo . ' 23:59:59');
+        }
+
+        $suppliers = $query->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->appends($request->query());
 
         $user = auth()->user();
         $recentActivities = $user->activities()

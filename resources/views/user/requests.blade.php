@@ -533,22 +533,15 @@
                     @endif
                 @else
                     <div class="text-center py-8">
-                        @if (request('search'))
+                        @if (request('search') || request('status') || request('date_from') || request('date_to'))
                             <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">No results found for
-                                "{{ request('search') }}"</h3>
-                            <p class="mt-1 text-sm text-gray-500">Try adjusting your search terms or browse all
-                                purchase requests.</p>
-                            <div class="mt-4">
-                                <a href="{{ route('user.requests') }}"
-                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                                    View All Requests
-                                </a>
-                            </div>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No results
+                                found{{ request('search') ? ' for "' . request('search') . '"' : '' }}</h3>
+                            <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filter criteria.</p>
                         @else
                             <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">

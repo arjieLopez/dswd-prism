@@ -372,207 +372,206 @@
                 @endif
 
                 <!-- User Table -->
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    #</th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Name</th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Email Address</th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Role</th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status</th>
-                                <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @php $counter = ($users->currentPage() - 1) * $users->perPage() + 1; @endphp
-                            @forelse($users as $user)
+                @if ($users->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
                                 <tr>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                        {{ $counter++ }}
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {{ $user->first_name }}{{ $user->middle_name ? ' ' . $user->middle_name : '' }}
-                                        {{ $user->last_name }}
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $user->email }}
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ ucfirst($user->role) }}
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                        <span
-                                            class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $user->isActive() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                            {{ $user->status }}
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
-                                        <div class="flex items-center justify-center space-x-2">
-                                            <button
-                                                class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold 
-                                                       hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105 
-                                                       active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
-                                                       transition-all duration-200 ease-in-out transform view-user-btn
-                                                       before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
-                                                       hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200"
-                                                data-user-id="{{ $user->id }}"
-                                                data-first-name="{{ $user->first_name }}"
-                                                data-middle-name="{{ $user->middle_name }}"
-                                                data-last-name="{{ $user->last_name }}"
-                                                data-email="{{ $user->email }}" data-role="{{ $user->role }}"
-                                                data-designation="{{ $user->designation }}"
-                                                data-employee-id="{{ $user->employee_id }}"
-                                                data-office="{{ $user->office }}" data-status="{{ $user->status }}"
-                                                data-created-at="{{ $user->created_at }}">
-                                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                                                    </path>
-                                                </svg>
-                                                View
-                                            </button>
-                                            <button
-                                                class="relative bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-lg text-xs font-semibold 
-                                                       hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105 
-                                                       active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
-                                                       transition-all duration-200 ease-in-out transform edit-user-btn
-                                                       before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
-                                                       hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200"
-                                                data-user-id="{{ $user->id }}"
-                                                data-first-name="{{ $user->first_name }}"
-                                                data-middle-name="{{ $user->middle_name }}"
-                                                data-last-name="{{ $user->last_name }}"
-                                                data-email="{{ $user->email }}" data-role="{{ $user->role }}"
-                                                data-designation="{{ $user->designation }}"
-                                                data-employee-id="{{ $user->employee_id }}"
-                                                data-office="{{ $user->office }}">
-                                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                                                    </path>
-                                                </svg>
-                                                Edit
-                                            </button>
-                                            @if ($user->id !== auth()->id())
-                                                {{-- <form method="POST"
-                            action="{{ route('admin.user_management.destroy', $user) }}"
-                            class="inline"
-                            onsubmit="return confirm('Are you sure you want to delete this user?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit"
-                                class="bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-red-600 transition">Delete</button>
-                        </form> --}}
-                                            @endif
-                                        </div>
-                                    </td>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        #</th>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Name</th>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Email Address</th>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Role</th>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status</th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Action</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="px-4 py-4 text-center text-gray-500">
-                                        No users found.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Custom Pagination - Only show when there are more than 10 items -->
-                @if ($users->total() > 10)
-                    <div class="flex justify-center mt-6">
-                        <div class="flex items-center space-x-1">
-                            @if ($users->onFirstPage())
-                                <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 19l-7-7 7-7"></path>
-                                    </svg>
-                                </span>
-                            @else
-                                <a href="{{ $users->previousPageUrl() }}"
-                                    class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 19l-7-7 7-7"></path>
-                                    </svg>
-                                </a>
-                            @endif
-
-                            @php
-                                $start = max(1, $users->currentPage() - 2);
-                                $end = min($users->lastPage(), $users->currentPage() + 2);
-
-                                if ($end - $start < 4) {
-                                    if ($start == 1) {
-                                        $end = min($users->lastPage(), $start + 4);
-                                    } else {
-                                        $start = max(1, $end - 4);
-                                    }
-                                }
-                            @endphp
-
-                            @if ($start > 1)
-                                <a href="{{ $users->url(1) }}"
-                                    class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">1</a>
-                                @if ($start > 2)
-                                    <span class="px-2 py-2 text-gray-400">...</span>
-                                @endif
-                            @endif
-
-                            @for ($page = $start; $page <= $end; $page++)
-                                @if ($page == $users->currentPage())
-                                    <span
-                                        class="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md">{{ $page }}</span>
-                                @else
-                                    <a href="{{ $users->url($page) }}"
-                                        class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $page }}</a>
-                                @endif
-                            @endfor
-
-                            @if ($end < $users->lastPage())
-                                @if ($end < $users->lastPage() - 1)
-                                    <span class="px-2 py-2 text-gray-400">...</span>
-                                @endif
-                                <a href="{{ $users->url($users->lastPage()) }}"
-                                    class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $users->lastPage() }}</a>
-                            @endif
-
-                            @if ($users->hasMorePages())
-                                <a href="{{ $users->nextPageUrl() }}"
-                                    class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </a>
-                            @else
-                                <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </span>
-                            @endif
-                        </div>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @php $counter = ($users->currentPage() - 1) * $users->perPage() + 1; @endphp
+                                @foreach ($users as $user)
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                            {{ $counter++ }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {{ $user->first_name }}{{ $user->middle_name ? ' ' . $user->middle_name : '' }}
+                                            {{ $user->last_name }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ $user->email }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ ucfirst($user->role) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <span
+                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $user->isActive() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">{{ $user->status }}</span>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
+                                            <div class="flex items-center justify-center space-x-2">
+                                                <button
+                                                    class="relative bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105 active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner transition-all duration-200 ease-in-out transform view-user-btn before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200"
+                                                    data-user-id="{{ $user->id }}"
+                                                    data-first-name="{{ $user->first_name }}"
+                                                    data-middle-name="{{ $user->middle_name }}"
+                                                    data-last-name="{{ $user->last_name }}"
+                                                    data-email="{{ $user->email }}" data-role="{{ $user->role }}"
+                                                    data-designation="{{ $user->designation }}"
+                                                    data-employee-id="{{ $user->employee_id }}"
+                                                    data-office="{{ $user->office }}"
+                                                    data-status="{{ $user->status }}"
+                                                    data-created-at="{{ $user->created_at }}">
+                                                    <svg class="w-3 h-3 inline mr-1" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                                        </path>
+                                                    </svg>
+                                                    View
+                                                </button>
+                                                <button
+                                                    class="relative bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105 active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner transition-all duration-200 ease-in-out transform edit-user-btn before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200"
+                                                    data-user-id="{{ $user->id }}"
+                                                    data-first-name="{{ $user->first_name }}"
+                                                    data-middle-name="{{ $user->middle_name }}"
+                                                    data-last-name="{{ $user->last_name }}"
+                                                    data-email="{{ $user->email }}" data-role="{{ $user->role }}"
+                                                    data-designation="{{ $user->designation }}"
+                                                    data-employee-id="{{ $user->employee_id }}"
+                                                    data-office="{{ $user->office }}">
+                                                    <svg class="w-3 h-3 inline mr-1" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                        </path>
+                                                    </svg>
+                                                    Edit
+                                                </button>
+                                                @if ($user->id !== auth()->id())
+                                                    {{-- Delete button commented out for safety --}}
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
+                @else
+                    <div class="text-center py-12">
+                        @if (request('search') || request('role') || request('status') || request('sort_by'))
+                            <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No results
+                                found{{ request('search') ? ' for "' . request('search') . '"' : '' }}</h3>
+                            <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filter criteria.</p>
+                        @else
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No users found</h3>
+                            <p class="mt-1 text-sm text-gray-500">No users are available for the selected criteria.</p>
+                        @endif
+                    </div>
+
+                    <!-- Custom Pagination - Only show when there are more than 10 items -->
+                    @if ($users->total() > 10)
+                        <div class="flex justify-center mt-6">
+                            <div class="flex items-center space-x-1">
+                                @if ($users->onFirstPage())
+                                    <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 19l-7-7 7-7"></path>
+                                        </svg>
+                                    </span>
+                                @else
+                                    <a href="{{ $users->appends(request()->query())->previousPageUrl() }}"
+                                        class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 19l-7-7 7-7"></path>
+                                        </svg>
+                                    </a>
+                                @endif
+
+                                @php
+                                    $start = max(1, $users->currentPage() - 2);
+                                    $end = min($users->lastPage(), $users->currentPage() + 2);
+
+                                    if ($end - $start < 4) {
+                                        if ($start == 1) {
+                                            $end = min($users->lastPage(), $start + 4);
+                                        } else {
+                                            $start = max(1, $end - 4);
+                                        }
+                                    }
+                                @endphp
+
+                                @if ($start > 1)
+                                    <a href="{{ $users->appends(request()->query())->url(1) }}"
+                                        class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">1</a>
+                                    @if ($start > 2)
+                                        <span class="px-2 py-2 text-gray-400">...</span>
+                                    @endif
+                                @endif
+
+                                @for ($page = $start; $page <= $end; $page++)
+                                    @if ($page == $users->currentPage())
+                                        <span
+                                            class="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md">{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $users->appends(request()->query())->url($page) }}"
+                                            class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $page }}</a>
+                                    @endif
+                                @endfor
+
+                                @if ($end < $users->lastPage())
+                                    @if ($end < $users->lastPage() - 1)
+                                        <span class="px-2 py-2 text-gray-400">...</span>
+                                    @endif
+                                    <a href="{{ $users->appends(request()->query())->url($users->lastPage()) }}"
+                                        class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">{{ $users->lastPage() }}</a>
+                                @endif
+
+                                @if ($users->hasMorePages())
+                                    <a href="{{ $users->appends(request()->query())->nextPageUrl() }}"
+                                        class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </a>
+                                @else
+                                    <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
                 @endif
 
             </div>
