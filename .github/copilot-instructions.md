@@ -799,6 +799,8 @@ function openCustomDatePicker() {
 -   **CHECK EXISTING CODE**: Always search for existing implementations before adding methods
 -   **CONSISTENCY FIRST**: Reference similar files to maintain design patterns and avoid redundancy
 
+-   **ERROR-FREE CODE**: All generated code must be free of syntax, runtime, and logic errors. Always validate and fix any errors before considering the task complete.
+
 ### **Code Review Process**
 
 ```bash
