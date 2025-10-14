@@ -7,7 +7,7 @@
             ' ' .
             Auth::user()->last_name" :recentActivities="$recentActivities ?? collect()" />
     </x-slot>
-    <div class="w-full min-h-screen bg-gray-100 flex items-center justify-center py-8">
+    <div class="w-full bg-gray-100 flex justify-center py-8">
         <div class="w-full max-w-2xl mx-auto rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
@@ -101,13 +101,23 @@
                                 class="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring focus:ring-blue-200 focus:border-blue-300">
                             <div class="flex gap-2">
                                 <button type="submit"
-                                    class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded bg-blue-600 text-white text-xs font-semibold shadow hover:bg-blue-700 transition w-full">
-                                    <i class="iconify w-4 h-4" data-icon="mdi:filter"></i> Apply Filter
+                                    class="relative flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs
+                                        hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:scale-105
+                                        active:from-blue-700 active:to-blue-800 active:scale-95 active:shadow-inner
+                                        transition-all duration-200 ease-in-out transform
+                                        before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                        hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200 w-full">
+                                    <i class="iconify w-4 h-4 inline mr-1" data-icon="mdi:filter"></i> Apply Filter
                                 </button>
                                 @if ($dateFrom && $dateTo)
                                     <a href="{{ route('notifications.all') }}"
-                                        class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded bg-gray-600 text-white text-xs font-semibold shadow hover:bg-gray-700 transition w-full">
-                                        <i class="iconify w-4 h-4" data-icon="mdi:delete"></i> Clear Dates
+                                        class="relative flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold bg-gradient-to-r from-gray-500 to-gray-600 text-white text-xs
+                                            hover:from-gray-600 hover:to-gray-700 hover:shadow-lg hover:scale-105
+                                            active:from-gray-700 active:to-gray-800 active:scale-95 active:shadow-inner
+                                            transition-all duration-200 ease-in-out transform
+                                            before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg
+                                            hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200 w-full">
+                                        <i class="iconify w-4 h-4 inline mr-1" data-icon="mdi:delete"></i> Clear Dates
                                     </a>
                                 @endif
                             </div>
