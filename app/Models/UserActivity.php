@@ -62,10 +62,10 @@ class UserActivity extends Model
             'downloaded_document' => 'mdi:download',
 
             // Suppliers
-            'created_supplier' => 'mdi:account-multiple-plus',
-            'updated_supplier' => 'mdi:account-multiple-edit',
-            'deleted_supplier' => 'mdi:account-multiple-remove',
-            'supplier_status_changed' => 'mdi:account-multiple-cog',
+            'created_supplier' => 'mdi:store-plus',
+            'updated_supplier' => 'mdi:store-edit',
+            'deleted_supplier' => 'mdi:store-remove',
+            'supplier_status_changed' => 'mdi:store-cog',
 
             // System
             'generated_report' => 'mdi:chart-line',
