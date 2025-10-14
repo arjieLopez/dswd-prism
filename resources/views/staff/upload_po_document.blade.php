@@ -28,8 +28,8 @@
                         <x-input-label for="po_number">
                             PO Number <span class="text-red-500">*</span>
                         </x-input-label>
-                        <x-text-input id="po_number" name="po_number" type="text" class="mt-1 block w-full"
-                            :value="old('po_number', request('po_number'))" required autofocus readonly />
+                        <x-text-input id="po_number" name="po_number" type="text"
+                            class="mt-1 block w-full bg-gray-100" :value="old('po_number', request('po_number'))" required autofocus readonly />
                         <x-input-error :messages="$errors->get('po_number')" class="mt-2" />
                     </div>
 

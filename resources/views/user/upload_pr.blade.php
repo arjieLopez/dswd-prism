@@ -27,8 +27,8 @@
                         <x-input-label for="pr_number">
                             PR Number <span class="text-red-500">*</span>
                         </x-input-label>
-                        <x-text-input id="pr_number" name="pr_number" type="text" class="mt-1 block w-full"
-                            :value="old('pr_number', $prNumber ?? '')" required autofocus readonly />
+                        <x-text-input id="pr_number" name="pr_number" type="text"
+                            class="mt-1 block w-full bg-gray-100" :value="old('pr_number', $prNumber ?? '')" required autofocus readonly />
                         <x-input-error :messages="$errors->get('pr_number')" class="mt-2" />
                     </div>
 

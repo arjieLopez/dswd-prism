@@ -48,7 +48,7 @@
                                         class="text-red-500">*</span></label>
                                 <input type="text" name="office_section" id="office_section"
                                     value="{{ old('office_section', auth()->user()->office) }}" required readonly
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-100 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                             </div>
 
                             <div>
@@ -234,7 +234,7 @@
                                     <input type="text" name="requested_by_name" id="requested_by_name"
                                         value="{{ old('requested_by_name', auth()->user()->first_name . (auth()->user()->middle_name ? ' ' . auth()->user()->middle_name : '') . ' ' . auth()->user()->last_name) }}"
                                         required readonly
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-100 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                 </div>
 
                                 <div>
@@ -245,7 +245,7 @@
                                         id="requested_by_designation"
                                         value="{{ old('requested_by_designation', auth()->user()->designation) }}"
                                         required readonly
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-100 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                 </div>
 
                                 {{-- <div>
