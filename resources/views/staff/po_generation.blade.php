@@ -608,6 +608,9 @@
 
     <script>
         window.suppliers = @json($suppliers);
+        window.modesOfProcurement = @json($modesOfProcurement);
+        window.deliveryTerms = @json($deliveryTerms);
+        window.paymentTerms = @json($paymentTerms);
     </script>
 
     <script>
@@ -860,6 +863,27 @@
                             `<option value="${s.id}" data-address="${s.address ?? ''}" data-tin="${s.tin ?? ''}" ${data.supplier_id == s.id ? 'selected' : ''}>${s.supplier_name}</option>`;
                     });
 
+                    // Build mode of procurement options
+                    let modeOptions = `<option value="">Select Mode</option>`;
+                    window.modesOfProcurement.forEach(mode => {
+                        modeOptions +=
+                            `<option value="${mode.name}" ${data.mode_of_procurement === mode.name ? 'selected' : ''}>${mode.name}</option>`;
+                    });
+
+                    // Build delivery term options
+                    let deliveryTermOptions = `<option value="">Select Delivery Term</option>`;
+                    window.deliveryTerms.forEach(term => {
+                        deliveryTermOptions +=
+                            `<option value="${term.name}" ${data.delivery_term === term.name ? 'selected' : ''}>${term.name}</option>`;
+                    });
+
+                    // Build payment term options
+                    let paymentTermOptions = `<option value="">Select Payment Term</option>`;
+                    window.paymentTerms.forEach(term => {
+                        paymentTermOptions +=
+                            `<option value="${term.name}" ${data.payment_term === term.name ? 'selected' : ''}>${term.name}</option>`;
+                    });
+
                     let html = `
         <div class="bg-gray-50 p-4 rounded-lg mb-4">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Purchase Request Information</h3>
@@ -903,25 +927,24 @@
                 <div>
                     <label for="edit_mode_of_procurement" class="block text-sm font-medium text-gray-700">Mode of Procurement <span class="text-red-500">*</span></label>
                     <select name="mode_of_procurement" id="edit_mode_of_procurement" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Select Mode</option>
-                        <option value="Shopping" ${data.mode_of_procurement === 'Shopping' ? 'selected' : ''}>Shopping</option>
-                        <option value="Small Value Procurement" ${data.mode_of_procurement === 'Small Value Procurement' ? 'selected' : ''}>Small Value Procurement</option>
-                        <option value="Direct Contracting" ${data.mode_of_procurement === 'Direct Contracting' ? 'selected' : ''}>Direct Contracting</option>
-                        <option value="Limited Source Bidding" ${data.mode_of_procurement === 'Limited Source Bidding' ? 'selected' : ''}>Limited Source Bidding</option>
-                        <option value="Competitive Bidding" ${data.mode_of_procurement === 'Competitive Bidding' ? 'selected' : ''}>Competitive Bidding</option>
+                        ${modeOptions}
                     </select>
                 </div>
                 <div>
                     <label for="edit_place_of_delivery" class="block text-sm font-medium text-gray-700">Place of Delivery</label>
-                    <input type="text" name="place_of_delivery" id="edit_place_of_delivery" value="${data.place_of_delivery ?? ''}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                    <input type="text" name="place_of_delivery" id="edit_place_of_delivery" value="${data.place_of_delivery ?? ''}" readonly class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-100">
                 </div>
                 <div>
                     <label for="edit_delivery_term" class="block text-sm font-medium text-gray-700">Delivery Term <span class="text-red-500">*</span></label>
-                    <input type="text" name="delivery_term" id="edit_delivery_term" value="${data.delivery_term ?? ''}" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <select name="delivery_term" id="edit_delivery_term" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        ${deliveryTermOptions}
+                    </select>
                 </div>
                 <div>
                     <label for="edit_payment_term" class="block text-sm font-medium text-gray-700">Payment Term <span class="text-red-500">*</span></label>
-                    <input type="text" name="payment_term" id="edit_payment_term" value="${data.payment_term ?? ''}" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <select name="payment_term" id="edit_payment_term" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        ${paymentTermOptions}
+                    </select>
                 </div>
                 <div>
                     <label for="edit_date_of_delivery" class="block text-sm font-medium text-gray-700">Date of Delivery <span class="text-red-500">*</span></label>

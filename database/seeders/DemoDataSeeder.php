@@ -15,6 +15,9 @@ class DemoDataSeeder extends Seeder
 {
     public function run()
     {
+        // Seed system selections first
+        $this->call(SystemSelectionSeeder::class);
+
         // Seed 10 Suppliers
         for ($i = 0; $i < 10; $i++) {
             Supplier::create([

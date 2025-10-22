@@ -100,11 +100,9 @@
                                 <select name="mode_of_procurement" id="mode_of_procurement" required
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                     <option value="">Select Mode</option>
-                                    <option value="Shopping">Shopping</option>
-                                    <option value="Small Value Procurement">Small Value Procurement</option>
-                                    <option value="Direct Contracting">Direct Contracting</option>
-                                    <option value="Limited Source Bidding">Limited Source Bidding</option>
-                                    <option value="Competitive Bidding">Competitive Bidding</option>
+                                    @foreach ($modesOfProcurement as $mode)
+                                        <option value="{{ $mode->name }}">{{ $mode->name }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div>
@@ -117,16 +115,24 @@
                             <div>
                                 <label for="delivery_term" class="block text-sm font-medium text-gray-700">Delivery
                                     Term <span class="text-red-500">*</span></label>
-                                <input type="text" name="delivery_term" id="delivery_term" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
-                                    placeholder="e.g., Within 30 days from receipt of PO">
+                                <select name="delivery_term" id="delivery_term" required
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Select Delivery Term</option>
+                                    @foreach ($deliveryTerms as $term)
+                                        <option value="{{ $term->name }}">{{ $term->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                             <div>
                                 <label for="payment_term" class="block text-sm font-medium text-gray-700">Payment Term
                                     <span class="text-red-500">*</span></label>
-                                <input type="text" name="payment_term" id="payment_term" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
-                                    placeholder="e.g., 30 days after delivery">
+                                <select name="payment_term" id="payment_term" required
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Select Payment Term</option>
+                                    @foreach ($paymentTerms as $term)
+                                        <option value="{{ $term->name }}">{{ $term->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                             <div>
                                 <label for="date_of_delivery" class="block text-sm font-medium text-gray-700">Date of

@@ -839,7 +839,6 @@
 
         function approvePR(prId) {
             showModernConfirmation(
-                'Approve Purchase Request',
                 'Are you sure you want to approve this purchase request? This action will move it to the next stage of processing.',
                 () => {
                     fetch(`/staff/pr-review/${prId}/approve`, {

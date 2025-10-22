@@ -29,17 +29,29 @@
                             <div>
                                 <label for="entity_name" class="block text-sm font-medium text-gray-700">Entity
                                     Name <span class="text-red-500">*</span></label>
-                                <input type="text" name="entity_name" id="entity_name"
-                                    value="{{ old('entity_name') }}" required
+                                <select name="entity_name" id="entity_name" required
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                    <option value="">Select entity</option>
+                                    @foreach ($entities as $entity)
+                                        <option value="{{ $entity->name }}"
+                                            {{ old('entity_name') == $entity->name ? 'selected' : '' }}>
+                                            {{ $entity->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
 
                             <div>
                                 <label for="fund_cluster" class="block text-sm font-medium text-gray-700">Fund
                                     Cluster <span class="text-red-500">*</span></label>
-                                <input type="text" name="fund_cluster" id="fund_cluster"
-                                    value="{{ old('fund_cluster') }}" required
+                                <select name="fund_cluster" id="fund_cluster" required
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                    <option value="">Select fund cluster</option>
+                                    @foreach ($fundClusters as $fundCluster)
+                                        <option value="{{ $fundCluster->name }}"
+                                            {{ old('fund_cluster') == $fundCluster->name ? 'selected' : '' }}>
+                                            {{ $fundCluster->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
 
                             <div>
@@ -55,9 +67,15 @@
                                 <label for="responsibility_center_code"
                                     class="block text-sm font-medium text-gray-700">Responsibility Center Code <span
                                         class="text-red-500">*</span></label>
-                                <input type="text" name="responsibility_center_code" id="responsibility_center_code"
-                                    value="{{ old('responsibility_center_code') }}" required
+                                <select name="responsibility_center_code" id="responsibility_center_code" required
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                    <option value="">Select responsibility code</option>
+                                    @foreach ($responsibilityCodes as $code)
+                                        <option value="{{ $code->name }}"
+                                            {{ old('responsibility_center_code') == $code->name ? 'selected' : '' }}>
+                                            {{ $code->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
 
                             <div>
@@ -89,50 +107,9 @@
                                             <select name="unit[]" required
                                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                                 <option value="">Select unit</option>
-
-                                                <!-- Basic -->
-                                                <option value="pcs">pcs</option>
-                                                <option value="set">set</option>
-                                                <option value="pair">pair</option>
-                                                <option value="dozen">dozen</option>
-                                                <option value="lot">lot</option>
-
-                                                <!-- Packaging -->
-                                                <option value="box">box</option>
-                                                <option value="pack">pack</option>
-                                                <option value="carton">carton</option>
-                                                <option value="case">case</option>
-                                                <option value="roll">roll</option>
-                                                <option value="ream">ream</option>
-                                                <option value="bundle">bundle</option>
-                                                <option value="tube">tube</option>
-                                                <option value="bottle">bottle</option>
-                                                <option value="can">can</option>
-                                                <option value="jar">jar</option>
-                                                <option value="sachet">sachet</option>
-                                                <option value="drum">drum</option>
-                                                <option value="barrel">barrel</option>
-                                                <option value="bag">bag</option>
-
-                                                <!-- Weight -->
-                                                <option value="g">g</option>
-                                                <option value="kg">kg</option>
-                                                <option value="lb">lb</option>
-                                                <option value="ton">ton</option>
-
-                                                <!-- Volume -->
-                                                <option value="ml">ml</option>
-                                                <option value="l">L</option>
-                                                <option value="gal">gal</option>
-
-                                                <!-- Length -->
-                                                <option value="mm">mm</option>
-                                                <option value="cm">cm</option>
-                                                <option value="m">m</option>
-                                                <option value="km">km</option>
-
-                                                <!-- Area -->
-                                                <option value="sqm">sqm</option>
+                                                @foreach ($metricUnits as $unit)
+                                                    <option value="{{ $unit->name }}">{{ $unit->name }}</option>
+                                                @endforeach
                                             </select>
                                         </div>
                                         <div>
@@ -200,17 +177,30 @@
                                     <label for="delivery_period"
                                         class="block text-sm font-medium text-gray-700">Delivery Period <span
                                             class="text-red-500">*</span></label>
-                                    <input type="text" name="delivery_period" id="delivery_period"
-                                        value="{{ old('delivery_period') }}" required
+                                    <select name="delivery_period" id="delivery_period" required
                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                        <option value="">Select delivery period</option>
+                                        @foreach ($deliveryPeriods as $period)
+                                            <option value="{{ $period->name }}"
+                                                {{ old('delivery_period') == $period->name ? 'selected' : '' }}>
+                                                {{ $period->name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
 
                                 <div>
                                     <label for="delivery_address"
                                         class="block text-sm font-medium text-gray-700">Delivery Address <span
                                             class="text-red-500">*</span></label>
-                                    <textarea name="delivery_address" id="delivery_address" rows="3" required
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">{{ old('delivery_address') }}</textarea>
+                                    <select name="delivery_address" id="delivery_address" required
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                        <option value="">Select delivery address</option>
+                                        @foreach ($deliveryAddresses as $address)
+                                            <option value="{{ $address->name }}"
+                                                {{ old('delivery_address') == $address->name ? 'selected' : '' }}>
+                                                {{ $address->name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                         </div>

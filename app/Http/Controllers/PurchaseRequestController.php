@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PurchaseRequest;
+use App\Models\SystemSelection;
 use App\Models\UserActivity;
 use App\Services\ActivityService;
 use Illuminate\Http\Request;
@@ -59,7 +60,15 @@ class PurchaseRequestController extends Controller
             ->get();
         $statuses = PurchaseRequest::select('status')->distinct()->pluck('status');
 
-        return view('user.requests', compact('purchaseRequests', 'uploadedDocuments', 'recentActivities', 'statuses', 'fileTypes'));
+        // Get system selections for edit modal
+        $entities = SystemSelection::getByType('entity');
+        $fundClusters = SystemSelection::getByType('fund_cluster');
+        $responsibilityCodes = SystemSelection::getByType('responsibility_code');
+        $deliveryPeriods = SystemSelection::getByType('delivery_period');
+        $deliveryAddresses = SystemSelection::getByType('delivery_address');
+        $metricUnits = SystemSelection::getByType('metric_units');
+
+        return view('user.requests', compact('purchaseRequests', 'uploadedDocuments', 'recentActivities', 'statuses', 'fileTypes', 'entities', 'fundClusters', 'responsibilityCodes', 'deliveryPeriods', 'deliveryAddresses', 'metricUnits'));
     }
 
     public function create()
@@ -70,7 +79,19 @@ class PurchaseRequestController extends Controller
             ->limit(10)
             ->get();
 
-        return view('user.create_pr', compact('recentActivities'));
+        // Get metric units from system selections
+        $metricUnits = SystemSelection::getByType('metric_units');
+
+        // Get entities from system selections
+        $entities = SystemSelection::getByType('entity');
+
+        // Get other system selections
+        $fundClusters = SystemSelection::getByType('fund_cluster');
+        $responsibilityCodes = SystemSelection::getByType('responsibility_code');
+        $deliveryPeriods = SystemSelection::getByType('delivery_period');
+        $deliveryAddresses = SystemSelection::getByType('delivery_address');
+
+        return view('user.create_pr', compact('recentActivities', 'metricUnits', 'entities', 'fundClusters', 'responsibilityCodes', 'deliveryPeriods', 'deliveryAddresses'));
     }
 
     public function store(Request $request)
@@ -106,7 +127,7 @@ class PurchaseRequestController extends Controller
         $total = $totalCost; // Add tax or other calculations if needed
 
         // Generate PR Number
-        $prNumber = 'PR ' . date('Y') . '-' . str_pad(PurchaseRequest::whereYear('created_at', date('Y'))->count() + 1, 4, '0', STR_PAD_LEFT);
+        $prNumber = 'PR ' . date('Y-m') . '-' . str_pad(PurchaseRequest::whereYear('created_at', date('Y'))->whereMonth('created_at', date('m'))->count() + 1, 4, '0', STR_PAD_LEFT);
 
         // Handle file uploads
         $requestedBySignature = null;

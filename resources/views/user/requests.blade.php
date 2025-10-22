@@ -767,14 +767,24 @@
                         <div>
                             <label for="edit-entity-name" class="block text-sm font-medium text-gray-700">Entity
                                 Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="entity_name" id="edit-entity-name"
+                            <select name="entity_name" id="edit-entity-name" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                <option value="">Select entity</option>
+                                @foreach ($entities as $entity)
+                                    <option value="{{ $entity->name }}">{{ $entity->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label for="edit-fund-cluster" class="block text-sm font-medium text-gray-700">Fund
                                 Cluster <span class="text-red-500">*</span></label>
-                            <input type="text" name="fund_cluster" id="edit-fund-cluster"
+                            <select name="fund_cluster" id="edit-fund-cluster" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                <option value="">Select fund cluster</option>
+                                @foreach ($fundClusters as $fundCluster)
+                                    <option value="{{ $fundCluster->name }}">{{ $fundCluster->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label for="edit-office-section" class="block text-sm font-medium text-gray-700">Office
@@ -791,8 +801,13 @@
                         <div>
                             <label for="edit-delivery-period" class="block text-sm font-medium text-gray-700">Delivery
                                 Period <span class="text-red-500">*</span></label>
-                            <input type="text" name="delivery_period" id="edit-delivery-period"
+                            <select name="delivery_period" id="edit-delivery-period" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                <option value="">Select delivery period</option>
+                                @foreach ($deliveryPeriods as $period)
+                                    <option value="{{ $period->name }}">{{ $period->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
 
@@ -823,8 +838,13 @@
                             <label for="edit-delivery-address"
                                 class="block text-sm font-medium text-gray-700">Delivery
                                 Address <span class="text-red-500">*</span></label>
-                            <textarea name="delivery_address" id="edit-delivery-address" rows="3"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"></textarea>
+                            <select name="delivery_address" id="edit-delivery-address" required
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                <option value="">Select delivery address</option>
+                                @foreach ($deliveryAddresses as $address)
+                                    <option value="{{ $address->name }}">{{ $address->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label for="edit-purpose" class="block text-sm font-medium text-gray-700">Purpose <span
@@ -1315,38 +1335,7 @@
                             <label class="block text-sm font-medium text-gray-700">Unit <span class="text-red-500">*</span></label>
                             <select name="unit[]" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                 <option value="">Select unit</option>
-                                <option value="pcs" ${item.unit === 'pcs' ? 'selected' : ''}>pcs</option>
-                                <option value="set" ${item.unit === 'set' ? 'selected' : ''}>set</option>
-                                <option value="pair" ${item.unit === 'pair' ? 'selected' : ''}>pair</option>
-                                <option value="dozen" ${item.unit === 'dozen' ? 'selected' : ''}>dozen</option>
-                                <option value="lot" ${item.unit === 'lot' ? 'selected' : ''}>lot</option>
-                                <option value="box" ${item.unit === 'box' ? 'selected' : ''}>box</option>
-                                <option value="pack" ${item.unit === 'pack' ? 'selected' : ''}>pack</option>
-                                <option value="carton" ${item.unit === 'carton' ? 'selected' : ''}>carton</option>
-                                <option value="case" ${item.unit === 'case' ? 'selected' : ''}>case</option>
-                                <option value="roll" ${item.unit === 'roll' ? 'selected' : ''}>roll</option>
-                                <option value="ream" ${item.unit === 'ream' ? 'selected' : ''}>ream</option>
-                                <option value="bundle" ${item.unit === 'bundle' ? 'selected' : ''}>bundle</option>
-                                <option value="tube" ${item.unit === 'tube' ? 'selected' : ''}>tube</option>
-                                <option value="bottle" ${item.unit === 'bottle' ? 'selected' : ''}>bottle</option>
-                                <option value="can" ${item.unit === 'can' ? 'selected' : ''}>can</option>
-                                <option value="jar" ${item.unit === 'jar' ? 'selected' : ''}>jar</option>
-                                <option value="sachet" ${item.unit === 'sachet' ? 'selected' : ''}>sachet</option>
-                                <option value="drum" ${item.unit === 'drum' ? 'selected' : ''}>drum</option>
-                                <option value="barrel" ${item.unit === 'barrel' ? 'selected' : ''}>barrel</option>
-                                <option value="bag" ${item.unit === 'bag' ? 'selected' : ''}>bag</option>
-                                <option value="g" ${item.unit === 'g' ? 'selected' : ''}>g</option>
-                                <option value="kg" ${item.unit === 'kg' ? 'selected' : ''}>kg</option>
-                                <option value="lb" ${item.unit === 'lb' ? 'selected' : ''}>lb</option>
-                                <option value="ton" ${item.unit === 'ton' ? 'selected' : ''}>ton</option>
-                                <option value="ml" ${item.unit === 'ml' ? 'selected' : ''}>ml</option>
-                                <option value="l" ${item.unit === 'l' ? 'selected' : ''}>L</option>
-                                <option value="gal" ${item.unit === 'gal' ? 'selected' : ''}>gal</option>
-                                <option value="mm" ${item.unit === 'mm' ? 'selected' : ''}>mm</option>
-                                <option value="cm" ${item.unit === 'cm' ? 'selected' : ''}>cm</option>
-                                <option value="m" ${item.unit === 'm' ? 'selected' : ''}>m</option>
-                                <option value="km" ${item.unit === 'km' ? 'selected' : ''}>km</option>
-                                <option value="sqm" ${item.unit === 'sqm' ? 'selected' : ''}>sqm</option>
+                                ${metricUnitsData.map(unit => `<option value="${unit.name}" ${item.unit === unit.name ? 'selected' : ''}>${unit.name}</option>`).join('')}
                             </select>
                         </div>
                         <div>
@@ -1675,6 +1664,9 @@
                     }
                 }, 5000);
             }
+
+            // Pass metric units data to JavaScript
+            const metricUnitsData = @json($metricUnits);
         </script>
 
 </x-page-layout>
