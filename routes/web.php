@@ -59,7 +59,20 @@ Route::post('/admin/reports/export', [App\Http\Controllers\ReportsController::cl
 Route::get('/admin/reports/pr/{id}/data', [App\Http\Controllers\ReportsController::class, 'getPRData'])->middleware(['auth', 'verified', 'twofactor', 'role:admin'])->name('admin.reports.pr.data');
 Route::get('/admin/reports/po/{id}/data', [App\Http\Controllers\ReportsController::class, 'getPOData'])->middleware(['auth', 'verified', 'twofactor', 'role:admin'])->name('admin.reports.po.data');
 // User Management Routes
+
 Route::get('/admin/user-management', [App\Http\Controllers\UserManagementController::class, 'index'])->middleware(['auth', 'verified', 'twofactor', 'role:admin'])->name('admin.user_management');
+
+Route::get('/admin/system-selections', [App\Http\Controllers\SystemSelectionController::class, 'index'])
+    ->middleware(['auth', 'verified', 'twofactor', 'role:admin'])
+    ->name('admin.system_selections');
+
+// System Selection API Routes
+Route::prefix('admin/system-selections')->middleware(['auth', 'verified', 'twofactor', 'role:admin'])->group(function () {
+    Route::get('/{type}/items', [App\Http\Controllers\SystemSelectionController::class, 'list'])->name('admin.system_selections.list');
+    Route::post('/{type}/items', [App\Http\Controllers\SystemSelectionController::class, 'store'])->name('admin.system_selections.store');
+    Route::put('/{type}/items/{id}', [App\Http\Controllers\SystemSelectionController::class, 'update'])->name('admin.system_selections.update');
+    Route::delete('/{type}/items/{id}', [App\Http\Controllers\SystemSelectionController::class, 'destroy'])->name('admin.system_selections.destroy');
+});
 Route::post('/admin/user-management', [App\Http\Controllers\UserManagementController::class, 'store'])->middleware(['auth', 'verified', 'twofactor', 'role:admin'])->name('admin.user_management.store');
 Route::put('/admin/user-management/{user}', [App\Http\Controllers\UserManagementController::class, 'update'])->middleware(['auth', 'verified', 'twofactor', 'role:admin'])->name('admin.user_management.update');
 Route::delete('/admin/user-management/{user}', [App\Http\Controllers\UserManagementController::class, 'destroy'])->middleware(['auth', 'verified', 'twofactor', 'role:admin'])->name('admin.user_management.destroy');

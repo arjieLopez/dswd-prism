@@ -401,7 +401,7 @@
                                 @php $counter = ($users->currentPage() - 1) * $users->perPage() + 1; @endphp
                                 @foreach ($users as $user)
                                     <tr>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                             {{ $counter++ }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             {{ $user->first_name }}{{ $user->middle_name ? ' ' . $user->middle_name : '' }}

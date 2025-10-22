@@ -2,793 +2,344 @@
 
 ## Project Overview
 
-DSWD-PRISM is a Laravel 10 procurement system for the Department of Social Welfare and Development. It manages Purchase Requests (PRs) and Purchase Orders (POs) through a workflow-based system with role-based access control.
+DSWD-PRISM is a Laravel 10 procurement system for the Department of Social Welfare and Development. It manages Purchase Requests (PRs) and Purchase Orders (POs) through a workflow-based system with role-based access control (admin, staff/GSO, user/requestor).
 
-## Architecture & Core Workflow
+## Core Workflow
 
-### Domain Model
+PR Status Flow: `draft` → `pending` (submit) → `approved/rejected` (staff review) → `po_generated` (PO creation) → `completed` (delivery).
 
--   **Purchase Requests (PRs)**: Core entity with statuses: `draft` → `pending` → `approved/rejected` → `po_generated` → `completed`
--   **Purchase Request Items**: Line items within a PR (quantity, unit_cost, item_description)
--   **Purchase Orders (POs)**: Generated from approved PRs with supplier and procurement details
--   **Suppliers**: External vendors with status management (`active`/`inactive`)
--   **Users**: Three roles - `admin`, `staff` (GSO), and `user` (requestor)
--   **PODocuments**: Uploaded PO documents with file management
--   **UploadedDocuments**: Scanned PR documents attached to purchase requests
--   **UserActivity**: Notification system for tracking all system actions
+## Domain Model
 
-### Key Business Logic
+-   **PurchaseRequest**: Core entity with items, supplier, status.
+-   **PurchaseOrder**: Generated from approved PRs.
+-   **User**: Roles with activities/notifications.
+-   **Supplier**: Vendors with status management.
+-   **UserActivity**: Audit logging and notifications.
 
-```php
-// PR Status Flow
-'draft' → 'pending' (submit) → 'approved/rejected' (staff review) → 'po_generated' (PO creation) → 'completed' (delivery)
+## Critical Controllers & Responsibilities
 
-// Status Colors (in PurchaseRequest model using match expressions)
-'pending' => 'bg-yellow-100 text-yellow-800'
-'approved' => 'bg-green-100 text-green-800'
-'po_generated' => 'bg-blue-100 text-blue-800'
-'completed' => 'bg-indigo-100 text-indigo-800'
-```
-
-### Critical Controllers & Their Responsibilities
-
--   `PurchaseRequestController`: User CRUD operations, submit/withdraw/complete actions, **staff notifications**
--   `PRReviewController`: Staff approval/rejection workflow with export functionality
--   `POGenerationController`: Convert approved PRs to POs, manage supplier assignment, edit/print POs
--   `PODocumentController`: Handle PO document uploads/downloads/deletion
--   `UploadedDocumentController`: Manage scanned document uploads with export features
--   `SupplierController`: Supplier CRUD operations with **consistent alert feedback**
--   `UserManagementController`: Admin user management with role/status controls
--   `GSODashboardController`: Statistics and overview for GSO staff with date filtering
--   `UserDashboardController`: User-specific dashboard with month/custom date filtering
--   `ActivityService`: Centralized activity logging and **notification creation**
+-   `PurchaseRequestController`: User CRUD, submit/withdraw/complete, staff notifications.
+-   `PRReviewController`: Staff approval/rejection, export.
+-   `POGenerationController`: PO creation, supplier assignment, edit/print.
+-   `SupplierController`: Supplier CRUD with alert feedback.
+-   `GSODashboardController`: Statistics with date filtering.
+-   `ActivityService`: Centralized logging and notifications.
 
 ## Development Patterns
 
-### **CRITICAL: Standardized Alert System**
+### Standardized Alert System
 
-**ALL pages must use the same JavaScript alert functions** - never use basic `alert()` or inconsistent styling:
+Use `showSuccessAlert(message)` and `showErrorAlert(message)` for all user feedback. Never use `alert()`. Integrate with session messages and AJAX responses.
+
+Example:
 
 ```javascript
-// Required on every page that shows user feedback
-function showSuccessAlert(message) {
-    const alertDiv = document.createElement("div");
-    alertDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #10B981;
-        color: white;
-        padding: 16px 20px;
-        border-radius: 8px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        z-index: 99999;
-        font-weight: 500;
-        font-size: 16px;
-        text-align: center;
-        min-width: 300px;
-        max-width: 400px;
-    `;
-    alertDiv.textContent = message;
-
-    const closeBtn = document.createElement("button");
-    closeBtn.textContent = "×";
-    closeBtn.style.cssText = `
-        position: absolute;
-        top: 5px;
-        right: 10px;
-        background: none;
-        border: none;
-        color: white;
-        font-size: 18px;
-        cursor: pointer;
-        line-height: 1;
-    `;
-    closeBtn.onclick = () => alertDiv.remove();
-    alertDiv.appendChild(closeBtn);
-
-    document.body.appendChild(alertDiv);
-    setTimeout(() => alertDiv.parentNode && alertDiv.remove(), 3000);
-}
-
-function showErrorAlert(message) {
-    // Same structure but background: #EF4444 for red
-}
+showSuccessAlert(data.message);
+setTimeout(() => location.reload(), 1500);
 ```
 
-**Alert Integration Patterns:**
+### Notification System
 
--   **Laravel session messages**: Convert to JavaScript alerts in Blade templates
--   **AJAX responses**: Always call `showSuccessAlert(data.message)` on success
--   **Form submissions**: Show success alert then delayed reload: `setTimeout(() => location.reload(), 1500)`
-
-### Notification System Pattern
-
-When users submit PRs, **automatically notify all staff**:
+On PR submission, notify all staff via `UserActivity`:
 
 ```php
-// In PurchaseRequestController submit method
 $staffUsers = User::where('role', 'staff')->get();
 foreach ($staffUsers as $staff) {
-    UserActivity::create([
-        'user_id' => $staff->id,
-        'action' => 'pr_submitted_notification',
-        'details' => "New PR {$pr->pr_number} submitted by {$user->first_name} {$user->last_name}",
-        'related_type' => 'App\Models\PurchaseRequest',
-        'related_id' => $pr->id,
-    ]);
+    UserActivity::create([...]);
 }
 ```
 
-### Dashboard Filtering Pattern
+### Date Filtering & Formatting
 
-All dashboards implement consistent date filtering with three modes:
+Dashboards use three modes: this_month, previous_month, custom. Format display as `F j, Y`, forms as `Y-m-d`.
 
-```php
-// Controller pattern for date filtering
-$filterType = $request->get('filter_type', 'this_month');
-$dateFrom = $request->get('date_from');
-$dateTo = $request->get('date_to');
+### Pagination
 
-// Set date range based on filter type
-if ($filterType === 'this_month') {
-    $startDate = Carbon::now()->startOfMonth();
-    $endDate = Carbon::now()->endOfMonth();
-} elseif ($filterType === 'previous_month') {
-    $startDate = Carbon::now()->subMonth()->startOfMonth();
-    $endDate = Carbon::now()->subMonth()->endOfMonth();
-} elseif ($filterType === 'custom' && $dateFrom && $dateTo) {
-    $startDate = Carbon::createFromFormat('Y-m-d', $dateFrom)->startOfDay();
-    $endDate = Carbon::createFromFormat('Y-m-d', $dateTo)->endOfDay();
-}
-```
+Use `appends(request()->query())` for filter preservation. Show only if >10 items.
 
-### Pagination with Filter Preservation
+### Status Colors
 
-Use `appends(request()->query())` to maintain filter parameters across pagination. All list views use custom pagination that only shows when more than 10 items exist:
-
-```blade
-<!-- Custom Pagination Pattern (used in suppliers, PR review, PO generation, user requests) -->
-@if ($items->total() > 10)
-    <div class="flex justify-center mt-6">
-        <div class="flex items-center space-x-1">
-            <!-- Previous/Next buttons with SVG icons -->
-            @if ($items->onFirstPage())
-                <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                </span>
-            @else
-                <a href="{{ $items->appends(request()->query())->previousPageUrl() }}"
-                   class="px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors">
-                    <!-- SVG icon -->
-                </a>
-            @endif
-
-            <!-- Page number logic with ellipsis -->
-            @php
-                $start = max(1, $items->currentPage() - 2);
-                $end = min($items->lastPage(), $items->currentPage() + 2);
-                // Smart pagination logic to show 5 pages when possible
-            @endphp
-
-            <!-- Page links preserve filters -->
-            <a href="{{ $items->appends(request()->query())->url($page) }}"
-               class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md">
-        </div>
-    </div>
-@endif
-```
-
-### Counter Column Pattern
-
-All list tables include sequential numbering that works across pagination:
-
-```blade
-<!-- Table counter that preserves pagination -->
-{{ ($items->currentPage() - 1) * $items->perPage() + $index + 1 }}
-<!-- For @foreach($items as $index => $item) loops -->
-
-{{ ($items->currentPage() - 1) * $items->perPage() + $loop->iteration }}
-<!-- For @foreach without key when using $loop variable -->
-```
-
-### Status Color System
-
-Models use `getStatusColorAttribute()` and `getStatusDisplayAttribute()` with match expressions:
+Models use `getStatusColorAttribute()` with match expressions:
 
 ```php
-public function getStatusColorAttribute()
-{
-    return match ($this->status) {
-        'draft' => 'bg-gray-100 text-gray-800',
-        'pending' => 'bg-yellow-100 text-yellow-800',
-        'approved' => 'bg-green-100 text-green-800',
-        'po_generated' => 'bg-blue-100 text-blue-800',
-        'completed' => 'bg-indigo-100 text-indigo-800',
-        default => 'bg-gray-100 text-gray-800',
-    };
-}
+return match ($this->status) {
+    'pending' => 'bg-yellow-100 text-yellow-800',
+    // ...
+};
 ```
 
-### Overdue Logic Pattern
+### AJAX Pattern
 
-For date comparisons, use `startOfDay()` to avoid time-based issues:
-
-```php
-// Only mark items overdue if delivery date is strictly before today
-$isOverdue = $item->date_of_delivery && $item->date_of_delivery->startOfDay()->lt(now()->startOfDay());
-```
-
-### Blade Component Architecture
-
-```php
-// Standard page layout pattern
-<x-page-layout>
-    <x-slot name="header">
-        <x-app-header :homeUrl="route('staff')" :userName="..." :recentActivities="..." />
-    </x-slot>
-    <!-- Content -->
-</x-page-layout>
-```
-
-### Modal Pattern
-
-Use `<x-modal name="unique-name">` with Alpine.js for dynamic forms. JavaScript functions follow naming: `openViewModal(id)`, `closeEditModal()`.
+Include CSRF token, handle success/error with alerts:
 
 ```javascript
-// Standard modal opening pattern with fetch API
-function openViewModal(prId) {
-    fetch(`/staff/po-generation/${prId}/data`, {
-        method: "GET",
-        headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-        },
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            // Populate modal fields
-            document.getElementById("view-pr-number").textContent =
-                data.pr_number;
-            // Show modal using Alpine.js event system
-            window.dispatchEvent(
-                new CustomEvent("open-modal", {
-                    detail: "view-pr-modal",
-                })
-            );
-        });
-}
-```
-
-### Export Functionality Pattern
-
-All list views implement consistent export dropdown with XLSX/PDF options using global JavaScript in `app.js`:
-
-```blade
-<!-- Standard export dropdown HTML (copy this pattern) -->
-<div class="relative inline-block text-left">
-    <button id="export-btn" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md">
-        <i class="iconify w-4 h-4 mr-2" data-icon="material-symbols:upload"></i>
-        Export
-    </button>
-    <div id="export-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-        <button id="export-xlsx" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-            <i class="iconify w-4 h-4 mr-2" data-icon="vscode-icons:file-type-excel"></i>
-            Export as XLSX
-        </button>
-        <button id="export-pdf" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-            <i class="iconify w-4 h-4 mr-2" data-icon="vscode-icons:file-type-pdf2"></i>
-            Export as PDF
-        </button>
-    </div>
-</div>
-```
-
-```javascript
-// Global export functionality pattern (in app.js)
-// Automatically detects current page and routes to appropriate export endpoint
-document.getElementById("export-xlsx")?.addEventListener("click", function () {
-    const urlParams = new URLSearchParams(window.location.search);
-    const formData = new FormData();
-
-    // Preserve all active filters
-    if (urlParams.get("search"))
-        formData.append("search", urlParams.get("search"));
-    if (urlParams.get("status"))
-        formData.append("status", urlParams.get("status"));
-    if (urlParams.get("date_from"))
-        formData.append("date_from", urlParams.get("date_from"));
-
-    // Route detection for different pages
-    const currentPath = window.location.pathname;
-    let exportUrl = "/purchase-requests/export/xlsx";
-    if (currentPath.includes("pr-review"))
-        exportUrl = "/staff/pr-review/export/xlsx";
-    else if (currentPath.includes("po-generation"))
-        exportUrl = "/staff/po-generation/export/xlsx";
-
-    // CSRF token and file download logic
-    const csrfToken = document
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute("content");
-    if (csrfToken) formData.append("_token", csrfToken);
-
-    fetch(exportUrl, { method: "POST", body: formData })
-        .then((response) => response.blob())
-        .then((blob) => {
-            // Auto-download with timestamp
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download =
-                "export_" +
-                new Date().toISOString().slice(0, 19).replace(/:/g, "-") +
-                ".xlsx";
-            document.body.appendChild(a);
-            a.click();
-            // Cleanup
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        });
-});
-```
-
-```blade
-<!-- Standard export dropdown HTML (copy this pattern) -->
-<div class="relative inline-block text-left">
-    <button id="export-btn" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md">
-        <i class="iconify w-4 h-4 mr-2" data-icon="material-symbols:upload"></i>
-        Export
-    </button>
-    <div id="export-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-        <button id="export-xlsx" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-            <i class="iconify w-4 h-4 mr-2" data-icon="vscode-icons:file-type-excel"></i>
-            Export as XLSX
-        </button>
-        <button id="export-pdf" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-            <i class="iconify w-4 h-4 mr-2" data-icon="vscode-icons:file-type-pdf2"></i>
-            Export as PDF
-        </button>
-    </div>
-</div>
-```
-
-### AJAX Pattern with CSRF
-
-All AJAX requests must include CSRF token and use standardized alerts:
-
-```javascript
-// Standard AJAX pattern for form submissions
-fetch(`/staff/pr-review/${prId}/approve`, {
+fetch(url, {
     method: "POST",
-    headers: {
-        "X-CSRF-TOKEN": document
-            .querySelector('meta[name="csrf-token"]')
-            .getAttribute("content"),
-        "Content-Type": "application/json",
-    },
-    body: JSON.stringify(requestData),
+    headers: { "X-CSRF-TOKEN": token, "Content-Type": "application/json" },
+    body: JSON.stringify(data),
 })
     .then((response) => response.json())
     .then((data) => {
-        if (data.success) {
-            showSuccessAlert(data.message);
-            setTimeout(() => location.reload(), 1500); // Show alert before reload
-        } else {
-            showErrorAlert(data.message || "An error occurred");
-        }
-    })
-    .catch((error) => {
-        showErrorAlert("Network error occurred");
+        if (data.success) showSuccessAlert(data.message);
+        else showErrorAlert(data.message);
     });
 ```
 
-### Professional Confirmation Modal Pattern
+### Export Functionality
 
-Replace basic `confirm()` dialogs with styled confirmation modals:
+Global JS in `app.js` for XLSX/PDF export with filter preservation.
+
+### Modal Pattern
+
+Use `<x-modal>` with Alpine.js. Functions: `openViewModal(id)`, `closeEditModal()`.
+
+### Number to Words
+
+For PO amounts, use custom function for pesos/centavos.
+
+## Key Files
+
+-   Controllers: `app/Http/Controllers/`
+-   Models: `app/Models/`
+-   Views: `resources/views/` (Blade + Alpine.js)
+-   Routes: `routes/web.php`
+-   Services: `app/Services/ActivityService.php`
+
+## Dependencies
+
+-   `barryvdh/laravel-dompdf`: PDF generation
+-   `phpoffice/phpspreadsheet`: Excel export
+-   `laravel/sanctum`: API auth
+-   Chart.js, Tailwind CSS, Vite
+
+## Development Workflow
+
+-   Serve: `php artisan serve`
+-   Assets: `npm run dev` / `npm run build`
+-   DB: `php artisan migrate` / `db:seed`
+-   Cache: `php artisan config:clear` etc.
+-   Test: PHPUnit in `tests/`
+
+## Code Quality & Validation
+
+### Syntax Checking
+
+Always validate code syntax after making changes to ensure error-free implementation:
+
+```bash
+# Check PHP syntax in Blade templates
+php -l resources/views/admin/system_selections.blade.php
+
+# Clear view cache after template changes
+php artisan view:clear
+
+# Check for compilation errors
+php artisan view:cache
+```
+
+**Validation Workflow:**
+
+1. **Syntax Check**: Use `php -l` to validate PHP syntax in all modified files
+2. **View Cache**: Clear view cache with `php artisan view:clear` after Blade template changes
+3. **Error Verification**: Ensure no syntax, runtime, or logic errors before task completion
+4. **Testing**: Run relevant tests to verify functionality works as expected
+
+## Security
+
+-   Two-factor auth with middleware
+-   Role-based routes with middleware
+-   CSRF on all forms/AJAX
+
+## Common Pitfalls
+
+-   Separate PO Generated/Completed cards
+-   Consistent field mapping (e.g., `total`, not `total_amount`)
+-   Use `startOfDay()` for overdue checks
+-   Always log activities via `ActivityService`
+
+### Standard Confirmation Dialogue
+
+Use modern styled confirmation modals instead of browser's basic `confirm()`. Always use the `showConfirmationModal()` function with the exact styling pattern:
 
 ```javascript
-// Professional confirmation for critical actions (supplier status, etc.)
 function showConfirmationModal(message, onConfirm) {
     const confirmDiv = document.createElement("div");
     confirmDiv.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5); z-index: 99999;
-        display: flex; align-items: center; justify-content: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.2s ease-out;
     `;
 
     const modalDiv = document.createElement("div");
     modalDiv.style.cssText = `
-        background: white; padding: 24px; border-radius: 8px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 400px; text-align: center;
+        background: white;
+        padding: 32px 28px;
+        border-radius: 16px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        max-width: 440px;
+        width: 90%;
+        text-align: center;
+        animation: slideIn 0.3s ease-out;
+        transform-origin: center center;
     `;
 
     modalDiv.innerHTML = `
-        <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600;">Confirm Action</h3>
-        <p style="margin: 0 0 24px 0; color: #666;">${message}</p>
+        <div style="margin-bottom: 20px;">
+            <div style="width: 64px; height: 64px; margin: 0 auto 16px; background: linear-gradient(135deg, #FEF3C7, #F59E0B); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <svg style="width: 32px; height: 32px; color: #D97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+            </div>
+            <h3 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 600; color: #1F2937;">Confirm Action</h3>
+            <p style="margin: 0; color: #6B7280; font-size: 15px; line-height: 1.5;">${message}</p>
+        </div>
         <div style="display: flex; gap: 12px; justify-content: center;">
-            <button id="confirm-yes" style="padding: 8px 16px; background: #EF4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Yes</button>
-            <button id="confirm-no" style="padding: 8px 16px; background: #6B7280; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+            <button id="confirm-yes" style="
+                padding: 12px 24px;
+                background: linear-gradient(135deg, #EF4444, #DC2626);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 14px;
+                transition: all 0.2s ease;
+                box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(239, 68, 68, 0.4)'"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.3)'">
+                Yes, Confirm
+            </button>
+            <button id="confirm-no" style="
+                padding: 12px 24px;
+                background: linear-gradient(135deg, #6B7280, #4B5563);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 14px;
+                transition: all 0.2s ease;
+                box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+            " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(107, 114, 128, 0.4)'"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(107, 114, 128, 0.3)'">
+                Cancel
+            </button>
         </div>
     `;
 
     confirmDiv.appendChild(modalDiv);
     document.body.appendChild(confirmDiv);
 
+    // Add CSS animations
+    const style = document.createElement("style");
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Event listeners
     document.getElementById("confirm-yes").onclick = () => {
         confirmDiv.remove();
         onConfirm();
     };
-    document.getElementById("confirm-no").onclick = () => confirmDiv.remove();
-    confirmDiv.onclick = (e) => {
-        if (e.target === confirmDiv) confirmDiv.remove();
+
+    document.getElementById("confirm-no").onclick = () => {
+        confirmDiv.style.animation = "fadeOut 0.2s ease-in";
+        setTimeout(() => confirmDiv.remove(), 200);
     };
-}
-```
 
-### Supplier Auto-fill Pattern
-
-Forms with supplier selection auto-populate related fields:
-
-```javascript
-// Auto-fill supplier address and TIN from data attributes
-function updateSupplierInfo() {
-    const supplierSelect = document.getElementById('supplier_id');
-    const selectedOption = supplierSelect.options[supplierSelect.selectedIndex];
-
-    document.getElementById('supplier_address').value = selectedOption.getAttribute('data-address') || '';
-    document.getElementById('supplier_tin').value = selectedOption.getAttribute('data-tin') || '';
-}
-
-// Blade template pattern for supplier options
-@foreach($suppliers as $supplier)
-    <option value="{{ $supplier->id }}"
-            data-address="{{ $supplier->address }}"
-            data-tin="{{ $supplier->tin }}">
-        {{ $supplier->supplier_name }}
-    </option>
-@endforeach
-```
-
-### Activity Logging & Notifications
-
-Always use `ActivityService` for audit trails and notifications:
-
-```php
-ActivityService::logPrApproved($prNumber, $staffName);
-ActivityService::logPoGenerated($prNumber, $poNumber);
-ActivityService::logPrSubmitted($prNumber, $userName);
-```
-
-**UserActivity** model serves dual purpose:
-
--   Audit logging for administrator reports
--   Notification system for user bell icons (filter by `user_id` for notifications)
-
-```php
-// Creating notifications for specific users
-UserActivity::create([
-    'user_id' => $targetUserId, // Who receives the notification
-    'action' => 'pr_submitted_notification',
-    'details' => "New PR {$prNumber} submitted",
-    'related_type' => 'App\Models\PurchaseRequest',
-    'related_id' => $prId,
-]);
-```
-
-### Number to Words Pattern
-
-For PDF documents requiring amount in words (particularly PO print layouts):
-
-```php
-@php
-    function numberToWords($number) {
-        $ones = array(
-            0 => '', 1 => 'ONE', 2 => 'TWO', 3 => 'THREE', 4 => 'FOUR', 5 => 'FIVE',
-            6 => 'SIX', 7 => 'SEVEN', 8 => 'EIGHT', 9 => 'NINE', 10 => 'TEN',
-            11 => 'ELEVEN', 12 => 'TWELVE', 13 => 'THIRTEEN', 14 => 'FOURTEEN', 15 => 'FIFTEEN',
-            16 => 'SIXTEEN', 17 => 'SEVENTEEN', 18 => 'EIGHTEEN', 19 => 'NINETEEN'
-        );
-
-        $tens = array(
-            0 => '', 2 => 'TWENTY', 3 => 'THIRTY', 4 => 'FORTY', 5 => 'FIFTY',
-            6 => 'SIXTY', 7 => 'SEVENTY', 8 => 'EIGHTY', 9 => 'NINETY'
-        );
-
-        if ($number < 20) {
-            return $ones[$number];
-        } elseif ($number < 100) {
-            return $tens[intval($number / 10)] . ($number % 10 != 0 ? ' ' . $ones[$number % 10] : '');
-        } elseif ($number < 1000) {
-            return $ones[intval($number / 100)] . ' HUNDRED' . ($number % 100 != 0 ? ' ' . numberToWords($number % 100) : '');
-        } elseif ($number < 1000000) {
-            return numberToWords(intval($number / 1000)) . ' THOUSAND' . ($number % 1000 != 0 ? ' ' . numberToWords($number % 1000) : '');
-        } elseif ($number < 1000000000) {
-            return numberToWords(intval($number / 1000000)) . ' MILLION' . ($number % 1000000 != 0 ? ' ' . numberToWords($number % 1000000) : '');
+    confirmDiv.onclick = (e) => {
+        if (e.target === confirmDiv) {
+            confirmDiv.style.animation = "fadeOut 0.2s ease-in";
+            setTimeout(() => confirmDiv.remove(), 200);
         }
-        return 'NUMBER TOO LARGE';
-    }
-
-    $total = $purchaseRequest->total ?? 0;
-    $pesos = floor($total);
-    $centavos = round(($total - $pesos) * 100);
-
-    $totalInWords = '';
-    if ($pesos > 0) {
-        $totalInWords = numberToWords($pesos) . ' PESOS';
-    }
-    if ($centavos > 0) {
-        $totalInWords .= ($pesos > 0 ? ' AND ' : '') . numberToWords($centavos) . ' CENTAVOS';
-    }
-    if ($pesos == 0 && $centavos == 0) {
-        $totalInWords = 'ZERO PESOS';
-    }
-    $totalInWords .= ' ONLY';
-@endphp
-{{ $totalInWords }}
-```
-
-### Date Formatting Pattern
-
-Consistent date formatting across the application:
-
-```php
-// For display dates (October 10, 2025 format)
-{{ $item->date_field ? \Carbon\Carbon::parse($item->date_field)->format('F j, Y') : '' }}
-
-// For form dates (YYYY-MM-DD format)
-{{ $item->date_field ? $item->date_field->format('Y-m-d') : '' }}
-
-// For timestamps with time (audit logs only)
-{{ $item->updated_at->format('M j, Y g:i A') }}
-```
-
-### User Name Display Pattern
-
-Consistent full name formatting throughout views:
-
-```php
-Auth::user()->first_name . (Auth::user()->middle_name ? ' ' . Auth::user()->middle_name : '') . ' ' . Auth::user()->last_name
-```
-
-### Date Formatting Pattern
-
-Consistent date formatting across the application:
-
-```php
-// For display dates (October 10, 2025 format)
-{{ $item->date_field ? \Carbon\Carbon::parse($item->date_field)->format('F j, Y') : '' }}
-
-// For form dates (YYYY-MM-DD format)
-{{ $item->date_field ? $item->date_field->format('Y-m-d') : '' }}
-
-// For timestamps with time
-{{ $item->updated_at->format('M j, Y g:i A') }}
-```
-
-## Database Relationships
-
-### Key Model Relationships
-
-```php
-PurchaseRequest::class
-- belongsTo(User::class)
-- belongsTo(Supplier::class)
-- hasMany(PurchaseRequestItem::class, 'items')
-
-User::class
-- hasMany(PurchaseRequest::class)
-- hasMany(UserActivity::class, 'activities')
-```
-
-### Migration Patterns
-
--   Use `foreignId()->constrained()->onDelete('cascade')` for relationships
--   Decimal fields use `decimal(15, 2)` for currency, `decimal(12, 2)` for items
--   Status fields are strings with specific enum-like values
-
-## Frontend Patterns
-
-### Styling Conventions
-
--   Tailwind CSS with consistent color schemes per status
--   Card layouts: `bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300`
--   Icons via Iconify: `<i class="iconify" data-icon="mdi:icon-name"></i>`
--   Grid layouts commonly use `grid-cols-3` or `grid-cols-4` for dashboards
-
-### JavaScript Integration
-
--   Alpine.js for component interactivity
--   Chart.js for dashboard visualizations with global window variables pattern
--   Fetch API for AJAX operations with CSRF token handling
--   Form validation follows Laravel's validation patterns
-
-## Critical Dependencies
-
-### Key Packages
-
--   `barryvdh/laravel-dompdf`: PDF generation for PRs/POs
--   `phpoffice/phpspreadsheet`: Excel export functionality
--   `laravel/sanctum`: API authentication
--   `blade-ui-kit/blade-heroicons`: Icon components
-
-### Build Tools
-
--   Vite for asset compilation (`npm run dev` / `npm run build`)
--   Tailwind CSS with forms plugin
--   PostCSS with autoprefixer
-
-## Development Workflow
-
-### Common Commands
-
-```bash
-# Development
-php artisan serve
-npm run dev
-
-# Database
-php artisan migrate
-php artisan db:seed
-
-# Cache clearing
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
-```
-
-### Testing Environment
-
-Uses PHPUnit with Feature/Unit test structure. Laravel Breeze provides authentication scaffolding.
-
-## Security & Authentication
-
-### Two-Factor Authentication
-
-Custom middleware `TwoFactorMiddleware` redirects to verification if 2FA code exists and is valid.
-
-### Role-Based Access
-
-Routes grouped by role with middleware:
-
--   `admin`: User management, reports, audit logs
--   `staff`: PR review, PO generation, GSO dashboard
--   `user`: Create/manage own PRs
-
-### File Uploads
-
-Stored in `storage/app/public` with specific patterns for PR signatures and PO documents.
-
-## Common Pitfalls & Solutions
-
-### Dashboard Card Separation
-
-Keep PO Generated and Completed cards separate - PO Generated should only count `status = 'po_generated'`, not completed items:
-
-```php
-// Correct: PO Generated card counts only po_generated status
-$poGenerated = PurchaseRequest::where('status', 'po_generated')
-    ->whereBetween('po_generated_at', [$startDate, $endDate])->count();
-
-// Correct: Completed card counts only completed status
-$completed = PurchaseRequest::where('status', 'completed')
-    ->whereBetween('updated_at', [$startDate, $endDate])->count();
-```
-
-### Field Mapping Consistency
-
-Ensure consistent field mapping across templates and controllers:
-
-```php
-// Common field mappings to watch for
-$pr->total (not $pr->total_amount)
-$pr->po_generated_at (not $pr->po_date)
-$pr->delivery_address ?? $pr->place_of_delivery
-$pr->items (relationship, not single item)
-```
-
-### Dashboard Variables
-
-When adding new dashboard cards, ensure controller passes all required variables:
-
-```php
-// In GSODashboardController
-return view('staff.gso_dashboard', compact(
-    'pendingPRs', 'approvedPRs', 'completedPRs', // Add new variable
-    'pendingPercentageChange', 'approvedPercentageChange', 'completedPercentageChange' // Add new calculation
-));
-```
-
-### Status Management
-
-Always validate status transitions in controllers before database updates. Use helper methods in models for status color classes.
-
-### Export Functionality
-
-PDF/Excel exports use jobs pattern for large datasets. Always include CSRF tokens in export forms.
-
-## File Structure Notes
-
--   Custom layouts in `resources/views/layouts/page.blade.php` (with sidebar)
--   Modal components follow Alpine.js patterns with x-data
--   Controllers follow RESTful naming but include custom actions (approve, reject, generate)
--   Services in `app/Services/` for cross-cutting concerns like activity logging
-
-## Advanced JavaScript Patterns
-
-### Global Variable Pattern for Dynamic Data
-
-Pass server data to JavaScript using Blade directives:
-
-```php
-// In Blade template
-<script>
-    window.suppliers = @json($suppliers);
-</script>
-
-// In JavaScript
-function buildSupplierOptions() {
-    let options = '<option value="">Select Supplier</option>';
-    window.suppliers.forEach(s => {
-        options += `<option value="${s.id}" data-address="${s.address}">${s.supplier_name}</option>`;
-    });
-    return options;
+    };
+
+    // Cleanup style when modal closes
+    setTimeout(() => {
+        if (style.parentNode) {
+            style.remove();
+        }
+    }, 5000);
 }
 ```
 
-### Chart.js Integration Pattern
+**Key Features:**
 
-Dashboard charts use global window variables:
+-   Warning icon with yellow/orange gradient background
+-   Gradient buttons with hover effects (lift + enhanced shadows)
+-   Smooth animations (fadeIn, slideIn, fadeOut)
+-   Backdrop blur effect
+-   Click outside to close
+-   Professional typography and spacing
 
-```javascript
-// In app.js
-document.addEventListener("DOMContentLoaded", () => {
-    const el = document.getElementById("bar-chart");
-    if (el && window.chartLabels && window.chartPR && window.chartPO) {
-        new Chart(el, {
-            type: "bar",
-            data: {
-                labels: window.chartLabels,
-                datasets: [
-                    {
-                        label: "Total PR",
-                        data: window.chartPR,
-                        backgroundColor: "rgba(71, 74, 255, 0.9)",
-                    },
-                    {
-                        label: "Total PO",
-                        data: window.chartPO,
-                        backgroundColor: "rgba(77, 206, 65, 0.9)",
-                    },
-                ],
-            },
-        });
-    }
-});
+### Form Input Standards
+
+**Placeholder Text Color**: All input field placeholders must use gray text (`text-gray-500` or `placeholder-gray-500`) to clearly distinguish them from user input:
+
+```html
+<!-- ✅ Correct: Gray placeholder text -->
+<input
+    type="text"
+    placeholder="Enter your name..."
+    class="placeholder-gray-500 border border-gray-300 rounded-lg px-3 py-2"
+/>
+
+<!-- ❌ Incorrect: Default black placeholder -->
+<input
+    type="text"
+    placeholder="Enter your name..."
+    class="border border-gray-300 rounded-lg px-3 py-2"
+/>
 ```
 
-### Alpine.js Date Picker Pattern
+## 🚨 CRITICAL: System-Wide Style Uniformity
 
-Complex filtering with custom date picker integration:
+**This is the highest priority requirement.** All UI elements, spacing, colors, typography, and interactions must be perfectly consistent across the entire application. Study existing pages and copy their exact patterns.
 
-```javascript
-function openCustomDatePicker() {
-    const filterElement = document.getElementById("filter-dropdown");
-    if (
-        filterElement &&
-        filterElement._x_dataStack &&
-        filterElement._x_dataStack[0]
-    ) {
-        filterElement._x_dataStack[0].open = false;
-        setTimeout(() => {
-            filterElement._x_dataStack[0].showDatePicker = true;
-        }, 100);
-    }
-}
-```
+### Uniformity Requirements:
+
+-   **Spacing**: Use consistent Tailwind classes (`mt-6`, `px-4 py-2`, `space-x-4`, etc.)
+-   **Colors**: Match status colors exactly (`bg-yellow-100 text-yellow-800` for pending)
+-   **Typography**: Same font weights, sizes, and hierarchy across all pages
+-   **Components**: Reuse existing modal, button, and card patterns
+-   **Interactions**: Same hover effects, transitions, and animations
+-   **Layout**: Consistent grid systems, card layouts, and responsive behavior
+
+### Before implementing any UI:
+
+1. **Reference existing pages** - Copy styling from similar functionality
+2. **Check multiple pages** - Ensure consistency across user, staff, and admin sections
+3. **Use exact classes** - Don't approximate; copy the precise Tailwind combinations
+4. **Test responsiveness** - Ensure mobile/tablet behavior matches other pages
+
+**Example**: All dashboard cards use `bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300` - use this exact pattern everywhere.
 
 ## 🚨 CRITICAL GUIDELINES FOR AI AGENTS
 
@@ -798,6 +349,7 @@ function openCustomDatePicker() {
 -   **NO CONTROLLER ROUTES**: Do not add new routes without explicit user permission
 -   **CHECK EXISTING CODE**: Always search for existing implementations before adding methods
 -   **CONSISTENCY FIRST**: Reference similar files to maintain design patterns and avoid redundancy
+-   **AVOID DUPLICATION**: Before implementing any new feature, method, or component, thoroughly search the codebase to ensure it doesn't already exist
 
 -   **ERROR-FREE CODE**: All generated code must be free of syntax, runtime, and logic errors. Always validate and fix any errors before considering the task complete.
 

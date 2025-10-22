@@ -24,6 +24,13 @@
                     User Management
                 </a>
 
+                <a href="{{ route('admin.system_selections') }}"
+                    class="flex items-center px-4 py-3 rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.system_selections') ? 'bg-gradient-to-r from-blue-300 to-white font-bold text-gray-900' : 'text-gray-700 hover:bg-blue-50' }}">
+                    <i class="iconify w-5 h-5 mr-3 {{ request()->routeIs('admin.system_selections') ? 'text-gray-900' : 'text-gray-600' }}"
+                        data-icon="mdi:tune-variant"></i>
+                    System Selections
+                </a>
+
                 <a href="{{ route('admin.audit_logs') }}"
                     class="flex items-center px-4 py-3 rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.audit_logs') ? 'bg-gradient-to-r from-blue-300 to-white font-bold text-gray-900' : 'text-gray-700 hover:bg-blue-50' }}">
                     <i class="iconify w-5 h-5 mr-3 {{ request()->routeIs('admin.audit_logs') ? 'text-gray-900' : 'text-gray-600' }}"
