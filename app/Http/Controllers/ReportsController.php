@@ -14,107 +14,114 @@ class ReportsController extends Controller
     public function index(Request $request)
     {
         // Get PRs that are approved or completed (only these statuses should be shown)
-        $prQuery = PurchaseRequest::with('user')
-            ->whereIn('purchase_requests.status', ['approved', 'completed'])
+        $prQuery = PurchaseRequest::with('user', 'status')
+            ->whereHas('status', function ($statusQuery) {
+                $statusQuery->whereIn('name', ['approved', 'completed']);
+            })
             ->whereNotExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('purchase_orders')
                     ->whereRaw('purchase_orders.purchase_request_id = purchase_requests.id');
-            }) // Exclude PRs that have associated POs
-            ->select([
-                'purchase_requests.id',
-                'purchase_requests.pr_number',
-                'purchase_requests.total',
-                'purchase_requests.status',
-                'purchase_requests.created_at',
-                'purchase_requests.updated_at',
-                DB::raw("'PR' as type"),
-                DB::raw("purchase_requests.pr_number as document_number"),
-                DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name) as department"),
-                DB::raw("purchase_requests.total as amount"),
-                DB::raw("purchase_requests.created_at as date_created"),
-                DB::raw("purchase_requests.updated_at as date_edited")
-            ])
-            ->join('users', 'purchase_requests.user_id', '=', 'users.id');
+            }); // Exclude PRs that have associated POs
 
-        // Get PO data from purchase_orders table joined with purchase_requests
-        $poQuery = PurchaseOrder::with(['purchaseRequest.user', 'supplier'])
-            ->join('purchase_requests', 'purchase_orders.purchase_request_id', '=', 'purchase_requests.id')
-            ->join('users', 'purchase_requests.user_id', '=', 'users.id')
-            ->leftJoin('suppliers', 'purchase_orders.supplier_id', '=', 'suppliers.id')
-            ->select([
-                'purchase_orders.id',
-                'purchase_requests.pr_number',
-                'purchase_requests.total',
-                'purchase_requests.status', // Use actual PR status instead of hardcoded po_generated
-                'purchase_orders.generated_at',
-                'purchase_orders.updated_at',
-                DB::raw("'PO' as type"),
-                DB::raw("purchase_orders.po_number as document_number"),
-                DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name) as department"),
-                DB::raw("purchase_requests.total as amount"),
-                DB::raw("purchase_orders.generated_at as date_created"),
-                DB::raw("purchase_orders.updated_at as date_edited")
-            ]);
+        // Get PO data from purchase_orders table
+        $poQuery = PurchaseOrder::with(['purchaseRequest.user', 'supplier', 'purchaseRequest.status']);
 
         // Apply search filters to both queries
         if ($request->filled('search')) {
             $search = $request->search;
             $prQuery->where(function ($q) use ($search) {
-                $q->where('purchase_requests.pr_number', 'like', "%{$search}%")
-                    ->orWhere(DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name)"), 'like', "%{$search}%")
-                    ->orWhere('purchase_requests.status', 'like', "%{$search}%");
+                $q->where('pr_number', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('middle_name', 'like', "%{$search}%");
+                    });
             });
 
             $poQuery->where(function ($q) use ($search) {
-                $q->where('purchase_requests.pr_number', 'like', "%{$search}%")
-                    ->orWhere('purchase_orders.po_number', 'like', "%{$search}%")
-                    ->orWhere(DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name)"), 'like', "%{$search}%");
+                $q->whereHas('purchaseRequest', function ($prQuery) use ($search) {
+                    $prQuery->where('pr_number', 'like', "%{$search}%");
+                })
+                    ->orWhere('po_number', 'like', "%{$search}%")
+                    ->orWhereHas('purchaseRequest.user', function ($userQuery) use ($search) {
+                        $userQuery->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('middle_name', 'like', "%{$search}%");
+                    });
             });
         }
 
-        // Apply status filter (only allow approved, completed, and po_generated)
+        // Apply status filter
         if ($request->filled('status') && $request->status !== 'all') {
             if ($request->status === 'approved') {
-                // Only show approved PRs that don't have POs
-                $prQuery->where('purchase_requests.status', 'approved');
-                $poQuery->whereRaw('1 = 0'); // This will return no results
+                // Only show approved PRs
+                $prQuery->whereHas('status', function ($statusQuery) {
+                    $statusQuery->where('name', 'approved');
+                });
+                $poQuery->whereRaw('1 = 0'); // No POs for approved filter
             } elseif ($request->status === 'po_generated') {
-                // Only show POs where PR status is po_generated
-                $prQuery->whereRaw('1 = 0'); // This will return no results
-                $poQuery->where('purchase_requests.status', 'po_generated');
+                // Only show POs
+                $prQuery->whereRaw('1 = 0'); // No PRs for po_generated filter
+                // All POs are po_generated by definition
             } elseif ($request->status === 'completed') {
-                // Only show POs where PR status is completed
-                $prQuery->whereRaw('1 = 0'); // This will return no results
-                $poQuery->where('purchase_requests.status', 'completed');
-            } else {
-                // Invalid status filter, show no results
-                $prQuery->whereRaw('1 = 0');
-                $poQuery->whereRaw('1 = 0');
+                // Show completed PRs and completed POs
+                $prQuery->whereHas('status', function ($statusQuery) {
+                    $statusQuery->where('name', 'completed');
+                });
+                $poQuery->whereNotNull('completed_at');
             }
         }
 
         // Apply date range filters
         if ($request->filled('date_from')) {
-            $prQuery->whereDate('purchase_requests.created_at', '>=', $request->date_from);
-            $poQuery->whereDate('purchase_orders.generated_at', '>=', $request->date_from);
+            $prQuery->whereDate('created_at', '>=', $request->date_from);
+            $poQuery->whereDate('generated_at', '>=', $request->date_from);
         }
         if ($request->filled('date_to')) {
-            $prQuery->whereDate('purchase_requests.created_at', '<=', $request->date_to);
-            $poQuery->whereDate('purchase_orders.generated_at', '<=', $request->date_to);
+            $prQuery->whereDate('created_at', '<=', $request->date_to);
+            $poQuery->whereDate('generated_at', '<=', $request->date_to);
         }
 
-        // Union the queries and order by date
-        $combinedQuery = $prQuery->union($poQuery)
-            ->orderBy('date_created', 'desc');
+        // Get results and combine them
+        $prs = $prQuery->get()->map(function ($pr) {
+            $pr->type = 'PR';
+            $pr->document_number = $pr->pr_number;
+            $pr->department = $pr->user ? trim($pr->user->first_name . ' ' . ($pr->user->middle_name ?? '') . ' ' . $pr->user->last_name) : '';
+            $pr->amount = $pr->total;
+            $pr->date_created = $pr->created_at;
+            $pr->date_edited = $pr->updated_at;
+            return $pr;
+        });
+
+        $pos = $poQuery->get()->map(function ($po) {
+            $po->type = 'PO';
+            $po->document_number = $po->po_number;
+            $po->department = $po->purchaseRequest->user ? trim($po->purchaseRequest->user->first_name . ' ' . ($po->purchaseRequest->user->middle_name ?? '') . ' ' . $po->purchaseRequest->user->last_name) : '';
+            $po->amount = $po->purchaseRequest->total;
+            $po->date_created = $po->generated_at;
+            $po->date_edited = $po->updated_at;
+            return $po;
+        });
+
+        // Combine and sort by date_created desc
+        $combined = $prs->concat($pos)->sortByDesc('date_created');
 
         // Paginate the combined results
-        $reports = $combinedQuery->paginate(10);
+        $perPage = 10;
+        $currentPage = $request->get('page', 1);
+        $reports = new \Illuminate\Pagination\LengthAwarePaginator(
+            $combined->forPage($currentPage, $perPage),
+            $combined->count(),
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'pageName' => 'page']
+        );
+        $reports->appends($request->query());
 
         // Get all available statuses for filter dropdown
-        $statuses = PurchaseRequest::select('status')
-            ->distinct()
-            ->pluck('status');
+        $statuses = \App\Models\Status::where('context', 'purchase_request')
+            ->pluck('name');
 
         $user = auth()->user();
         $recentActivities = $user->activities()
@@ -143,94 +150,97 @@ class ReportsController extends Controller
     private function getFilteredReports(Request $request)
     {
         // Same logic as index method to get filtered data
-        $prQuery = PurchaseRequest::with('user')
-            ->whereIn('purchase_requests.status', ['approved', 'completed'])
+        $prQuery = PurchaseRequest::with('user', 'status')
+            ->whereHas('status', function ($statusQuery) {
+                $statusQuery->whereIn('name', ['approved', 'completed']);
+            })
             ->whereNotExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('purchase_orders')
                     ->whereRaw('purchase_orders.purchase_request_id = purchase_requests.id');
-            }) // Exclude PRs that have associated POs
-            ->select([
-                'purchase_requests.id',
-                'purchase_requests.pr_number',
-                'purchase_requests.total',
-                'purchase_requests.status',
-                'purchase_requests.created_at',
-                'purchase_requests.updated_at',
-                DB::raw("'PR' as type"),
-                DB::raw("purchase_requests.pr_number as document_number"),
-                DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name) as department"),
-                DB::raw("purchase_requests.total as amount"),
-                DB::raw("purchase_requests.created_at as date_created"),
-                DB::raw("purchase_requests.updated_at as date_edited")
-            ])
-            ->join('users', 'purchase_requests.user_id', '=', 'users.id');
+            }); // Exclude PRs that have associated POs
 
-        $poQuery = PurchaseOrder::with(['purchaseRequest.user', 'supplier'])
-            ->join('purchase_requests', 'purchase_orders.purchase_request_id', '=', 'purchase_requests.id')
-            ->join('users', 'purchase_requests.user_id', '=', 'users.id')
-            ->leftJoin('suppliers', 'purchase_orders.supplier_id', '=', 'suppliers.id')
-            ->select([
-                'purchase_orders.id',
-                'purchase_requests.pr_number',
-                'purchase_requests.total',
-                'purchase_requests.status', // Use actual PR status instead of hardcoded po_generated
-                'purchase_orders.generated_at',
-                'purchase_orders.updated_at',
-                DB::raw("'PO' as type"),
-                DB::raw("purchase_orders.po_number as document_number"),
-                DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name) as department"),
-                DB::raw("purchase_requests.total as amount"),
-                DB::raw("purchase_orders.generated_at as date_created"),
-                DB::raw("purchase_orders.updated_at as date_edited")
-            ]);
+        $poQuery = PurchaseOrder::with(['purchaseRequest.user', 'supplier', 'purchaseRequest.status']);
 
         // Apply filters
         if ($request->filled('search')) {
             $search = $request->search;
             $prQuery->where(function ($q) use ($search) {
-                $q->where('purchase_requests.pr_number', 'like', "%{$search}%")
-                    ->orWhere(DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name)"), 'like', "%{$search}%")
-                    ->orWhere('purchase_requests.status', 'like', "%{$search}%");
+                $q->where('pr_number', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('middle_name', 'like', "%{$search}%");
+                    });
             });
 
             $poQuery->where(function ($q) use ($search) {
-                $q->where('purchase_requests.pr_number', 'like', "%{$search}%")
-                    ->orWhere('purchase_orders.po_number', 'like', "%{$search}%")
-                    ->orWhere(DB::raw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name)"), 'like', "%{$search}%");
+                $q->whereHas('purchaseRequest', function ($prQuery) use ($search) {
+                    $prQuery->where('pr_number', 'like', "%{$search}%");
+                })
+                    ->orWhere('po_number', 'like', "%{$search}%")
+                    ->orWhereHas('purchaseRequest.user', function ($userQuery) use ($search) {
+                        $userQuery->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('middle_name', 'like', "%{$search}%");
+                    });
             });
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
             if ($request->status === 'approved') {
-                // Only show approved PRs that don't have POs
-                $prQuery->where('purchase_requests.status', 'approved');
-                $poQuery->whereRaw('1 = 0'); // This will return no results
+                // Only show approved PRs
+                $prQuery->whereHas('status', function ($statusQuery) {
+                    $statusQuery->where('name', 'approved');
+                });
+                $poQuery->whereRaw('1 = 0'); // No POs for approved filter
             } elseif ($request->status === 'po_generated') {
-                // Only show POs where PR status is po_generated
-                $prQuery->whereRaw('1 = 0'); // This will return no results
-                $poQuery->where('purchase_requests.status', 'po_generated');
+                // Only show POs
+                $prQuery->whereRaw('1 = 0'); // No PRs for po_generated filter
+                // All POs are po_generated by definition
             } elseif ($request->status === 'completed') {
-                // Only show POs where PR status is completed
-                $prQuery->whereRaw('1 = 0'); // This will return no results
-                $poQuery->where('purchase_requests.status', 'completed');
-            } else {
-                // Invalid status filter, show no results
-                $prQuery->whereRaw('1 = 0');
-                $poQuery->whereRaw('1 = 0');
+                // Show completed PRs and completed POs
+                $prQuery->whereHas('status', function ($statusQuery) {
+                    $statusQuery->where('name', 'completed');
+                });
+                $poQuery->whereNotNull('completed_at');
             }
         }
 
         if ($request->filled('date_from')) {
-            $prQuery->whereDate('purchase_requests.created_at', '>=', $request->date_from);
-            $poQuery->whereDate('purchase_orders.generated_at', '>=', $request->date_from);
+            $prQuery->whereDate('created_at', '>=', $request->date_from);
+            $poQuery->whereDate('generated_at', '>=', $request->date_from);
         }
         if ($request->filled('date_to')) {
-            $prQuery->whereDate('purchase_requests.created_at', '<=', $request->date_to);
-            $poQuery->whereDate('purchase_orders.generated_at', '<=', $request->date_to);
+            $prQuery->whereDate('created_at', '<=', $request->date_to);
+            $poQuery->whereDate('generated_at', '<=', $request->date_to);
         }
 
-        return $prQuery->union($poQuery)->orderBy('date_created', 'desc')->get();
+        // Get results and combine them
+        $prs = $prQuery->get()->map(function ($pr) {
+            $pr->type = 'PR';
+            $pr->document_number = $pr->pr_number;
+            $pr->department = $pr->user ? trim($pr->user->first_name . ' ' . ($pr->user->middle_name ?? '') . ' ' . $pr->user->last_name) : '';
+            $pr->amount = $pr->total;
+            $pr->date_created = $pr->created_at;
+            $pr->date_edited = $pr->updated_at;
+            return $pr;
+        });
+
+        $pos = $poQuery->get()->map(function ($po) {
+            $po->type = 'PO';
+            $po->document_number = $po->po_number;
+            $po->department = $po->purchaseRequest->user ? trim($po->purchaseRequest->user->first_name . ' ' . ($po->purchaseRequest->user->middle_name ?? '') . ' ' . $po->purchaseRequest->user->last_name) : '';
+            $po->amount = $po->purchaseRequest->total;
+            $po->date_created = $po->generated_at;
+            $po->date_edited = $po->updated_at;
+            return $po;
+        });
+
+        // Combine and sort by date_created desc
+        $combined = $prs->concat($pos)->sortByDesc('date_created');
+
+        return $combined;
     }
 
     private function exportToCsv($reports, Request $request)

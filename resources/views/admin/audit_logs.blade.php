@@ -384,8 +384,11 @@
                                         </td>
                                         <td class="px-4 py-4 text-sm text-gray-900">
                                             <div class="flex items-center">
-                                                <i class="iconify w-4 h-4 mr-2 {{ $log->action_color }}"
-                                                    data-icon="{{ $log->action_icon }}"></i>
+                                                <div
+                                                    class="w-8 h-8 rounded-full flex items-center justify-center mr-3 {{ $log->action_color }}">
+                                                    <i class="iconify w-4 h-4"
+                                                        data-icon="{{ $log->action_icon }}"></i>
+                                                </div>
                                                 {{ $log->description }}
                                                 @if ($log->pr_number)
                                                     <span class="ml-1 text-gray-500">({{ $log->pr_number }})</span>

@@ -545,15 +545,15 @@
         function viewReport(id, type, status) {
             console.log('Viewing report:', id, 'Type:', type, 'Status:', status);
 
-            // Determine which modal to show based on status
-            if (status === 'po_generated' || status === 'completed') {
+            // Determine which modal to show based on type
+            if (type === 'PO') {
                 // Show PO modal
                 openViewPOModal(id);
-            } else if (status === 'approved') {
+            } else if (type === 'PR') {
                 // Show PR modal
                 openViewPRModal(id);
             } else {
-                console.error('Unknown status:', status);
+                console.error('Unknown type:', type);
             }
         }
 

@@ -47,10 +47,14 @@ class AdminDashboardController extends Controller
         $poData = $chartData['poData'];
 
         // Get filtered counts and totals for cards - only approved, po_generated, and completed
-        $prCount = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+        $prCount = PurchaseRequest::whereHas('status', function ($query) {
+            $query->whereIn('name', ['approved', 'po_generated', 'completed']);
+        })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
-        $prTotal = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+        $prTotal = PurchaseRequest::whereHas('status', function ($query) {
+            $query->whereIn('name', ['approved', 'po_generated', 'completed']);
+        })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('total');
 
@@ -64,7 +68,9 @@ class AdminDashboardController extends Controller
         $previousStartDate = $startDate->copy()->subMonth();
         $previousEndDate = $endDate->copy()->subMonth();
 
-        $previousPrCount = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+        $previousPrCount = PurchaseRequest::whereHas('status', function ($query) {
+            $query->whereIn('name', ['approved', 'po_generated', 'completed']);
+        })
             ->whereBetween('created_at', [$previousStartDate, $previousEndDate])
             ->count();
         $previousPoCount = PurchaseOrder::whereBetween('generated_at', [$previousStartDate, $previousEndDate])
@@ -189,7 +195,9 @@ class AdminDashboardController extends Controller
                 $date = Carbon::now()->subMonths($i);
                 $labels[] = $date->format('M');
 
-                $prData[] = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+                $prData[] = PurchaseRequest::whereHas('status', function ($query) {
+                    $query->whereIn('name', ['approved', 'po_generated', 'completed']);
+                })
                     ->whereYear('created_at', $date->year)
                     ->whereMonth('created_at', $date->month)
                     ->count();
@@ -209,7 +217,9 @@ class AdminDashboardController extends Controller
                     $date = $targetMonth->copy()->subMonths($i);
                     $labels[] = $date->format('M Y');
 
-                    $prData[] = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+                    $prData[] = PurchaseRequest::whereHas('status', function ($query) {
+                        $query->whereIn('name', ['approved', 'po_generated', 'completed']);
+                    })
                         ->whereYear('created_at', $date->year)
                         ->whereMonth('created_at', $date->month)
                         ->count();
@@ -226,7 +236,9 @@ class AdminDashboardController extends Controller
                 while ($currentDate <= $endMonth) {
                     $labels[] = $currentDate->format('M Y');
 
-                    $prData[] = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+                    $prData[] = PurchaseRequest::whereHas('status', function ($query) {
+                        $query->whereIn('name', ['approved', 'po_generated', 'completed']);
+                    })
                         ->whereYear('created_at', $currentDate->year)
                         ->whereMonth('created_at', $currentDate->month)
                         ->count();
@@ -250,7 +262,9 @@ class AdminDashboardController extends Controller
                     if ($firstHalfStart <= $endDate && $firstHalfEnd >= $startDate) {
                         $labels[] = $year . ' H1';
 
-                        $prData[] = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+                        $prData[] = PurchaseRequest::whereHas('status', function ($query) {
+                            $query->whereIn('name', ['approved', 'po_generated', 'completed']);
+                        })
                             ->whereBetween('created_at', [
                                 max($firstHalfStart, $startDate),
                                 min($firstHalfEnd, $endDate)
@@ -269,7 +283,9 @@ class AdminDashboardController extends Controller
                     if ($secondHalfStart <= $endDate && $secondHalfEnd >= $startDate) {
                         $labels[] = $year . ' H2';
 
-                        $prData[] = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
+                        $prData[] = PurchaseRequest::whereHas('status', function ($query) {
+                            $query->whereIn('name', ['approved', 'po_generated', 'completed']);
+                        })
                             ->whereBetween('created_at', [
                                 max($secondHalfStart, $startDate),
                                 min($secondHalfEnd, $endDate)

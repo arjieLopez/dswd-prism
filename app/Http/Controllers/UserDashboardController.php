@@ -47,52 +47,72 @@ class UserDashboardController extends Controller
             ->count();
 
         $draftPRs = $user->purchaseRequests()
-            ->whereIn('status', ['draft'])
+            ->whereHas('status', function ($query) {
+                $query->whereIn('name', ['draft']);
+            })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
         $draftTotal = $user->purchaseRequests()
-            ->whereIn('status', ['draft'])
+            ->whereHas('status', function ($query) {
+                $query->whereIn('name', ['draft']);
+            })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('total');
 
         $approvedPRs = $user->purchaseRequests()
-            ->whereIn('status', ['approved', 'po_generated'])
+            ->whereHas('status', function ($query) {
+                $query->whereIn('name', ['approved', 'po_generated']);
+            })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
         $approvedTotal = $user->purchaseRequests()
-            ->whereIn('status', ['approved', 'po_generated'])
+            ->whereHas('status', function ($query) {
+                $query->whereIn('name', ['approved', 'po_generated']);
+            })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('total');
 
         $pendingPRs = $user->purchaseRequests()
-            ->where('status', 'pending')
+            ->whereHas('status', function ($query) {
+                $query->where('name', 'pending');
+            })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
         $pendingTotal = $user->purchaseRequests()
-            ->where('status', 'pending')
+            ->whereHas('status', function ($query) {
+                $query->where('name', 'pending');
+            })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('total');
 
         $rejectedPRs = $user->purchaseRequests()
-            ->where('status', 'rejected')
+            ->whereHas('status', function ($query) {
+                $query->where('name', 'rejected');
+            })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
         $rejectedTotal = $user->purchaseRequests()
-            ->where('status', 'rejected')
+            ->whereHas('status', function ($query) {
+                $query->where('name', 'rejected');
+            })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('total');
 
         $completedPRs = $user->purchaseRequests()
-            ->where('status', 'completed')
+            ->whereHas('status', function ($query) {
+                $query->where('name', 'completed');
+            })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
         $completedTotal = $user->purchaseRequests()
-            ->where('status', 'completed')
+            ->whereHas('status', function ($query) {
+                $query->where('name', 'completed');
+            })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('total');
 
@@ -103,30 +123,40 @@ class UserDashboardController extends Controller
             ->count();
 
         $lastMonthDraft = $user->purchaseRequests()
-            ->where('status', 'draft')
+            ->whereHas('status', function ($query) {
+                $query->where('name', 'draft');
+            })
             ->whereMonth('created_at', $lastMonth->month)
             ->whereYear('created_at', $lastMonth->year)
             ->count();
 
         $lastMonthApproved = $user->purchaseRequests()
-            ->whereIn('status', ['approved', 'po_generated'])
+            ->whereHas('status', function ($query) {
+                $query->whereIn('name', ['approved', 'po_generated']);
+            })
             ->whereMonth('created_at', $lastMonth->month)
             ->whereYear('created_at', $lastMonth->year)
             ->count();
 
         $lastMonthPending = $user->purchaseRequests()
-            ->where('status', 'pending')
+            ->whereHas('status', function ($query) {
+                $query->where('name', 'pending');
+            })
             ->whereMonth('created_at', $lastMonth->month)
             ->whereYear('created_at', $lastMonth->year)
             ->count();
 
         $lastMonthRejected = $user->purchaseRequests()
-            ->where('status', 'rejected')
+            ->whereHas('status', function ($query) {
+                $query->where('name', 'rejected');
+            })
             ->whereMonth('created_at', $lastMonth->month)
             ->whereYear('created_at', $lastMonth->year)
             ->count();
         $lastMonthCompleted = $user->purchaseRequests()
-            ->where('status', 'completed')
+            ->whereHas('status', function ($query) {
+                $query->where('name', 'completed');
+            })
             ->whereMonth('created_at', $lastMonth->month)
             ->whereYear('created_at', $lastMonth->year)
             ->count();
@@ -220,25 +250,33 @@ class UserDashboardController extends Controller
                 $labels[] = $date->format('M');
 
                 $approvePR[] = $user->purchaseRequests()
-                    ->whereIn('status', ['approved', 'po_generated'])
+                    ->whereHas('status', function ($query) {
+                        $query->whereIn('name', ['approved', 'po_generated']);
+                    })
                     ->whereMonth('created_at', $date->month)
                     ->whereYear('created_at', $date->year)
                     ->count();
 
                 $pendingPR[] = $user->purchaseRequests()
-                    ->where('status', 'pending')
+                    ->whereHas('status', function ($query) {
+                        $query->where('name', 'pending');
+                    })
                     ->whereMonth('created_at', $date->month)
                     ->whereYear('created_at', $date->year)
                     ->count();
 
                 $rejectPR[] = $user->purchaseRequests()
-                    ->where('status', 'rejected')
+                    ->whereHas('status', function ($query) {
+                        $query->where('name', 'rejected');
+                    })
                     ->whereMonth('created_at', $date->month)
                     ->whereYear('created_at', $date->year)
                     ->count();
 
                 $completedPR[] = $user->purchaseRequests()
-                    ->where('status', 'completed')
+                    ->whereHas('status', function ($query) {
+                        $query->where('name', 'completed');
+                    })
                     ->whereMonth('created_at', $date->month)
                     ->whereYear('created_at', $date->year)
                     ->count();
@@ -255,25 +293,33 @@ class UserDashboardController extends Controller
                     $labels[] = $date->format('M Y');
 
                     $approvePR[] = $user->purchaseRequests()
-                        ->whereIn('status', ['approved', 'po_generated'])
+                        ->whereHas('status', function ($query) {
+                            $query->whereIn('name', ['approved', 'po_generated']);
+                        })
                         ->whereMonth('created_at', $date->month)
                         ->whereYear('created_at', $date->year)
                         ->count();
 
                     $pendingPR[] = $user->purchaseRequests()
-                        ->where('status', 'pending')
+                        ->whereHas('status', function ($query) {
+                            $query->where('name', 'pending');
+                        })
                         ->whereMonth('created_at', $date->month)
                         ->whereYear('created_at', $date->year)
                         ->count();
 
                     $rejectPR[] = $user->purchaseRequests()
-                        ->where('status', 'rejected')
+                        ->whereHas('status', function ($query) {
+                            $query->where('name', 'rejected');
+                        })
                         ->whereMonth('created_at', $date->month)
                         ->whereYear('created_at', $date->year)
                         ->count();
 
                     $completedPR[] = $user->purchaseRequests()
-                        ->where('status', 'completed')
+                        ->whereHas('status', function ($query) {
+                            $query->where('name', 'completed');
+                        })
                         ->whereMonth('created_at', $date->month)
                         ->whereYear('created_at', $date->year)
                         ->count();
@@ -287,25 +333,33 @@ class UserDashboardController extends Controller
                     $labels[] = $currentDate->format('M Y');
 
                     $approvePR[] = $user->purchaseRequests()
-                        ->whereIn('status', ['approved', 'po_generated'])
+                        ->whereHas('status', function ($query) {
+                            $query->whereIn('name', ['approved', 'po_generated']);
+                        })
                         ->whereMonth('created_at', $currentDate->month)
                         ->whereYear('created_at', $currentDate->year)
                         ->count();
 
                     $pendingPR[] = $user->purchaseRequests()
-                        ->where('status', 'pending')
+                        ->whereHas('status', function ($query) {
+                            $query->where('name', 'pending');
+                        })
                         ->whereMonth('created_at', $currentDate->month)
                         ->whereYear('created_at', $currentDate->year)
                         ->count();
 
                     $rejectPR[] = $user->purchaseRequests()
-                        ->where('status', 'rejected')
+                        ->whereHas('status', function ($query) {
+                            $query->where('name', 'rejected');
+                        })
                         ->whereMonth('created_at', $currentDate->month)
                         ->whereYear('created_at', $currentDate->year)
                         ->count();
 
                     $completedPR[] = $user->purchaseRequests()
-                        ->where('status', 'completed')
+                        ->whereHas('status', function ($query) {
+                            $query->where('name', 'completed');
+                        })
                         ->whereMonth('created_at', $currentDate->month)
                         ->whereYear('created_at', $currentDate->year)
                         ->count();
@@ -326,7 +380,9 @@ class UserDashboardController extends Controller
                         $labels[] = $year . ' H1';
 
                         $approvePR[] = $user->purchaseRequests()
-                            ->whereIn('status', ['approved', 'po_generated'])
+                            ->whereHas('status', function ($query) {
+                                $query->whereIn('name', ['approved', 'po_generated']);
+                            })
                             ->whereBetween('created_at', [
                                 max($firstHalfStart, $startDate),
                                 min($firstHalfEnd, $endDate)
@@ -334,7 +390,9 @@ class UserDashboardController extends Controller
                             ->count();
 
                         $pendingPR[] = $user->purchaseRequests()
-                            ->where('status', 'pending')
+                            ->whereHas('status', function ($query) {
+                                $query->where('name', 'pending');
+                            })
                             ->whereBetween('created_at', [
                                 max($firstHalfStart, $startDate),
                                 min($firstHalfEnd, $endDate)
@@ -342,7 +400,9 @@ class UserDashboardController extends Controller
                             ->count();
 
                         $rejectPR[] = $user->purchaseRequests()
-                            ->where('status', 'rejected')
+                            ->whereHas('status', function ($query) {
+                                $query->where('name', 'rejected');
+                            })
                             ->whereBetween('created_at', [
                                 max($firstHalfStart, $startDate),
                                 min($firstHalfEnd, $endDate)
@@ -350,7 +410,9 @@ class UserDashboardController extends Controller
                             ->count();
 
                         $completedPR[] = $user->purchaseRequests()
-                            ->where('status', 'completed')
+                            ->whereHas('status', function ($query) {
+                                $query->where('name', 'completed');
+                            })
                             ->whereBetween('created_at', [
                                 max($firstHalfStart, $startDate),
                                 min($firstHalfEnd, $endDate)
@@ -366,7 +428,9 @@ class UserDashboardController extends Controller
                         $labels[] = $year . ' H2';
 
                         $approvePR[] = $user->purchaseRequests()
-                            ->whereIn('status', ['approved', 'po_generated'])
+                            ->whereHas('status', function ($query) {
+                                $query->whereIn('name', ['approved', 'po_generated']);
+                            })
                             ->whereBetween('created_at', [
                                 max($secondHalfStart, $startDate),
                                 min($secondHalfEnd, $endDate)
@@ -374,7 +438,9 @@ class UserDashboardController extends Controller
                             ->count();
 
                         $pendingPR[] = $user->purchaseRequests()
-                            ->where('status', 'pending')
+                            ->whereHas('status', function ($query) {
+                                $query->where('name', 'pending');
+                            })
                             ->whereBetween('created_at', [
                                 max($secondHalfStart, $startDate),
                                 min($secondHalfEnd, $endDate)
@@ -382,7 +448,9 @@ class UserDashboardController extends Controller
                             ->count();
 
                         $rejectPR[] = $user->purchaseRequests()
-                            ->where('status', 'rejected')
+                            ->whereHas('status', function ($query) {
+                                $query->where('name', 'rejected');
+                            })
                             ->whereBetween('created_at', [
                                 max($secondHalfStart, $startDate),
                                 min($secondHalfEnd, $endDate)
@@ -390,7 +458,9 @@ class UserDashboardController extends Controller
                             ->count();
 
                         $completedPR[] = $user->purchaseRequests()
-                            ->where('status', 'completed')
+                            ->whereHas('status', function ($query) {
+                                $query->where('name', 'completed');
+                            })
                             ->whereBetween('created_at', [
                                 max($secondHalfStart, $startDate),
                                 min($secondHalfEnd, $endDate)

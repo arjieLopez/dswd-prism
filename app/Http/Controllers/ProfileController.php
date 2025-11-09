@@ -22,9 +22,15 @@ class ProfileController extends Controller
             ->limit(10)
             ->get();
 
+        // Get reference data for dropdowns
+        $designations = \App\Models\Designation::orderBy('name')->get();
+        $offices = \App\Models\Office::orderBy('name')->get();
+
         return view('profile.edit', [
             'user' => $user,
             'recentActivities' => $recentActivities,
+            'designations' => $designations,
+            'offices' => $offices,
         ]);
     }
 
@@ -33,13 +39,29 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $validated = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // Convert designation and office names to IDs
+        if (isset($validated['designation'])) {
+            $designation = \App\Models\Designation::where('name', $validated['designation'])->first();
+            $validated['designation_id'] = $designation ? $designation->id : null;
+            unset($validated['designation']);
         }
 
-        $request->user()->save();
+        if (isset($validated['office'])) {
+            $office = \App\Models\Office::where('name', $validated['office'])->first();
+            $validated['office_id'] = $office ? $office->id : null;
+            unset($validated['office']);
+        }
+
+        $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

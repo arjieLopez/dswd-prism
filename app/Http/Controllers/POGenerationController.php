@@ -16,15 +16,16 @@ class POGenerationController extends Controller
     public function index(Request $request)
     {
         // Build query for generated POs from purchase_orders table
-        $generatedPOsQuery = PurchaseOrder::with(['purchaseRequest.user', 'supplier', 'generatedBy'])
+        $generatedPOsQuery = PurchaseOrder::with(['purchaseRequest.user', 'supplier', 'purchaseRequest.status'])
             ->join('purchase_requests', 'purchase_orders.purchase_request_id', '=', 'purchase_requests.id')
             ->join('users', 'purchase_requests.user_id', '=', 'users.id')
+            ->join('statuses', 'purchase_requests.status_id', '=', 'statuses.id')
             ->leftJoin('suppliers', 'purchase_orders.supplier_id', '=', 'suppliers.id')
             ->select([
                 'purchase_orders.*',
                 'purchase_requests.pr_number',
                 'purchase_requests.total',
-                'purchase_requests.status as pr_status',
+                'statuses.name as pr_status',
                 'purchase_requests.delivery_address',
                 'purchase_requests.delivery_period',
                 'users.first_name',
@@ -55,7 +56,7 @@ class POGenerationController extends Controller
                 $generatedPOsQuery->whereNotNull('purchase_orders.completed_at');
             } else {
                 // Filter by PR status
-                $generatedPOsQuery->where('purchase_requests.status', $request->status);
+                $generatedPOsQuery->where('statuses.name', $request->status);
             }
         }
 
@@ -73,7 +74,9 @@ class POGenerationController extends Controller
 
         // Get all approved purchase requests (not filtered for now, as they're separate section)
         $approvedPRs = PurchaseRequest::with('user')
-            ->where('status', 'approved')
+            ->whereHas('status', function ($query) {
+                $query->where('name', 'approved');
+            })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -81,7 +84,9 @@ class POGenerationController extends Controller
         $poDocuments = PODocument::orderBy('created_at', 'desc')
             ->paginate(10);
 
-        $suppliers = \App\Models\Supplier::where('status', 'active')->get();
+        $suppliers = \App\Models\Supplier::whereHas('status', function ($query) {
+            $query->where('name', 'active');
+        })->get();
 
         // Get system selections for edit modal
         $modesOfProcurement = \App\Models\SystemSelection::getByType('mode_of_procurement');
@@ -258,7 +263,9 @@ class POGenerationController extends Controller
         $purchaseRequest->load('items');
 
         // Get active suppliers
-        $suppliers = \App\Models\Supplier::where('status', 'active')->orderBy('supplier_name')->get();
+        $suppliers = \App\Models\Supplier::whereHas('status', function ($query) {
+            $query->where('name', 'active');
+        })->orderBy('supplier_name')->get();
 
         // Get system selections
         $modesOfProcurement = \App\Models\SystemSelection::getByType('mode_of_procurement');
@@ -394,7 +401,7 @@ class POGenerationController extends Controller
                 $requestedBy,
                 $po->generated_at ? $po->generated_at->format('M d, Y') : 'N/A',
                 '₱' . number_format($po->purchaseRequest->total, 2),
-                $po->completed_at ? 'Completed' : 'Generated'
+                $po->status_display
             ];
         }
 

@@ -41,17 +41,25 @@ class GSODashboardController extends Controller
         $lastMonth = $currentMonth->copy()->subMonth();
 
         // Get PR statistics for selected date range
-        $pendingPRs = PurchaseRequest::where('status', 'pending')
+        $pendingPRs = PurchaseRequest::whereHas('status', function ($query) {
+            $query->where('name', 'pending');
+        })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
-        $pendingTotal = PurchaseRequest::where('status', 'pending')
+        $pendingTotal = PurchaseRequest::whereHas('status', function ($query) {
+            $query->where('name', 'pending');
+        })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('total');
 
-        $approvedPRs = PurchaseRequest::where('status', 'approved')
+        $approvedPRs = PurchaseRequest::whereHas('status', function ($query) {
+            $query->where('name', 'approved');
+        })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
-        $approvedTotal = PurchaseRequest::where('status', 'approved')
+        $approvedTotal = PurchaseRequest::whereHas('status', function ($query) {
+            $query->where('name', 'approved');
+        })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('total');
 
@@ -73,11 +81,15 @@ class GSODashboardController extends Controller
         $lastMonthStartDate = $lastMonth->copy()->startOfMonth();
         $lastMonthEndDate = $lastMonth->copy()->endOfMonth();
 
-        $lastMonthPendingPRs = PurchaseRequest::where('status', 'pending')
+        $lastMonthPendingPRs = PurchaseRequest::whereHas('status', function ($query) {
+            $query->where('name', 'pending');
+        })
             ->whereBetween('created_at', [$lastMonthStartDate, $lastMonthEndDate])
             ->count();
 
-        $lastMonthApprovedPRs = PurchaseRequest::where('status', 'approved')
+        $lastMonthApprovedPRs = PurchaseRequest::whereHas('status', function ($query) {
+            $query->where('name', 'approved');
+        })
             ->whereBetween('created_at', [$lastMonthStartDate, $lastMonthEndDate])
             ->count();
 
@@ -98,11 +110,12 @@ class GSODashboardController extends Controller
         $completedPRsList = PurchaseOrder::with(['purchaseRequest.user', 'supplier'])
             ->join('purchase_requests', 'purchase_orders.purchase_request_id', '=', 'purchase_requests.id')
             ->leftJoin('suppliers', 'purchase_orders.supplier_id', '=', 'suppliers.id')
+            ->join('statuses', 'purchase_requests.status_id', '=', 'statuses.id')
             ->select([
                 'purchase_orders.*',
                 'purchase_requests.pr_number',
                 'purchase_requests.total',
-                'purchase_requests.status as pr_status',
+                'statuses.name as pr_status',
                 'suppliers.supplier_name'
             ])
             ->orderBy('purchase_orders.generated_at', 'desc')

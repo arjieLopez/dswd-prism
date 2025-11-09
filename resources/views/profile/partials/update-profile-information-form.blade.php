@@ -44,15 +44,31 @@
 
         <div>
             <x-input-label for="designation" :value="__('Designation')" />
-            <x-text-input id="designation" name="designation" type="text" class="mt-1 block w-full" :value="old('designation', $user->designation)"
-                autocomplete="organization-title" />
+            <select name="designation" id="designation"
+                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                <option value="">Select Designation</option>
+                @foreach ($designations as $designationOption)
+                    <option value="{{ $designationOption->name }}"
+                        {{ old('designation', $user->designation) == $designationOption->name ? 'selected' : '' }}>
+                        {{ $designationOption->name }}
+                    </option>
+                @endforeach
+            </select>
             <x-input-error class="mt-2" :messages="$errors->get('designation')" />
         </div>
 
         <div>
             <x-input-label for="office" :value="__('Office')" />
-            <x-text-input id="office" name="office" type="text" class="mt-1 block w-full" :value="old('office', $user->office)"
-                autocomplete="organization" />
+            <select name="office" id="office"
+                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                <option value="">Select Office</option>
+                @foreach ($offices as $officeOption)
+                    <option value="{{ $officeOption->name }}"
+                        {{ old('office', $user->office) == $officeOption->name ? 'selected' : '' }}>
+                        {{ $officeOption->name }}
+                    </option>
+                @endforeach
+            </select>
             <x-input-error class="mt-2" :messages="$errors->get('office')" />
         </div>
 

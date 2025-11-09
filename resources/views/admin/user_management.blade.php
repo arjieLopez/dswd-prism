@@ -150,14 +150,14 @@
                                             </a>
                                         </li>
                                         @php
-                                            $roles = ['admin', 'staff', 'user'];
+                                            $filterRoles = ['admin', 'staff', 'user'];
                                             $roleDisplayMap = [
                                                 'admin' => 'Admin',
                                                 'staff' => 'Staff',
                                                 'user' => 'User',
                                             ];
                                         @endphp
-                                        @foreach ($roles as $role)
+                                        @foreach ($filterRoles as $role)
                                             <li>
                                                 <a href="{{ route('admin.user_management', array_filter(['role' => $role, 'search' => request('search'), 'status' => request('status'), 'sort_by' => request('sort_by'), 'sort_order' => request('sort_order')])) }}"
                                                     class="block px-4 py-2 text-gray-700 hover:bg-blue-100 rounded {{ request('role') == $role ? 'font-bold text-blue-600 bg-blue-50' : '' }}">
@@ -630,17 +630,23 @@
                             <select name="role" id="role" required
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                                 <option value="">Select Role</option>
-                                <option value="admin">Admin</option>
-                                <option value="staff">Staff</option>
-                                <option value="user">User</option>
+                                @foreach ($roles as $roleOption)
+                                    <option value="{{ $roleOption->name }}">{{ ucfirst($roleOption->name) }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="designation">
                                 Designation
                             </label>
-                            <input type="text" name="designation" id="designation"
+                            <select name="designation" id="designation"
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <option value="">Select Designation</option>
+                                @foreach ($designations as $designationOption)
+                                    <option value="{{ $designationOption->name }}">{{ $designationOption->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
 
@@ -656,8 +662,13 @@
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="office">
                                 Office
                             </label>
-                            <input type="text" name="office" id="office"
+                            <select name="office" id="office"
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <option value="">Select Office</option>
+                                @foreach ($offices as $officeOption)
+                                    <option value="{{ $officeOption->name }}">{{ $officeOption->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
 
@@ -862,17 +873,24 @@
                             </label>
                             <select name="role" id="edit_role" required
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                                <option value="admin">Admin</option>
-                                <option value="staff">Staff</option>
-                                <option value="user">User</option>
+                                <option value="">Select Role</option>
+                                @foreach ($roles as $roleOption)
+                                    <option value="{{ $roleOption->name }}">{{ ucfirst($roleOption->name) }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_designation">
                                 Designation
                             </label>
-                            <input type="text" name="designation" id="edit_designation"
+                            <select name="designation" id="edit_designation"
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <option value="">Select Designation</option>
+                                @foreach ($designations as $designationOption)
+                                    <option value="{{ $designationOption->name }}">{{ $designationOption->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
 
@@ -888,8 +906,13 @@
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_office">
                                 Office
                             </label>
-                            <input type="text" name="office" id="edit_office"
+                            <select name="office" id="edit_office"
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <option value="">Select Office</option>
+                                @foreach ($offices as $officeOption)
+                                    <option value="{{ $officeOption->name }}">{{ $officeOption->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
 

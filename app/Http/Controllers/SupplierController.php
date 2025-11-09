@@ -27,7 +27,9 @@ class SupplierController extends Controller
 
         // Status filter
         if ($request->filled('status') && in_array($request->input('status'), ['active', 'inactive'])) {
-            $query->where('status', $request->input('status'));
+            $query->whereHas('status', function ($statusQuery) use ($request) {
+                $statusQuery->where('name', $request->input('status'));
+            });
         }
 
         // Date filter
@@ -46,7 +48,7 @@ class SupplierController extends Controller
             $query->where('created_at', '<=', $dateTo . ' 23:59:59');
         }
 
-        $suppliers = $query->orderBy('created_at', 'desc')
+        $suppliers = $query->with('status')->orderBy('created_at', 'desc')
             ->paginate(10)
             ->appends($request->query());
 
@@ -137,13 +139,22 @@ class SupplierController extends Controller
     {
         try {
             $oldStatus = $supplier->status;
-            $newStatus = $supplier->status === 'active' ? 'inactive' : 'active';
+            $newStatusName = $supplier->status === 'active' ? 'inactive' : 'active';
 
-            $supplier->update(['status' => $newStatus]);
+            // Find the new status ID
+            $newStatus = \App\Models\Status::where('context', 'supplier')
+                ->where('name', $newStatusName)
+                ->first();
 
-            ActivityService::logSupplierStatusChanged($supplier->supplier_name, $oldStatus, $newStatus);
+            if (!$newStatus) {
+                return response()->json(['success' => false, 'message' => 'Status not found'], 404);
+            }
 
-            $statusText = $newStatus === 'active' ? 'activated' : 'deactivated';
+            $supplier->update(['status_id' => $newStatus->id]);
+
+            ActivityService::logSupplierStatusChanged($supplier->supplier_name, $oldStatus, $newStatusName);
+
+            $statusText = $newStatusName === 'active' ? 'activated' : 'deactivated';
             return response()->json(['success' => true, 'message' => "Supplier {$statusText} successfully!"]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error updating supplier status: ' . $e->getMessage()], 500);

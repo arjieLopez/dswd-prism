@@ -12,7 +12,7 @@ class Approval extends Model
     protected $fillable = [
         'purchase_request_id',
         'approver_id',
-        'status',
+        'status_id',
         'approved_at',
         'remarks',
         'signature_path'
@@ -35,5 +35,18 @@ class Approval extends Model
     public function signatures()
     {
         return $this->morphMany(Signature::class, 'signable');
+    }
+
+    // Backward-compatible accessor for normalized status column
+    public function getStatusAttribute()
+    {
+        $statusRelation = $this->getRelationValue('status');
+        return $statusRelation ? $statusRelation->name : null;
+    }
+
+    // Reference table relationships
+    public function status()
+    {
+        return $this->belongsTo(\App\Models\Status::class);
     }
 }

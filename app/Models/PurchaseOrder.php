@@ -17,6 +17,7 @@ class PurchaseOrder extends Model
         'delivery_term',
         'payment_term',
         'date_of_delivery',
+        'status_id',
         'generated_at',
         'generated_by',
         'completed_at'
@@ -48,18 +49,43 @@ class PurchaseOrder extends Model
         return $this->morphMany(CommonAttribute::class, 'entity');
     }
 
+    // Reference table relationships
+    public function status()
+    {
+        return $this->belongsTo(\App\Models\Status::class);
+    }
+
     public function getStatusAttribute()
     {
-        return $this->purchaseRequest ? $this->purchaseRequest->status : null;
+        $statusRelation = $this->getRelationValue('status');
+        return $statusRelation ? $statusRelation->name : null;
     }
 
     public function getStatusDisplayAttribute()
     {
-        return $this->purchaseRequest ? $this->purchaseRequest->status_display : 'Unknown';
+        $statusRelation = $this->getRelationValue('status');
+        if ($statusRelation) {
+            return $statusRelation->display_name;
+        }
+        // If relationship not loaded, find the status by ID
+        if ($this->status_id) {
+            $status = \App\Models\Status::find($this->status_id);
+            return $status ? $status->display_name : 'Unknown';
+        }
+        return 'Unknown';
     }
 
     public function getStatusColorAttribute()
     {
-        return $this->purchaseRequest ? $this->purchaseRequest->status_color : 'bg-gray-100 text-gray-800';
+        $statusRelation = $this->getRelationValue('status');
+        if ($statusRelation) {
+            return $statusRelation->color;
+        }
+        // If relationship not loaded, find the status by ID
+        if ($this->status_id) {
+            $status = \App\Models\Status::find($this->status_id);
+            return $status ? $status->color : 'bg-gray-100 text-gray-800';
+        }
+        return 'bg-gray-100 text-gray-800';
     }
 }

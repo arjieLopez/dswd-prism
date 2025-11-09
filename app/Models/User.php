@@ -21,12 +21,12 @@ class User extends Authenticatable
         'first_name',
         'middle_name',
         'last_name',
-        'designation',
-        'office',
+        'designation_id',
+        'office_id',
         'employee_id',
         'email',
         'password',
-        'role',
+        'role_id',
         'twofactor_code',
         'twofactor_code_expires_at',
         'email_verified_at',
@@ -115,5 +115,40 @@ class User extends Authenticatable
     public function activities()
     {
         return $this->hasMany(UserActivity::class);
+    }
+
+    // Backward-compatible accessors for normalized columns
+    public function getRoleAttribute()
+    {
+        $roleRelation = $this->getRelationValue('role');
+        return $roleRelation ? $roleRelation->name : null;
+    }
+
+    public function getDesignationAttribute()
+    {
+        $designationRelation = $this->getRelationValue('designation');
+        return $designationRelation ? $designationRelation->name : null;
+    }
+
+    public function getOfficeAttribute()
+    {
+        $officeRelation = $this->getRelationValue('office');
+        return $officeRelation ? $officeRelation->name : null;
+    }
+
+    // Reference table relationships
+    public function designation()
+    {
+        return $this->belongsTo(\App\Models\Designation::class);
+    }
+
+    public function office()
+    {
+        return $this->belongsTo(\App\Models\Office::class);
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(\App\Models\Role::class);
     }
 }

@@ -16,16 +16,47 @@ class Supplier extends Model
         'contact_person',
         'contact_number',
         'email',
-        'status'
+        'status_id'
     ];
 
     public function getStatusColorAttribute()
     {
-        return $this->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+        $statusRelation = $this->getRelationValue('status');
+        if ($statusRelation) {
+            return $statusRelation->color;
+        }
+        // If relationship not loaded, find the status by ID
+        if ($this->status_id) {
+            $status = \App\Models\Status::find($this->status_id);
+            return $status ? $status->color : 'bg-gray-100 text-gray-800';
+        }
+        return 'bg-gray-100 text-gray-800';
     }
 
     public function isActive()
     {
-        return $this->status === 'active';
+        $statusRelation = $this->getRelationValue('status');
+        if ($statusRelation) {
+            return $statusRelation->name === 'active';
+        }
+        // If relationship not loaded, find the status by ID
+        if ($this->status_id) {
+            $status = \App\Models\Status::find($this->status_id);
+            return $status && $status->name === 'active';
+        }
+        return false;
+    }
+
+    // Backward-compatible accessor for normalized status column
+    public function getStatusAttribute()
+    {
+        $statusRelation = $this->getRelationValue('status');
+        return $statusRelation ? $statusRelation->name : null;
+    }
+
+    // Reference table relationships
+    public function status()
+    {
+        return $this->belongsTo(\App\Models\Status::class);
     }
 }

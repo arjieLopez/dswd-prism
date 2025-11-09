@@ -146,9 +146,9 @@
                                         @endphp
                                         @foreach ($statuses as $status)
                                             <li>
-                                                <a href="{{ route('user.requests', array_filter(['status' => $status, 'search' => request('search'), 'date_from' => request('date_from'), 'date_to' => request('date_to')])) }}"
-                                                    class="block px-4 py-2 text-gray-700 hover:bg-blue-100 rounded {{ request('status') == $status ? 'font-bold text-blue-600 bg-blue-50' : '' }}">
-                                                    {{ $statusDisplayMap[$status] ?? ucfirst($status) }}
+                                                <a href="{{ route('user.requests', array_filter(['status' => $status->name, 'search' => request('search'), 'date_from' => request('date_from'), 'date_to' => request('date_to')])) }}"
+                                                    class="block px-4 py-2 text-gray-700 hover:bg-blue-100 rounded {{ request('status') == $status->name ? 'font-bold text-blue-600 bg-blue-50' : '' }}">
+                                                    {{ $status->display_name }}
                                                 </a>
                                             </li>
                                         @endforeach

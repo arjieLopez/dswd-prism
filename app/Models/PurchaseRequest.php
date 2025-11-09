@@ -23,7 +23,8 @@ class PurchaseRequest extends Model
         'delivery_period',
         'delivery_address',
         'purpose',
-        'status',
+        'status_id',
+        'procurement_mode_id',
         'remarks',
         'notes'
     ];
@@ -41,28 +42,42 @@ class PurchaseRequest extends Model
 
     public function getStatusColorAttribute()
     {
-        return match ($this->status) {
-            'draft' => 'bg-gray-100 text-gray-800',
-            'pending' => 'bg-yellow-100 text-yellow-800',
-            'approved' => 'bg-green-100 text-green-800',
-            'rejected' => 'bg-red-100 text-red-800',
-            'po_generated' => 'bg-blue-100 text-blue-800',
-            'completed' => 'bg-purple-100 text-purple-800',
-            default => 'bg-gray-100 text-gray-800',
-        };
+        $statusRelation = $this->getRelationValue('status');
+        if ($statusRelation) {
+            return $statusRelation->color;
+        }
+        // If relationship not loaded, find the status by ID
+        if ($this->status_id) {
+            $status = \App\Models\Status::find($this->status_id);
+            return $status ? $status->color : 'bg-gray-100 text-gray-800';
+        }
+        return 'bg-gray-100 text-gray-800';
     }
 
     public function getStatusDisplayAttribute()
     {
-        return match ($this->status) {
-            'draft' => 'Draft',
-            'pending' => 'Pending',
-            'approved' => 'Approved',
-            'rejected' => 'Rejected',
-            'po_generated' => 'PO Generated',
-            'completed' => 'Completed',
-            default => ucfirst($this->status),
-        };
+        $statusRelation = $this->getRelationValue('status');
+        if ($statusRelation) {
+            return $statusRelation->display_name;
+        }
+        // If relationship not loaded, find the status by ID
+        if ($this->status_id) {
+            $status = \App\Models\Status::find($this->status_id);
+            return $status ? $status->display_name : 'Unknown';
+        }
+        return 'Unknown';
+    }
+
+    // Backward-compatible accessor for normalized status column
+    public function getStatusAttribute()
+    {
+        // Only return the name if the relationship is loaded and not null
+        $statusRelation = $this->getRelationValue('status');
+        if ($statusRelation) {
+            return $statusRelation->name;
+        }
+        // Otherwise, return null to allow the relationship to load
+        return null;
     }
 
     public function supplier()
@@ -93,5 +108,16 @@ class PurchaseRequest extends Model
     public function commonAttributes()
     {
         return $this->morphMany(CommonAttribute::class, 'entity');
+    }
+
+    // Reference table relationships
+    public function status()
+    {
+        return $this->belongsTo(\App\Models\Status::class);
+    }
+
+    public function procurementMode()
+    {
+        return $this->belongsTo(\App\Models\ProcurementMode::class);
     }
 }

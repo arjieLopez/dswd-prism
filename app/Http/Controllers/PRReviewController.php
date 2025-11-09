@@ -14,8 +14,10 @@ class PRReviewController extends Controller
 {
     public function index(Request $request)
     {
-        $query = PurchaseRequest::with('user')
-            ->where('status', '!=', 'draft')
+        $query = PurchaseRequest::with('user', 'status')
+            ->whereHas('status', function ($statusQuery) {
+                $statusQuery->where('name', '!=', 'draft');
+            })
             ->orderBy('created_at', 'desc');
 
         // Search functionality
@@ -26,7 +28,10 @@ class PRReviewController extends Controller
                     ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
                     ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('status', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('status', function ($statusQuery) use ($searchTerm) {
+                        $statusQuery->where('name', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('display_name', 'like', '%' . $searchTerm . '%');
+                    })
                     ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
                         $userQuery->where('first_name', 'like', '%' . $searchTerm . '%')
                             ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
@@ -37,7 +42,9 @@ class PRReviewController extends Controller
 
         // Status filtering
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+            $query->whereHas('status', function ($statusQuery) use ($request) {
+                $statusQuery->where('name', $request->status);
+            });
         }
 
         // Date range filtering
@@ -58,10 +65,9 @@ class PRReviewController extends Controller
             ->get();
 
         // Get available statuses for filtering
-        $statuses = PurchaseRequest::where('status', '!=', 'draft')
-            ->select('status')
-            ->distinct()
-            ->pluck('status');
+        $statuses = \App\Models\Status::where('context', 'purchase_request')
+            ->where('name', '!=', 'draft')
+            ->get();
 
         return view('staff.pr_review', compact('purchaseRequests', 'recentActivities', 'statuses'));
     }
@@ -110,7 +116,8 @@ class PRReviewController extends Controller
     public function approve(PurchaseRequest $purchaseRequest)
     {
         try {
-            $purchaseRequest->update(['status' => 'approved']);
+            $approvedStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'approved')->first();
+            $purchaseRequest->update(['status_id' => $approvedStatus->id]);
 
             // Log staff Activity:
             ActivityService::logPrApproved(
@@ -140,7 +147,8 @@ class PRReviewController extends Controller
     public function reject(PurchaseRequest $purchaseRequest)
     {
         try {
-            $purchaseRequest->update(['status' => 'rejected']);
+            $rejectedStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'rejected')->first();
+            $purchaseRequest->update(['status_id' => $rejectedStatus->id]);
 
             // Log staff Activity:
             ActivityService::logPrRejected(
@@ -186,7 +194,9 @@ class PRReviewController extends Controller
     public function exportXLSX(Request $request)
     {
         $query = PurchaseRequest::with('user')
-            ->where('status', '!=', 'draft')
+            ->whereHas('status', function ($query) {
+                $query->where('name', '!=', 'draft');
+            })
             ->orderBy('created_at', 'desc');
 
         // Apply the same filters as index method
@@ -197,7 +207,9 @@ class PRReviewController extends Controller
                     ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
                     ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('status', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('status', function ($statusQuery) use ($searchTerm) {
+                        $statusQuery->where('name', 'like', '%' . $searchTerm . '%');
+                    })
                     ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
                         $userQuery->where('first_name', 'like', '%' . $searchTerm . '%')
                             ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
@@ -207,7 +219,9 @@ class PRReviewController extends Controller
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+            $query->whereHas('status', function ($statusQuery) use ($request) {
+                $statusQuery->where('name', $request->status);
+            });
         }
 
         if ($request->filled('date_from')) {
@@ -276,7 +290,9 @@ class PRReviewController extends Controller
     public function exportPDF(Request $request)
     {
         $query = PurchaseRequest::with('user')
-            ->where('status', '!=', 'draft')
+            ->whereHas('status', function ($query) {
+                $query->where('name', '!=', 'draft');
+            })
             ->orderBy('created_at', 'desc');
 
         // Apply the same filters as index method
@@ -287,7 +303,9 @@ class PRReviewController extends Controller
                     ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
                     ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('status', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('status', function ($statusQuery) use ($searchTerm) {
+                        $statusQuery->where('name', 'like', '%' . $searchTerm . '%');
+                    })
                     ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
                         $userQuery->where('first_name', 'like', '%' . $searchTerm . '%')
                             ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
@@ -297,7 +315,9 @@ class PRReviewController extends Controller
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+            $query->whereHas('status', function ($statusQuery) use ($request) {
+                $statusQuery->where('name', $request->status);
+            });
         }
 
         if ($request->filled('date_from')) {

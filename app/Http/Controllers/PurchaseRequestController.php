@@ -26,13 +26,18 @@ class PurchaseRequestController extends Controller
                     ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
                     ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('status', 'like', '%' . $searchTerm . '%');
+                    ->orWhereHas('status', function ($statusQuery) use ($searchTerm) {
+                        $statusQuery->where('name', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('display_name', 'like', '%' . $searchTerm . '%');
+                    });
             });
         }
 
         // Status filtering
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+            $query->whereHas('status', function ($statusQuery) use ($request) {
+                $statusQuery->where('name', $request->status);
+            });
         }
 
         // Date range filtering
@@ -44,7 +49,7 @@ class PurchaseRequestController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $purchaseRequests = $query->paginate(10)->appends($request->query());
+        $purchaseRequests = $query->with('status')->paginate(10)->appends($request->query());
 
         $uploadedDocumentsQuery = auth()->user()->uploadedDocuments()->orderBy('created_at', 'desc');
         $fileTypes = auth()->user()->uploadedDocuments()->select('file_type')->distinct()->pluck('file_type');
@@ -58,7 +63,7 @@ class PurchaseRequestController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
-        $statuses = PurchaseRequest::select('status')->distinct()->pluck('status');
+        $statuses = \App\Models\Status::where('context', 'purchase_request')->get();
 
         // Get system selections for edit modal
         $entities = SystemSelection::getByType('entity');
@@ -79,8 +84,8 @@ class PurchaseRequestController extends Controller
             ->limit(10)
             ->get();
 
-        // Get metric units from system selections
-        $metricUnits = SystemSelection::getByType('metric_units');
+        // Get units from reference table
+        $metricUnits = \App\Models\Unit::all();
 
         // Get entities from system selections
         $entities = SystemSelection::getByType('entity');
@@ -150,12 +155,15 @@ class PurchaseRequestController extends Controller
             'delivery_period' => $request->delivery_period,
             'delivery_address' => $request->delivery_address,
             'purpose' => $request->purpose,
-            'status' => 'draft',
+            'status_id' => \App\Models\Status::where('context', 'purchase_request')->where('name', 'draft')->first()->id,
         ]);
 
         foreach ($request->unit as $i => $unit) {
+            $unitModel = \App\Models\Unit::where('name', $unit)->first();
+            $unitId = $unitModel ? $unitModel->id : null;
+
             $item = $purchaseRequest->items()->create([
-                'unit' => $unit,
+                'unit_id' => $unitId,
                 'quantity' => $request->quantity[$i],
                 'unit_cost' => $request->unit_cost[$i],
                 'item_description' => $request->item_description[$i],
@@ -192,7 +200,7 @@ class PurchaseRequestController extends Controller
             'status_color' => $purchaseRequest->status_color,
             'items' => $purchaseRequest->items->map(function ($item) {
                 return [
-                    'unit' => $item->unit,
+                    'unit' => $item->unit?->name ?? $item->unit, // Fallback for old data
                     'quantity' => $item->quantity,
                     'unit_cost' => $item->unit_cost,
                     'total_cost' => $item->total_cost,
@@ -237,8 +245,9 @@ class PurchaseRequestController extends Controller
 
             // Check if PR can be updated (not approved or has PO)
             $hasPO = \App\Models\PurchaseOrder::where('purchase_request_id', $purchaseRequest->id)->exists();
-            if ($purchaseRequest->status === 'approved' && !$hasPO) {
-                $purchaseRequest->status = 'draft';
+            if ($purchaseRequest->status->name === 'approved' && !$hasPO) {
+                $draftStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'draft')->first();
+                $purchaseRequest->status_id = $draftStatus->id;
             }
 
             $purchaseRequest->update([
@@ -290,11 +299,12 @@ class PurchaseRequestController extends Controller
         }
 
         // Only allow submission if status is draft
-        if ($purchaseRequest->status !== 'draft') {
+        if ($purchaseRequest->status->name !== 'draft') {
             return response()->json(['success' => false, 'message' => 'Only draft PRs can be submitted.']);
         }
 
-        $purchaseRequest->status = 'pending';
+        $pendingStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'pending')->first();
+        $purchaseRequest->status_id = $pendingStatus->id;
         $purchaseRequest->save();
 
         // Log activity for the submitting user
@@ -334,11 +344,12 @@ class PurchaseRequestController extends Controller
         }
 
         // Only allow withdrawal if status is pending
-        if ($purchaseRequest->status !== 'pending') {
+        if ($purchaseRequest->status->name !== 'pending') {
             return response()->json(['success' => false, 'message' => 'Only pending PRs can be withdrawn.']);
         }
 
-        $purchaseRequest->status = 'draft';
+        $draftStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'draft')->first();
+        $purchaseRequest->status_id = $draftStatus->id;
         $purchaseRequest->save();
 
         // Optionally log activity here
@@ -366,16 +377,22 @@ class PurchaseRequestController extends Controller
 
             // Only allow if status is approved or has an associated PO
             $hasPO = \App\Models\PurchaseOrder::where('purchase_request_id', $purchaseRequest->id)->exists();
-            if ($purchaseRequest->status !== 'approved' && !$hasPO) {
-                return response()->json(['success' => false, 'message' => 'PR cannot be marked as completed. Current status: ' . $purchaseRequest->status], 400);
+            if ($purchaseRequest->status->name !== 'approved' && !$hasPO) {
+                return response()->json(['success' => false, 'message' => 'PR cannot be marked as completed. Current status: ' . $purchaseRequest->status->display_name], 400);
             }
 
-            $purchaseRequest->status = 'completed';
+            $completedStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'completed')->first();
+            $purchaseRequest->status_id = $completedStatus->id;
 
-            // Update the associated PO's completed_at if it exists
+            // Update the associated PO's completed_at and status if it exists
             $purchaseOrder = \App\Models\PurchaseOrder::where('purchase_request_id', $purchaseRequest->id)->first();
             if ($purchaseOrder) {
                 $purchaseOrder->completed_at = now();
+                // Also update PO status to completed
+                $poCompletedStatus = \App\Models\Status::where('context', 'purchase_order')->where('name', 'completed')->first();
+                if ($poCompletedStatus) {
+                    $purchaseOrder->status_id = $poCompletedStatus->id;
+                }
                 $purchaseOrder->save();
             }
 
@@ -417,12 +434,16 @@ class PurchaseRequestController extends Controller
                     ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
                     ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('status', 'like', '%' . $searchTerm . '%');
+                    ->orWhereHas('status', function ($statusQuery) use ($searchTerm) {
+                        $statusQuery->where('name', 'like', '%' . $searchTerm . '%');
+                    });
             });
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+            $query->whereHas('status', function ($statusQuery) use ($request) {
+                $statusQuery->where('name', $request->status);
+            });
         }
 
         if ($request->filled('date_from')) {
@@ -494,12 +515,16 @@ class PurchaseRequestController extends Controller
                     ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
                     ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('status', 'like', '%' . $searchTerm . '%');
+                    ->orWhereHas('status', function ($statusQuery) use ($searchTerm) {
+                        $statusQuery->where('name', 'like', '%' . $searchTerm . '%');
+                    });
             });
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+            $query->whereHas('status', function ($statusQuery) use ($request) {
+                $statusQuery->where('name', $request->status);
+            });
         }
 
         if ($request->filled('date_from')) {

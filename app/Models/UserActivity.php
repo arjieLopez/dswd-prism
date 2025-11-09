@@ -124,4 +124,26 @@ class UserActivity extends Model
             default => 'text-gray-600 bg-gray-100'
         };
     }
+
+    public function getUserNameAttribute()
+    {
+        if ($this->user) {
+            return $this->user->first_name .
+                ($this->user->middle_name ? ' ' . $this->user->middle_name : '') .
+                ' ' . $this->user->last_name;
+        }
+        return 'Unknown User';
+    }
+
+    public function getUserRoleAttribute()
+    {
+        if ($this->user) {
+            // Ensure role relationship is loaded
+            if (!$this->user->relationLoaded('role')) {
+                $this->user->load('role');
+            }
+            return $this->user->role ?? 'unknown';
+        }
+        return 'unknown';
+    }
 }

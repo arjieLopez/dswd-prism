@@ -9,7 +9,7 @@ class PurchaseRequestItem extends Model
 {
     protected $fillable = [
         'purchase_request_id',
-        'unit',
+        'unit_id',
         'quantity',
         'unit_cost',
         'item_description',
@@ -19,5 +19,18 @@ class PurchaseRequestItem extends Model
     public function purchaseRequest()
     {
         return $this->belongsTo(PurchaseRequest::class);
+    }
+
+    // Backward-compatible accessor for normalized unit column
+    public function getUnitAttribute()
+    {
+        $unitRelation = $this->getRelationValue('unit');
+        return $unitRelation ? $unitRelation->name : null;
+    }
+
+    // Reference table relationships
+    public function unit()
+    {
+        return $this->belongsTo(\App\Models\Unit::class);
     }
 }

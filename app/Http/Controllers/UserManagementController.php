@@ -29,7 +29,9 @@ class UserManagementController extends Controller
 
         // Filter by role
         if ($request->filled('role') && $request->role !== 'all') {
-            $query->where('role', $request->role);
+            $query->whereHas('role', function ($q) use ($request) {
+                $q->where('name', $request->role);
+            });
         }
 
         // Filter by status
@@ -51,7 +53,7 @@ class UserManagementController extends Controller
             $query->orderBy($sortBy, $sortOrder);
         }
 
-        $users = $query->paginate(10)->withQueryString();
+        $users = $query->with(['role', 'designation', 'office'])->paginate(10)->withQueryString();
 
         $user = auth()->user();
         $recentActivities = $user->activities()
@@ -59,7 +61,12 @@ class UserManagementController extends Controller
             ->limit(10)
             ->get();
 
-        return view('admin.user_management', compact('users', 'recentActivities'));
+        // Get reference data for dropdowns
+        $roles = \App\Models\Role::orderBy('name')->get();
+        $designations = \App\Models\Designation::orderBy('name')->get();
+        $offices = \App\Models\Office::orderBy('name')->get();
+
+        return view('admin.user_management', compact('users', 'recentActivities', 'roles', 'designations', 'offices'));
     }
 
     public function store(Request $request)
@@ -70,11 +77,16 @@ class UserManagementController extends Controller
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'string', 'in:admin,staff,user'],
-            'designation' => ['nullable', 'string', 'max:255'],
+            'role' => ['required', 'string', 'exists:roles,name'],
+            'designation' => ['nullable', 'string', 'exists:designations,name'],
             'employee_id' => ['nullable', 'string', 'max:255'],
-            'office' => ['nullable', 'string', 'max:255'],
+            'office' => ['nullable', 'string', 'exists:offices,name'],
         ]);
+
+        // Find IDs from names
+        $roleId = \App\Models\Role::where('name', $request->role)->first()->id ?? null;
+        $designationId = $request->designation ? \App\Models\Designation::where('name', $request->designation)->first()->id : null;
+        $officeId = $request->office ? \App\Models\Office::where('name', $request->office)->first()->id : null;
 
         $user = User::create([
             'first_name' => $request->first_name,
@@ -82,10 +94,10 @@ class UserManagementController extends Controller
             'last_name' => $request->last_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
-            'designation' => $request->designation,
+            'role_id' => $roleId,
+            'designation_id' => $designationId,
             'employee_id' => $request->employee_id,
-            'office' => $request->office,
+            'office_id' => $officeId,
         ]);
 
         ActivityService::logUserCreated($user->id, $user->first_name . ' ' . ($user->middle_name ? $user->middle_name . ' ' : '') . $user->last_name, $user->role);
@@ -100,11 +112,16 @@ class UserManagementController extends Controller
             'middle_name' => ['nullable', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'role' => ['required', 'string', 'in:admin,staff,user'],
-            'designation' => ['nullable', 'string', 'max:255'],
+            'role' => ['required', 'string', 'exists:roles,name'],
+            'designation' => ['nullable', 'string', 'exists:designations,name'],
             'employee_id' => ['nullable', 'string', 'max:255'],
-            'office' => ['nullable', 'string', 'max:255'],
+            'office' => ['nullable', 'string', 'exists:offices,name'],
         ]);
+
+        // Find IDs from names
+        $roleId = \App\Models\Role::where('name', $request->role)->first()->id ?? null;
+        $designationId = $request->designation ? \App\Models\Designation::where('name', $request->designation)->first()->id : null;
+        $officeId = $request->office ? \App\Models\Office::where('name', $request->office)->first()->id : null;
 
         $oldRole = $user->role;
         $changes = [
@@ -123,10 +140,10 @@ class UserManagementController extends Controller
             'middle_name' => $request->middle_name,
             'last_name' => $request->last_name,
             'email' => $request->email,
-            'role' => $request->role,
-            'designation' => $request->designation,
+            'role_id' => $roleId,
+            'designation_id' => $designationId,
             'employee_id' => $request->employee_id,
-            'office' => $request->office,
+            'office_id' => $officeId,
         ]);
 
         ActivityService::logUserUpdated($user->id, $user->first_name . ' ' . ($user->middle_name ? $user->middle_name . ' ' : '') . $user->last_name, $changes);
@@ -191,7 +208,9 @@ class UserManagementController extends Controller
         }
 
         if ($request->filled('role') && $request->role !== 'all') {
-            $query->where('role', $request->role);
+            $query->whereHas('role', function ($q) use ($request) {
+                $q->where('name', $request->role);
+            });
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
@@ -274,7 +293,9 @@ class UserManagementController extends Controller
         }
 
         if ($request->filled('role') && $request->role !== 'all') {
-            $query->where('role', $request->role);
+            $query->whereHas('role', function ($q) use ($request) {
+                $q->where('name', $request->role);
+            });
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
