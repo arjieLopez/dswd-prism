@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
+use App\Models\PurchaseOrder;
 use App\Models\User;
 use App\Models\PODocument;
 use App\Models\Supplier;
@@ -14,42 +15,61 @@ class POGenerationController extends Controller
 {
     public function index(Request $request)
     {
-        // Build query for generated POs (PRs with status 'po_generated' or 'completed')
-        $generatedPOsQuery = PurchaseRequest::with(['supplier', 'user'])
-            ->whereIn('status', ['po_generated', 'completed']);
+        // Build query for generated POs from purchase_orders table
+        $generatedPOsQuery = PurchaseOrder::with(['purchaseRequest.user', 'supplier', 'generatedBy'])
+            ->join('purchase_requests', 'purchase_orders.purchase_request_id', '=', 'purchase_requests.id')
+            ->join('users', 'purchase_requests.user_id', '=', 'users.id')
+            ->leftJoin('suppliers', 'purchase_orders.supplier_id', '=', 'suppliers.id')
+            ->select([
+                'purchase_orders.*',
+                'purchase_requests.pr_number',
+                'purchase_requests.total',
+                'purchase_requests.status as pr_status',
+                'purchase_requests.delivery_address',
+                'purchase_requests.delivery_period',
+                'users.first_name',
+                'users.middle_name',
+                'users.last_name',
+                'suppliers.supplier_name',
+                'suppliers.address as supplier_address',
+                'suppliers.tin as supplier_tin'
+            ]);
 
         // Apply search filter
         if ($request->filled('search')) {
             $search = $request->search;
             $generatedPOsQuery->where(function ($query) use ($search) {
-                $query->where('pr_number', 'like', "%{$search}%")
-                    ->orWhere('po_number', 'like', "%{$search}%")
-                    ->orWhereHas('supplier', function ($q) use ($search) {
-                        $q->where('supplier_name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('user', function ($q) use ($search) {
-                        $q->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%");
-                    });
+                $query->where('purchase_requests.pr_number', 'like', "%{$search}%")
+                    ->orWhere('purchase_orders.po_number', 'like', "%{$search}%")
+                    ->orWhere('suppliers.supplier_name', 'like', "%{$search}%")
+                    ->orWhereRaw("CONCAT(users.first_name, ' ', IFNULL(users.middle_name, ''), ' ', users.last_name) LIKE ?", ["%{$search}%"]);
             });
         }
 
-        // Apply status filter
+        // Apply status filter (now refers to PR status, but we show all POs)
         if ($request->filled('status') && $request->status !== 'all') {
-            $generatedPOsQuery->where('status', $request->status);
+            if ($request->status === 'po_generated') {
+                // Show all POs (default behavior)
+            } elseif ($request->status === 'completed') {
+                // Filter by completed POs
+                $generatedPOsQuery->whereNotNull('purchase_orders.completed_at');
+            } else {
+                // Filter by PR status
+                $generatedPOsQuery->where('purchase_requests.status', $request->status);
+            }
         }
 
         // Apply date filters
         if ($request->filled('date_from')) {
-            $generatedPOsQuery->whereDate('po_generated_at', '>=', $request->date_from);
+            $generatedPOsQuery->whereDate('purchase_orders.generated_at', '>=', $request->date_from);
         }
 
         if ($request->filled('date_to')) {
-            $generatedPOsQuery->whereDate('po_generated_at', '<=', $request->date_to);
+            $generatedPOsQuery->whereDate('purchase_orders.generated_at', '<=', $request->date_to);
         }
 
         // Get filtered results
-        $generatedPOs = $generatedPOsQuery->orderBy('po_generated_at', 'desc')->paginate(10);
+        $generatedPOs = $generatedPOsQuery->orderBy('purchase_orders.generated_at', 'desc')->paginate(10);
 
         // Get all approved purchase requests (not filtered for now, as they're separate section)
         $approvedPRs = PurchaseRequest::with('user')
@@ -77,17 +97,21 @@ class POGenerationController extends Controller
         return view('staff.po_generation', compact('approvedPRs', 'generatedPOs', 'poDocuments', 'suppliers', 'modesOfProcurement', 'deliveryTerms', 'paymentTerms', 'recentActivities'));
     }
 
-    public function show(PurchaseRequest $purchaseRequest)
+    public function show(PurchaseOrder $purchaseOrder)
     {
-        if (!in_array($purchaseRequest->status, ['approved', 'po_generated', 'completed'])) {
-            return response()->json(['error' => 'Only approved PRs or generated POs can be viewed.'], 403);
+        // Get the associated PR
+        $purchaseRequest = $purchaseOrder->purchaseRequest;
+
+        if (!$purchaseRequest) {
+            return response()->json(['error' => 'No Purchase Request found for this PO.'], 404);
         }
 
-        // Load the items and user relationships
-        $purchaseRequest->load(['items', 'user', 'supplier']);
+        // Load the items and relationships
+        $purchaseRequest->load(['items', 'user']);
+        $purchaseOrder->load(['supplier']);
 
         return response()->json([
-            'id' => $purchaseRequest->id,
+            'id' => $purchaseOrder->id,
             'pr_number' => $purchaseRequest->pr_number,
             'entity_name' => $purchaseRequest->entity_name,
             'fund_cluster' => $purchaseRequest->fund_cluster,
@@ -95,25 +119,28 @@ class POGenerationController extends Controller
             'date' => $purchaseRequest->date ? $purchaseRequest->date->toDateString() : '',
             'delivery_address' => $purchaseRequest->delivery_address,
             'purpose' => $purchaseRequest->purpose,
-            'requested_by_name' => $purchaseRequest->requested_by_name,
+            'requested_by_name' => $purchaseRequest->user
+                ? ($purchaseRequest->user->first_name . ($purchaseRequest->user->middle_name ? ' ' . $purchaseRequest->user->middle_name : '') . ' ' . $purchaseRequest->user->last_name)
+                : 'Unknown',
             'delivery_period' => $purchaseRequest->delivery_period,
             'status' => $purchaseRequest->status,
-            'status_color' => $this->getStatusColorClass($purchaseRequest->status),
+            'status_display' => $purchaseRequest->status_display,
+            'status_color' => $purchaseRequest->status_color,
             'requesting_unit' => $purchaseRequest->user
                 ? ($purchaseRequest->user->first_name . ($purchaseRequest->user->middle_name ? ' ' . $purchaseRequest->user->middle_name : '') . ' ' . $purchaseRequest->user->last_name)
                 : 'Unknown',
-            'created_at' => $purchaseRequest->created_at->format('M d, Y'),
-            'po_number' => $purchaseRequest->po_number,
-            'supplier_id' => $purchaseRequest->supplier_id,
-            'supplier_name' => $purchaseRequest->supplier ? $purchaseRequest->supplier->supplier_name : null,
-            'supplier_address' => $purchaseRequest->supplier ? $purchaseRequest->supplier->address : '',
-            'supplier_tin' => $purchaseRequest->supplier ? $purchaseRequest->supplier->tin : '',
-            'po_generated_at' => $purchaseRequest->po_generated_at ? $purchaseRequest->po_generated_at->format('Y-m-d') : null,
-            'delivery_term' => $purchaseRequest->delivery_term,
-            'payment_term' => $purchaseRequest->payment_term,
-            'mode_of_procurement' => $purchaseRequest->mode_of_procurement,
-            'place_of_delivery' => $purchaseRequest->place_of_delivery ?? $purchaseRequest->delivery_address,
-            'date_of_delivery' => $purchaseRequest->date_of_delivery ? $purchaseRequest->date_of_delivery->format('Y-m-d') : '',
+            'created_at' => $purchaseRequest->date ? $purchaseRequest->date->format('M d, Y') : '',
+            'po_number' => $purchaseOrder->po_number,
+            'supplier_id' => $purchaseOrder->supplier_id,
+            'supplier_name' => $purchaseOrder->supplier ? $purchaseOrder->supplier->supplier_name : null,
+            'supplier_address' => $purchaseOrder->supplier ? $purchaseOrder->supplier->address : '',
+            'supplier_tin' => $purchaseOrder->supplier ? $purchaseOrder->supplier->tin : '',
+            'generated_at' => $purchaseOrder->generated_at ? $purchaseOrder->generated_at->format('M d, Y') : null,
+            'delivery_term' => $purchaseOrder->delivery_term,
+            'payment_term' => $purchaseOrder->payment_term,
+            'mode_of_procurement' => $purchaseOrder->mode_of_procurement,
+            'place_of_delivery' => $purchaseRequest->delivery_address,
+            'date_of_delivery' => $purchaseOrder->date_of_delivery ? $purchaseOrder->date_of_delivery->format('M d, Y') : '',
             'items' => $purchaseRequest->items->map(function ($item) {
                 return [
                     'id' => $item->id,
@@ -157,42 +184,63 @@ class POGenerationController extends Controller
 
     public function showPO(PurchaseRequest $purchaseRequest)
     {
-        // Add your logic to show the PO details
-        return view('staff.po_show', compact('purchaseRequest'));
+        // Find the associated PO
+        $purchaseOrder = PurchaseOrder::where('purchase_request_id', $purchaseRequest->id)->first();
+        if (!$purchaseOrder) {
+            return redirect()->route('staff.po_generation')->with('error', 'Purchase Order not found.');
+        }
+
+        return view('staff.po_show', compact('purchaseRequest', 'purchaseOrder'));
     }
 
     public function printPO(\App\Models\PurchaseRequest $purchaseRequest)
     {
-        // You can load relationships as needed
-        $purchaseRequest->load('supplier', 'user');
-        return view('staff.po_print', compact('purchaseRequest'));
+        // Find the associated PO
+        $purchaseOrder = PurchaseOrder::where('purchase_request_id', $purchaseRequest->id)->first();
+        if (!$purchaseOrder) {
+            return redirect()->route('staff.po_generation')->with('error', 'Purchase Order not found.');
+        }
+
+        // Load relationships
+        $purchaseRequest->load('user');
+        $purchaseOrder->load('supplier', 'generatedBy');
+        return view('staff.po_print', compact('purchaseRequest', 'purchaseOrder'));
     }
 
     public function editPO(PurchaseRequest $purchaseRequest)
     {
-        // Add your logic to edit the PO
-        return view('staff.po_edit', compact('purchaseRequest'));
+        // Find the associated PO
+        $purchaseOrder = PurchaseOrder::where('purchase_request_id', $purchaseRequest->id)->first();
+        if (!$purchaseOrder) {
+            return redirect()->route('staff.po_generation')->with('error', 'Purchase Order not found.');
+        }
+
+        return view('staff.po_edit', compact('purchaseRequest', 'purchaseOrder'));
     }
 
     public function updatePO(Request $request, PurchaseRequest $purchaseRequest)
     {
+        // Find the associated PO
+        $purchaseOrder = PurchaseOrder::where('purchase_request_id', $purchaseRequest->id)->first();
+        if (!$purchaseOrder) {
+            return response()->json(['error' => 'Purchase Order not found.'], 404);
+        }
+
         $request->validate([
-            'po_number' => 'required|string|max:255',
+            'po_number' => 'required|string|max:50',
             'delivery_term' => 'required|string|max:255',
             'payment_term' => 'required|string|max:255',
             'mode_of_procurement' => 'required|string|max:255',
             'supplier_id' => 'required|exists:suppliers,id',
-            'place_of_delivery' => 'required|string|max:1000',
             'date_of_delivery' => 'required|date',
         ]);
 
-        $purchaseRequest->update([
+        $purchaseOrder->update([
             'po_number' => $request->po_number,
             'delivery_term' => $request->delivery_term,
             'payment_term' => $request->payment_term,
             'mode_of_procurement' => $request->mode_of_procurement,
             'supplier_id' => $request->supplier_id,
-            'place_of_delivery' => $request->place_of_delivery,
             'date_of_delivery' => $request->date_of_delivery,
         ]);
 
@@ -218,7 +266,7 @@ class POGenerationController extends Controller
         $paymentTerms = \App\Models\SystemSelection::getByType('payment_term');
 
         // Generate PO number
-        $autoGeneratedPONumber = 'PO ' . date('Y-m') . '-' . str_pad(PurchaseRequest::where('status', 'po_generated')->whereYear('po_generated_at', date('Y'))->whereMonth('po_generated_at', date('m'))->count() + 1, 4, '0', STR_PAD_LEFT);
+        $autoGeneratedPONumber = 'PO ' . date('Y-m') . '-' . str_pad(PurchaseOrder::whereYear('generated_at', date('Y'))->whereMonth('generated_at', date('m'))->count() + 1, 4, '0', STR_PAD_LEFT);
 
         $user = auth()->user();
         $recentActivities = $user->activities()
@@ -238,7 +286,7 @@ class POGenerationController extends Controller
 
         $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
-            'po_number' => 'required|string|max:255',
+            'po_number' => 'required|string|max:50',
             'supplier_address' => 'required|string|max:1000',
             'supplier_tin' => 'nullable|string|max:255',
             'mode_of_procurement' => 'required|string|max:255',
@@ -249,20 +297,29 @@ class POGenerationController extends Controller
         ]);
 
         try {
-            // Update PR with PO details
-            $purchaseRequest->update([
-                'po_number' => $request->po_number,
-                'status' => 'po_generated',
-                'po_generated_at' => now(),
-                'po_generated_by' => auth()->user()->first_name . (auth()->user()->middle_name ? ' ' . auth()->user()->middle_name : '') . ' ' . auth()->user()->last_name,
+            // Check if PO already exists for this PR
+            $existingPO = PurchaseOrder::where('purchase_request_id', $purchaseRequest->id)->first();
+            if ($existingPO) {
+                return back()->withErrors(['error' => 'A Purchase Order already exists for this PR.']);
+            }
+
+            // Create new PurchaseOrder record
+            PurchaseOrder::create([
+                'purchase_request_id' => $purchaseRequest->id,
                 'supplier_id' => $request->supplier_id,
+                'po_number' => $request->po_number,
                 'mode_of_procurement' => $request->mode_of_procurement,
                 'delivery_term' => $request->delivery_term,
                 'payment_term' => $request->payment_term,
                 'date_of_delivery' => $request->date_of_delivery,
+                'generated_at' => now(),
+                'generated_by' => auth()->id(),
             ]);
 
-            // Add this line:
+            // Update PR status to po_generated
+            $purchaseRequest->update(['status' => 'po_generated']);
+
+            // Log the activity
             ActivityService::logPoGenerated($purchaseRequest->pr_number, $request->po_number);
 
             return redirect()->route('staff.po_generation')->with('success', 'Purchase Order generated successfully!');
@@ -273,41 +330,42 @@ class POGenerationController extends Controller
 
     public function exportXLSX(Request $request)
     {
-        $query = PurchaseRequest::with(['supplier', 'user'])
-            ->whereIn('status', ['po_generated', 'completed'])
-            ->orderBy('po_generated_at', 'desc');
+        $query = PurchaseOrder::with(['purchaseRequest.user', 'supplier'])
+            ->join('purchase_requests', 'purchase_orders.purchase_request_id', '=', 'purchase_requests.id')
+            ->leftJoin('suppliers', 'purchase_orders.supplier_id', '=', 'suppliers.id')
+            ->select([
+                'purchase_orders.*',
+                'purchase_requests.pr_number',
+                'purchase_requests.total',
+                'suppliers.supplier_name'
+            ]);
 
         // Apply the same filters as index method
         if ($request->filled('search')) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('pr_number', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('po_number', 'like', '%' . $searchTerm . '%')
-                    ->orWhereHas('supplier', function ($supplierQuery) use ($searchTerm) {
-                        $supplierQuery->where('supplier_name', 'like', '%' . $searchTerm . '%');
-                    })
-                    ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
-                        $userQuery->where('first_name', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('middle_name', 'like', '%' . $searchTerm . '%');
-                    });
+                $q->where('purchase_requests.pr_number', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('purchase_orders.po_number', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('suppliers.supplier_name', 'like', '%' . $searchTerm . '%');
             });
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+            if ($request->status === 'completed') {
+                $query->whereNotNull('purchase_orders.completed_at');
+            }
         }
 
         if ($request->filled('date_from')) {
-            $query->whereDate('po_generated_at', '>=', $request->date_from);
+            $query->whereDate('purchase_orders.generated_at', '>=', $request->date_from);
         }
 
         if ($request->filled('date_to')) {
-            $query->whereDate('po_generated_at', '<=', $request->date_to);
+            $query->whereDate('purchase_orders.generated_at', '<=', $request->date_to);
         }
 
         // Get all filtered results (no pagination)
-        $generatedPOs = $query->get();
+        $generatedPOs = $query->orderBy('purchase_orders.generated_at', 'desc')->get();
 
         // Create CSV content
         $csvContent = [];
@@ -324,9 +382,9 @@ class POGenerationController extends Controller
 
         $counter = 1;
         foreach ($generatedPOs as $po) {
-            $requestedBy = $po->user ? $po->user->first_name .
-                ($po->user->middle_name ? ' ' . $po->user->middle_name : '') .
-                ' ' . $po->user->last_name : 'N/A';
+            $requestedBy = $po->purchaseRequest->user ? $po->purchaseRequest->user->first_name .
+                ($po->purchaseRequest->user->middle_name ? ' ' . $po->purchaseRequest->user->middle_name : '') .
+                ' ' . $po->purchaseRequest->user->last_name : 'N/A';
 
             $csvContent[] = [
                 $counter++,
@@ -334,9 +392,9 @@ class POGenerationController extends Controller
                 $po->pr_number,
                 $po->supplier ? $po->supplier->supplier_name : 'N/A',
                 $requestedBy,
-                $po->po_generated_at ? $po->po_generated_at->format('M d, Y') : 'N/A',
-                '₱' . number_format($po->total, 2),
-                ucfirst(str_replace('_', ' ', $po->status))
+                $po->generated_at ? $po->generated_at->format('M d, Y') : 'N/A',
+                '₱' . number_format($po->purchaseRequest->total, 2),
+                $po->completed_at ? 'Completed' : 'Generated'
             ];
         }
 
@@ -359,44 +417,46 @@ class POGenerationController extends Controller
 
     public function exportPDF(Request $request)
     {
-        $query = PurchaseRequest::with(['supplier', 'user', 'items'])
-            ->whereIn('status', ['po_generated', 'completed'])
-            ->orderBy('po_generated_at', 'desc');
+        $query = PurchaseOrder::with(['purchaseRequest.user', 'purchaseRequest.items', 'supplier'])
+            ->join('purchase_requests', 'purchase_orders.purchase_request_id', '=', 'purchase_requests.id')
+            ->leftJoin('suppliers', 'purchase_orders.supplier_id', '=', 'suppliers.id')
+            ->select([
+                'purchase_orders.*',
+                'purchase_requests.*',
+                'suppliers.supplier_name',
+                'suppliers.address as supplier_address',
+                'suppliers.tin as supplier_tin'
+            ]);
 
         // Apply the same filters as index method
         if ($request->filled('search')) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('pr_number', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('po_number', 'like', '%' . $searchTerm . '%')
-                    ->orWhereHas('supplier', function ($supplierQuery) use ($searchTerm) {
-                        $supplierQuery->where('supplier_name', 'like', '%' . $searchTerm . '%');
-                    })
-                    ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
-                        $userQuery->where('first_name', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('middle_name', 'like', '%' . $searchTerm . '%');
-                    });
+                $q->where('purchase_requests.pr_number', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('purchase_orders.po_number', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('suppliers.supplier_name', 'like', '%' . $searchTerm . '%');
             });
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+            if ($request->status === 'completed') {
+                $query->whereNotNull('purchase_orders.completed_at');
+            }
         }
 
         if ($request->filled('date_from')) {
-            $query->whereDate('po_generated_at', '>=', $request->date_from);
+            $query->whereDate('purchase_orders.generated_at', '>=', $request->date_from);
         }
 
         if ($request->filled('date_to')) {
-            $query->whereDate('po_generated_at', '<=', $request->date_to);
+            $query->whereDate('purchase_orders.generated_at', '<=', $request->date_to);
         }
 
         // Get all filtered results (no pagination)
-        $purchaseRequests = $query->get();
+        $purchaseOrders = $query->orderBy('purchase_orders.generated_at', 'desc')->get();
 
         // Generate PDF using DomPDF
-        $pdf = Pdf::loadView('exports.po_generation_pdf', compact('purchaseRequests'));
+        $pdf = Pdf::loadView('exports.po_generation_pdf', compact('purchaseOrders'));
 
         $filename = 'po_generation_' . date('Y-m-d_H-i-s') . '.pdf';
         return $pdf->download($filename);

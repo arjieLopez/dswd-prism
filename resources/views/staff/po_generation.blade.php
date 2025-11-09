@@ -310,6 +310,9 @@
                                         Amount</th>
                                     <th
                                         class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status</th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Action</th>
                                 </tr>
                             </thead>
@@ -326,10 +329,16 @@
                                             {{ $po->supplier ? $po->supplier->supplier_name : 'N/A' }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                            {{ $po->po_generated_at ? $po->po_generated_at->format('M d, Y') : 'N/A' }}
+                                            {{ $po->generated_at ? $po->generated_at->format('M d, Y') : 'N/A' }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                             ₱{{ number_format($po->total, 2) }}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-center">
+                                            <span
+                                                class="inline-flex px-2 py-1 text-xs font-medium rounded-full {{ $po->status_color }}">
+                                                {{ $po->status_display }}
+                                            </span>
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
                                             <div class="flex space-x-2 justify-center">
@@ -640,7 +649,7 @@
             </div>
             <div>
                 <label class="block text-sm font-bold text-gray-700">Date</label>
-                <p class="mt-1 text-sm text-gray-900">${data.po_generated_at ?? ''}</p>
+                <p class="mt-1 text-sm text-gray-900">${data.generated_at ?? ''}</p>
             </div>
             <div>
                 <label class="block text-sm font-bold text-gray-700">Supplier</label>
@@ -685,7 +694,7 @@
             <div>
                 <label class="block text-sm font-bold text-gray-700">Status</label>
                 <span class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${data.status_color}">
-                    ${data.status ? data.status.charAt(0).toUpperCase() + data.status.slice(1) : ''}
+                    ${data.status_display ?? data.status ? data.status.charAt(0).toUpperCase() + data.status.slice(1) : ''}
                 </span>
             </div>
             <div class="md:col-span-2">

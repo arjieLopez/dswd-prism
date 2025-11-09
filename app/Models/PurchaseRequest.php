@@ -17,45 +17,21 @@ class PurchaseRequest extends Model
         'office_section',
         'responsibility_center_code',
         'date',
+        'submitted_at',
         'stoc_property_no',
-        'unit',
-        'item_description',
-        'quantity',
-        'unit_cost',
-        'total_cost',
         'total',
         'delivery_period',
         'delivery_address',
         'purpose',
-        'requested_by_name',
-        'requested_by_designation',
-        'requested_by_signature',
-        'approved_by_name',
-        'approved_by_designation',
-        'approved_by_signature',
         'status',
         'remarks',
-        'notes',
-        'po_number',
-        'po_generated_at',
-        'po_generated_by',
-        'completed_at',
-        'supplier_id',
-        'mode_of_procurement',
-        'delivery_term',
-        'payment_term',
-        'date_of_delivery'
+        'notes'
     ];
 
     protected $casts = [
         'date' => 'date',
-        'quantity' => 'integer',
-        'unit_cost' => 'decimal:2',
-        'total_cost' => 'decimal:2',
-        'total' => 'decimal:2',
-        'po_generated_at' => 'datetime',
-        'completed_at' => 'datetime',
-        'date_of_delivery' => 'date'
+        'submitted_at' => 'datetime',
+        'total' => 'decimal:2'
     ];
 
     public function user()
@@ -70,9 +46,8 @@ class PurchaseRequest extends Model
             'pending' => 'bg-yellow-100 text-yellow-800',
             'approved' => 'bg-green-100 text-green-800',
             'rejected' => 'bg-red-100 text-red-800',
-            'failed' => 'bg-red-100 text-red-800',
             'po_generated' => 'bg-blue-100 text-blue-800',
-            'completed' => 'bg-indigo-100 text-indigo-800',
+            'completed' => 'bg-purple-100 text-purple-800',
             default => 'bg-gray-100 text-gray-800',
         };
     }
@@ -85,7 +60,6 @@ class PurchaseRequest extends Model
             'approved' => 'Approved',
             'rejected' => 'Rejected',
             'po_generated' => 'PO Generated',
-            'failed' => 'Failed',
             'completed' => 'Completed',
             default => ucfirst($this->status),
         };
@@ -99,5 +73,25 @@ class PurchaseRequest extends Model
     public function items()
     {
         return $this->hasMany(PurchaseRequestItem::class);
+    }
+
+    public function purchaseOrder()
+    {
+        return $this->hasOne(PurchaseOrder::class);
+    }
+
+    public function approvals()
+    {
+        return $this->hasMany(Approval::class);
+    }
+
+    public function signatures()
+    {
+        return $this->morphMany(Signature::class, 'signable');
+    }
+
+    public function commonAttributes()
+    {
+        return $this->morphMany(CommonAttribute::class, 'entity');
     }
 }

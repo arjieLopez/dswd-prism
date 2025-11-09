@@ -140,6 +140,7 @@
                                                 'approved' => 'Approved',
                                                 'rejected' => 'Rejected',
                                                 'po_generated' => 'PO Generated',
+                                                'completed' => 'Completed',
                                                 'failed' => 'Failed',
                                             ];
                                         @endphp

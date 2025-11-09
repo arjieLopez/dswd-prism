@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('system_selections', function (Blueprint $table) {
+        Schema::create('signatures', function (Blueprint $table) {
             $table->id();
-            $table->string('type', 50); // e.g., 'metric_units', 'entity', 'fund_cluster', etc.
-            $table->string('name', 100);
+            $table->morphs('signable'); // signable_type, signable_id
+            $table->string('signature_path', 255);
+            $table->timestamp('signed_at');
             $table->timestamps();
-
-            $table->index(['type', 'name']); // For efficient queries
         });
     }
 
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('system_selections');
+        Schema::dropIfExists('signatures');
     }
 };

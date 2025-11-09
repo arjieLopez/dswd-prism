@@ -154,11 +154,12 @@
                 <td style="text-align: center;">
                     <div style="padding-top: 2rem;"></div>
                     <div style="text-align: center; margin-bottom: 0.5rem;">
-                        {{ $purchaseRequest->requested_by_name ?? '_____________________' }}
+                        {{ $purchaseRequest->user ? $purchaseRequest->user->first_name . ($purchaseRequest->user->middle_name ? ' ' . $purchaseRequest->user->middle_name : '') . ' ' . $purchaseRequest->user->last_name : '_____________________' }}
                     </div>
                     <div class="signature-line"></div>
                     <div class="signature-label">Requested
-                        by:<br>{{ $purchaseRequest->requested_by_designation ?? '_____________________' }}</div>
+                        by:<br>{{ $purchaseRequest->user ? $purchaseRequest->user->designation : '_____________________' }}
+                    </div>
                 </td>
                 <td colspan="3" style="text-align: center;">
                     <div style="padding-top: 3rem;"></div>

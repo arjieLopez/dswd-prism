@@ -75,10 +75,12 @@ class PRReviewController extends Controller
                 'entity_name' => $purchaseRequest->entity_name,
                 'fund_cluster' => $purchaseRequest->fund_cluster,
                 'office_section' => $purchaseRequest->office_section,
-                'date' => $purchaseRequest->date->toDateString(),
+                'date' => $purchaseRequest->date ? $purchaseRequest->date->format('M d, Y') : '',
                 'delivery_address' => $purchaseRequest->delivery_address,
                 'purpose' => $purchaseRequest->purpose,
-                'requested_by_name' => $purchaseRequest->requested_by_name,
+                'requested_by_name' => $purchaseRequest->user ? $purchaseRequest->user->first_name .
+                    ($purchaseRequest->user->middle_name ? ' ' . $purchaseRequest->user->middle_name : '') .
+                    ' ' . $purchaseRequest->user->last_name : 'Unknown',
                 'delivery_period' => $purchaseRequest->delivery_period,
                 'status' => $purchaseRequest->status,
                 'status_color' => $this->getStatusColorClass($purchaseRequest->status),
@@ -174,6 +176,8 @@ class PRReviewController extends Controller
             'pending' => 'bg-yellow-100 text-yellow-800',
             'approved' => 'bg-green-100 text-green-800',
             'rejected' => 'bg-red-100 text-red-800',
+            'po_generated' => 'bg-blue-100 text-blue-800',
+            'completed' => 'bg-purple-100 text-purple-800',
             'failed' => 'bg-red-100 text-red-800',
             default => 'bg-gray-100 text-gray-800',
         };

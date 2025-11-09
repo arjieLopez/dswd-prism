@@ -23,7 +23,7 @@ class PODocumentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'po_number' => 'required|string|max:255',
+            'po_number' => 'required|string|max:50',
             'po_document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240', // 10MB max
             'notes' => 'nullable|string|max:1000',
         ]);

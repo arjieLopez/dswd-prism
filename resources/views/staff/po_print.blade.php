@@ -63,22 +63,22 @@
         </tr>
         <tr>
             <td class="bold">Supplier :</td>
-            <td colspan="2">{{ $purchaseRequest->supplier->supplier_name ?? '' }}</td>
+            <td colspan="2">{{ $purchaseOrder->supplier->supplier_name ?? '' }}</td>
             <td class="bold">P.O. No. :</td>
-            <td colspan="2">{{ $purchaseRequest->po_number }}</td>
+            <td colspan="2">{{ $purchaseOrder->po_number }}</td>
         </tr>
         <tr>
             <td class="bold">Address :</td>
-            <td colspan="2">{{ $purchaseRequest->supplier->address ?? '' }}</td>
+            <td colspan="2">{{ $purchaseOrder->supplier->address ?? '' }}</td>
             <td class="bold">Date :</td>
             <td colspan="2">
-                {{ $purchaseRequest->po_generated_at ? $purchaseRequest->po_generated_at->format('Y-m-d') : '' }}</td>
+                {{ $purchaseOrder->generated_at ? $purchaseOrder->generated_at->format('Y-m-d') : '' }}</td>
         </tr>
         <tr>
             <td class="bold">TIN :</td>
-            <td colspan="2">{{ $purchaseRequest->supplier->tin ?? '' }}</td>
+            <td colspan="2">{{ $purchaseOrder->supplier->tin ?? '' }}</td>
             <td class="bold">Mode of Procurement:</td>
-            <td colspan="2">{{ $purchaseRequest->mode_of_procurement }}</td>
+            <td colspan="2">{{ $purchaseOrder->mode_of_procurement }}</td>
         </tr>
         <tr>
             <td colspan="6" class="bold">Sir/Madame:</td>
@@ -91,14 +91,14 @@
             <td colspan="2" class="bold">Place of Delivery :</td>
             <td>{{ $purchaseRequest->delivery_address ?? ($purchaseRequest->place_of_delivery ?? '') }}</td>
             <td class="bold">Delivery Term :</td>
-            <td colspan="2">{{ $purchaseRequest->delivery_term }}</td>
+            <td colspan="2">{{ $purchaseOrder->delivery_term }}</td>
         </tr>
         <tr>
             <td colspan="2" class="bold">Date of Delivery :</td>
-            <td>{{ $purchaseRequest->date_of_delivery ? \Carbon\Carbon::parse($purchaseRequest->date_of_delivery)->format('F j, Y') : '' }}
+            <td>{{ $purchaseOrder->date_of_delivery ? \Carbon\Carbon::parse($purchaseOrder->date_of_delivery)->format('F j, Y') : '' }}
             </td>
             <td class="bold">Payment Term :</td>
-            <td colspan="2">{{ $purchaseRequest->payment_term }}</td>
+            <td colspan="2">{{ $purchaseOrder->payment_term }}</td>
         </tr>
         <tr>
             <th width="10%">Stock/Property No.</th>

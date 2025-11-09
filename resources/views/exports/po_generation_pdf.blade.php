@@ -200,20 +200,20 @@
         <div class="summary-grid">
             <div class="summary-row">
                 <div class="summary-cell summary-label">Total Records:</div>
-                <div class="summary-cell">{{ $purchaseRequests->count() }}</div>
+                <div class="summary-cell">{{ $purchaseOrders->count() }}</div>
                 <div class="summary-cell summary-label">Approved PRs:</div>
                 <div class="summary-cell">{{ $purchaseRequests->where('status', 'approved')->count() }}</div>
             </div>
             <div class="summary-row">
-                <div class="summary-cell summary-label">PO Generated:</div>
-                <div class="summary-cell">{{ $purchaseRequests->where('status', 'po_generated')->count() }}</div>
-                <div class="summary-cell summary-label">Completed:</div>
-                <div class="summary-cell">{{ $purchaseRequests->where('status', 'completed')->count() }}</div>
+                <div class="summary-cell summary-label">Completed POs:</div>
+                <div class="summary-cell">{{ $purchaseOrders->whereNotNull('completed_at')->count() }}</div>
+                <div class="summary-cell summary-label">Pending POs:</div>
+                <div class="summary-cell">{{ $purchaseOrders->whereNull('completed_at')->count() }}</div>
             </div>
         </div>
     </div>
 
-    @if ($purchaseRequests->count() > 0)
+    @if ($purchaseOrders->count() > 0)
         <table>
             <thead>
                 <tr>
@@ -230,22 +230,22 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($purchaseRequests as $index => $pr)
+                @foreach ($purchaseOrders as $index => $po)
                     <tr>
                         <td class="text-center">{{ $index + 1 }}</td>
-                        <td class="text-center">{{ $pr->pr_number }}</td>
+                        <td class="text-center">{{ $po->pr_number }}</td>
                         <td class="wrapped-text">
-                            {{ $pr->user->first_name }}
-                            @if ($pr->user->middle_name)
-                                {{ $pr->user->middle_name }}
+                            {{ $po->first_name }}
+                            @if ($po->middle_name)
+                                {{ $po->middle_name }}
                             @endif
-                            {{ $pr->user->last_name }}
+                            {{ $po->last_name }}
                         </td>
-                        <td class="wrapped-text">{{ $pr->purpose }}</td>
-                        <td class="text-right">₱{{ number_format($pr->total, 2) }}</td>
+                        <td class="wrapped-text">{{ $po->purpose }}</td>
+                        <td class="text-right">₱{{ number_format($po->total, 2) }}</td>
                         <td class="text-center">
-                            <span class="status-badge status-{{ str_replace('_', '-', $pr->status) }}">
-                                {{ ucfirst(str_replace('_', ' ', $pr->status)) }}
+                            <span class="status-badge status-po-generated">
+                                PO Generated
                             </span>
                         </td>
                         <td class="text-center">
@@ -263,8 +263,8 @@
                             @endif
                         </td>
                         <td class="text-center">
-                            @if ($pr->po_generated_at)
-                                {{ \Carbon\Carbon::parse($pr->po_generated_at)->format('M j, Y') }}
+                            @if ($po->generated_at)
+                                {{ \Carbon\Carbon::parse($po->generated_at)->format('M j, Y') }}
                             @else
                                 <span style="color: #999;">N/A</span>
                             @endif

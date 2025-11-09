@@ -11,10 +11,10 @@ return new class extends Migration
         Schema::create('uploaded_documents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('pr_number');
-            $table->string('file_path');
-            $table->string('original_filename');
-            $table->string('file_type');
+            $table->string('pr_number', 20);
+            $table->string('file_path', 255);
+            $table->string('original_filename', 255);
+            $table->string('file_type', 50);
             $table->integer('file_size');
             $table->text('notes')->nullable();
             $table->timestamps();

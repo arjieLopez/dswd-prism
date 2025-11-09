@@ -284,25 +284,20 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach ($completedPRsList as $index => $pr)
+                                @foreach ($completedPRsList as $index => $po)
                                     @php
-                                        // Get the completed date - use completed_at if available, otherwise updated_at for completed status
-                                        $completedDate = null;
-                                        if (isset($pr->completed_at) && $pr->completed_at) {
-                                            $completedDate = $pr->completed_at;
-                                        } elseif ($pr->status === 'completed' && $pr->updated_at) {
-                                            $completedDate = $pr->updated_at;
-                                        }
+                                        // Get the completed date - use completed_at if available
+                                        $completedDate = $po->completed_at;
 
                                         // Only mark as overdue if:
                                         // 1. There's a delivery date
 // 2. The delivery date is past due (before today)
 // 3. Either there's no completion date OR the completion date is after the delivery date
                                         $isOverdue =
-                                            $pr->date_of_delivery &&
-                                            $pr->date_of_delivery->startOfDay()->lt(now()->startOfDay()) &&
+                                            $po->date_of_delivery &&
+                                            $po->date_of_delivery->startOfDay()->lt(now()->startOfDay()) &&
                                             (!$completedDate ||
-                                                $completedDate->startOfDay()->gt($pr->date_of_delivery->startOfDay()));
+                                                $completedDate->startOfDay()->gt($po->date_of_delivery->startOfDay()));
 
                                         $rowClass = $isOverdue ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-50';
                                     @endphp
@@ -312,40 +307,38 @@
                                             {{ ($completedPRsList->currentPage() - 1) * $completedPRsList->perPage() + $index + 1 }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                            {{ $pr->po_number ?: 'N/A' }}
+                                            {{ $po->po_number }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                            {{ $pr->user ? $pr->user->first_name . (($pr->user->middle_name ? ' ' . $pr->user->middle_name : '') . ' ' . $pr->user->last_name) : 'N/A' }}
+                                            {{ $po->purchaseRequest ? $po->purchaseRequest->user->first_name . (($po->purchaseRequest->user->middle_name ? ' ' . $po->purchaseRequest->user->middle_name : '') . ' ' . $po->purchaseRequest->user->last_name) : 'N/A' }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                            {{ $pr->supplier ? $pr->supplier->supplier_name : 'Not Assigned' }}
+                                            {{ $po->supplier ? $po->supplier->supplier_name : 'Not Assigned' }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center">
-                                            @if ($pr->date_of_delivery)
+                                            @if ($po->date_of_delivery)
                                                 <span
                                                     class="{{ $isOverdue ? 'text-red-700 font-semibold' : 'text-gray-900' }}">
-                                                    {{ $pr->date_of_delivery->format('M d, Y') }}
+                                                    {{ $po->date_of_delivery->format('M d, Y') }}
                                                 </span>
                                             @else
                                                 <span class="text-gray-500">N/A</span>
                                             @endif
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                            @if (isset($pr->completed_at) && $pr->completed_at)
-                                                {{ $pr->completed_at->format('M d, Y') }}
-                                            @elseif($pr->status === 'completed')
-                                                {{ $pr->updated_at ? $pr->updated_at->format('M d, Y') : 'N/A' }}
+                                            @if ($po->completed_at)
+                                                {{ $po->completed_at->format('M d, Y') }}
                                             @else
                                                 <span class="text-gray-500 italic">Pending</span>
                                             @endif
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                            ₱{{ number_format($pr->total, 2) }}
+                                            ₱{{ number_format($po->total, 2) }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center">
                                             <span
-                                                class="inline-flex px-2 py-1 text-xs font-medium rounded-full {{ $pr->status_color }}">
-                                                {{ $pr->status_display }}
+                                                class="inline-flex px-2 py-1 text-xs font-medium rounded-full {{ $po->status_color }}">
+                                                {{ $po->status_display }}
                                             </span>
                                         </td>
                                     </tr>

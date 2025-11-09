@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('system_selections', function (Blueprint $table) {
+        Schema::create('common_attributes', function (Blueprint $table) {
             $table->id();
-            $table->string('type', 50); // e.g., 'metric_units', 'entity', 'fund_cluster', etc.
-            $table->string('name', 100);
+            $table->string('entity_type', 50);
+            $table->unsignedBigInteger('entity_id');
+            $table->string('attribute_key', 50);
+            $table->text('attribute_value')->nullable();
             $table->timestamps();
-
-            $table->index(['type', 'name']); // For efficient queries
+            $table->index(['entity_type', 'entity_id', 'attribute_key']);
         });
     }
 
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('system_selections');
+        Schema::dropIfExists('common_attributes');
     }
 };

@@ -98,7 +98,7 @@ Route::post('/staff/pr-review/export/xlsx', [App\Http\Controllers\PRReviewContro
 Route::post('/staff/pr-review/export/pdf', [App\Http\Controllers\PRReviewController::class, 'exportPDF'])->middleware(['auth', 'verified', 'twofactor', 'role:staff'])->name('staff.pr_review.export.pdf');
 // PO Generation Routes
 Route::get('/staff/po-generation', [App\Http\Controllers\POGenerationController::class, 'index'])->middleware(['auth', 'verified', 'twofactor', 'role:staff'])->name('staff.po_generation');
-Route::get('/staff/po-generation/{purchaseRequest}/data', [App\Http\Controllers\POGenerationController::class, 'show'])->middleware(['auth', 'verified', 'twofactor', 'role:staff'])->name('staff.po_generation.data');
+Route::get('/staff/po-generation/{purchaseOrder}/data', [App\Http\Controllers\POGenerationController::class, 'show'])->middleware(['auth', 'verified', 'twofactor', 'role:staff'])->name('staff.po_generation.data');
 Route::post('/staff/po-generation/{purchaseRequest}/generate-po', [App\Http\Controllers\POGenerationController::class, 'generatePO'])->middleware(['auth', 'verified', 'twofactor', 'role:staff'])->name('staff.po_generation.generate');
 Route::get('/staff/po-generation/{purchaseRequest}/view', [App\Http\Controllers\POGenerationController::class, 'viewPO'])->middleware(['auth', 'verified', 'twofactor', 'role:staff'])->name('staff.po_generation.view');
 Route::get('/staff/po-generation/{purchaseRequest}/edit', [App\Http\Controllers\POGenerationController::class, 'editPO'])->middleware(['auth', 'verified', 'twofactor', 'role:staff'])->name('staff.po_generation.edit');

@@ -11,10 +11,10 @@ return new class extends Migration
         Schema::create('user_activities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('action'); // 'created_pr', 'updated_pr', 'uploaded_document'
-            $table->string('description');
-            $table->string('pr_number')->nullable(); // For PR-related activities
-            $table->string('document_name')->nullable(); // For upload activities
+            $table->string('action', 50); // 'created_pr', 'updated_pr', 'uploaded_document'
+            $table->text('description')->nullable();
+            $table->string('pr_number', 20)->nullable(); // For PR-related activities
+            $table->string('document_name', 100)->nullable(); // For upload activities
             $table->json('details')->nullable(); // Additional details
             $table->timestamps();
         });

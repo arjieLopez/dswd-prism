@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
+use App\Models\PurchaseOrder;
 use App\Models\PODocument;
 use App\Models\UserActivity;
 use Carbon\Carbon;
@@ -54,19 +55,19 @@ class GSODashboardController extends Controller
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('total');
 
-        $poGenerated = PurchaseRequest::where('status', 'po_generated')
-            ->whereBetween('updated_at', [$startDate, $endDate])
+        $poGenerated = PurchaseOrder::whereBetween('generated_at', [$startDate, $endDate])
             ->count();
-        $poGeneratedTotal = PurchaseRequest::where('status', 'po_generated')
-            ->whereBetween('updated_at', [$startDate, $endDate])
-            ->sum('total');
+        $poGeneratedTotal = PurchaseOrder::whereBetween('generated_at', [$startDate, $endDate])
+            ->join('purchase_requests', 'purchase_orders.purchase_request_id', '=', 'purchase_requests.id')
+            ->sum('purchase_requests.total');
 
-        $completedPRs = PurchaseRequest::where('status', 'completed')
-            ->whereBetween('updated_at', [$startDate, $endDate])
+        $completedPRs = PurchaseOrder::whereNotNull('completed_at')
+            ->whereBetween('completed_at', [$startDate, $endDate])
             ->count();
-        $completedTotal = PurchaseRequest::where('status', 'completed')
-            ->whereBetween('updated_at', [$startDate, $endDate])
-            ->sum('total');
+        $completedTotal = PurchaseOrder::whereNotNull('completed_at')
+            ->whereBetween('completed_at', [$startDate, $endDate])
+            ->join('purchase_requests', 'purchase_orders.purchase_request_id', '=', 'purchase_requests.id')
+            ->sum('purchase_requests.total');
 
         // Get PR statistics for last month (for percentage calculation)
         $lastMonthStartDate = $lastMonth->copy()->startOfMonth();
@@ -80,12 +81,11 @@ class GSODashboardController extends Controller
             ->whereBetween('created_at', [$lastMonthStartDate, $lastMonthEndDate])
             ->count();
 
-        $lastMonthPOGenerated = PurchaseRequest::where('status', 'po_generated')
-            ->whereBetween('updated_at', [$lastMonthStartDate, $lastMonthEndDate])
+        $lastMonthPOGenerated = PurchaseOrder::whereBetween('generated_at', [$lastMonthStartDate, $lastMonthEndDate])
             ->count();
 
-        $lastMonthCompletedPRs = PurchaseRequest::where('status', 'completed')
-            ->whereBetween('updated_at', [$lastMonthStartDate, $lastMonthEndDate])
+        $lastMonthCompletedPRs = PurchaseOrder::whereNotNull('completed_at')
+            ->whereBetween('completed_at', [$lastMonthStartDate, $lastMonthEndDate])
             ->count();
 
         // Calculate percentage changes
@@ -94,10 +94,18 @@ class GSODashboardController extends Controller
         $poGeneratedPercentageChange = $this->calculatePercentageChange($poGenerated, $lastMonthPOGenerated);
         $completedPercentageChange = $this->calculatePercentageChange($completedPRs, $lastMonthCompletedPRs);
 
-        // Get completed Purchase Requests
-        $completedPRsList = PurchaseRequest::whereIn('status', ['completed', 'po_generated'])
-            ->with(['user', 'supplier']) // Add supplier relationship
-            ->orderBy('updated_at', 'desc')
+        // Get completed Purchase Orders (both completed and pending completion)
+        $completedPRsList = PurchaseOrder::with(['purchaseRequest.user', 'supplier'])
+            ->join('purchase_requests', 'purchase_orders.purchase_request_id', '=', 'purchase_requests.id')
+            ->leftJoin('suppliers', 'purchase_orders.supplier_id', '=', 'suppliers.id')
+            ->select([
+                'purchase_orders.*',
+                'purchase_requests.pr_number',
+                'purchase_requests.total',
+                'purchase_requests.status as pr_status',
+                'suppliers.supplier_name'
+            ])
+            ->orderBy('purchase_orders.generated_at', 'desc')
             ->paginate(5);
 
         $user = auth()->user();

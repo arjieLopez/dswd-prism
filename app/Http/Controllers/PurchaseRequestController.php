@@ -97,26 +97,23 @@ class PurchaseRequestController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'entity_name' => 'required|string|max:255',
-            'fund_cluster' => 'required|string|max:255',
-            'office_section' => 'required|string|max:255',
-            'responsibility_center_code' => 'required|string|max:255',
+            'entity_name' => 'required|string|max:100',
+            'fund_cluster' => 'required|string|max:50',
+            'office_section' => 'required|string|max:100',
+            'responsibility_center_code' => 'required|string|max:50',
             'date' => 'required|date',
-            'stoc_property_no' => 'nullable|string|max:255',
+            'stoc_property_no' => 'nullable|string|max:50',
             'unit' => 'required|array',
-            'unit.*' => 'required|string|max:255',
+            'unit.*' => 'required|string|max:50',
             'quantity' => 'required|array',
             'quantity.*' => 'required|integer|min:1',
             'unit_cost' => 'required|array',
             'unit_cost.*' => 'required|numeric|min:0',
             'item_description' => 'required|array',
             'item_description.*' => 'required|string',
-            'delivery_period' => 'required|string|max:255',
+            'delivery_period' => 'required|string|max:100',
             'delivery_address' => 'required|string',
             'purpose' => 'required|string',
-            'requested_by_name' => 'required|string|max:255',
-            'requested_by_designation' => 'required|string|max:255',
-            'requested_by_signature' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         // Calculate totals
@@ -153,10 +150,6 @@ class PurchaseRequestController extends Controller
             'delivery_period' => $request->delivery_period,
             'delivery_address' => $request->delivery_address,
             'purpose' => $request->purpose,
-            'requested_by_name' => auth()->user()->first_name . (auth()->user()->middle_name ? ' ' . auth()->user()->middle_name : '') . ' ' . auth()->user()->last_name,
-            'requested_by_designation' => $request->requested_by_designation,
-            'requested_by_signature' => $requestedBySignature,
-            'scanned_copy' => $scannedCopy,
             'status' => 'draft',
         ]);
 
@@ -188,10 +181,12 @@ class PurchaseRequestController extends Controller
             'entity_name' => $purchaseRequest->entity_name,
             'fund_cluster' => $purchaseRequest->fund_cluster,
             'office_section' => $purchaseRequest->office_section,
-            'date' => $purchaseRequest->date->toDateString(),
+            'date' => $purchaseRequest->date ? $purchaseRequest->date->format('M d, Y') : '',
             'delivery_address' => $purchaseRequest->delivery_address,
             'purpose' => $purchaseRequest->purpose,
-            'requested_by_name' => $purchaseRequest->requested_by_name,
+            'requested_by_name' => $purchaseRequest->user ? $purchaseRequest->user->first_name .
+                ($purchaseRequest->user->middle_name ? ' ' . $purchaseRequest->user->middle_name : '') .
+                ' ' . $purchaseRequest->user->last_name : 'Unknown',
             'delivery_period' => $purchaseRequest->delivery_period,
             'status' => $purchaseRequest->status,
             'status_color' => $purchaseRequest->status_color,
@@ -216,19 +211,19 @@ class PurchaseRequestController extends Controller
 
         try {
             $validated = $request->validate([
-                'entity_name' => 'required|string|max:255',
-                'fund_cluster' => 'required|string|max:255',
-                'office_section' => 'required|string|max:255',
+                'entity_name' => 'required|string|max:100',
+                'fund_cluster' => 'required|string|max:50',
+                'office_section' => 'required|string|max:100',
                 'date' => 'required|date',
                 'unit' => 'required|array',
-                'unit.*' => 'required|string|max:255',
+                'unit.*' => 'required|string|max:50',
                 'quantity' => 'required|array',
                 'quantity.*' => 'required|integer|min:1',
                 'unit_cost' => 'required|array',
                 'unit_cost.*' => 'required|numeric|min:0',
                 'item_description' => 'required|array',
                 'item_description.*' => 'required|string',
-                'delivery_period' => 'required|string|max:255',
+                'delivery_period' => 'required|string|max:100',
                 'delivery_address' => 'required|string',
                 'purpose' => 'required|string',
             ]);
@@ -240,7 +235,9 @@ class PurchaseRequestController extends Controller
             }
             $total = $totalCost;
 
-            if (!in_array($purchaseRequest->status, ['approved', 'po_generated'])) {
+            // Check if PR can be updated (not approved or has PO)
+            $hasPO = \App\Models\PurchaseOrder::where('purchase_request_id', $purchaseRequest->id)->exists();
+            if ($purchaseRequest->status === 'approved' && !$hasPO) {
                 $purchaseRequest->status = 'draft';
             }
 
@@ -367,20 +364,19 @@ class PurchaseRequestController extends Controller
                 return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
             }
 
-            // Only allow if status is approved or po_generated
-            if (!in_array($purchaseRequest->status, ['approved', 'po_generated'])) {
+            // Only allow if status is approved or has an associated PO
+            $hasPO = \App\Models\PurchaseOrder::where('purchase_request_id', $purchaseRequest->id)->exists();
+            if ($purchaseRequest->status !== 'approved' && !$hasPO) {
                 return response()->json(['success' => false, 'message' => 'PR cannot be marked as completed. Current status: ' . $purchaseRequest->status], 400);
             }
 
             $purchaseRequest->status = 'completed';
 
-            // Try to set completed_at if the column exists
-            try {
-                $purchaseRequest->completed_at = now();
-            } catch (\Exception $e) {
-                // If completed_at column doesn't exist yet, continue without it
-                // This will be handled once the migration is run
-                Log::info('completed_at field not available yet: ' . $e->getMessage());
+            // Update the associated PO's completed_at if it exists
+            $purchaseOrder = \App\Models\PurchaseOrder::where('purchase_request_id', $purchaseRequest->id)->first();
+            if ($purchaseOrder) {
+                $purchaseOrder->completed_at = now();
+                $purchaseOrder->save();
             }
 
             $purchaseRequest->save();

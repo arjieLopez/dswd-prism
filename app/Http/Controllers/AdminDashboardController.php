@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
+use App\Models\PurchaseOrder;
 use App\Models\PODocument;
 use App\Models\UserActivity;
 use App\Models\User;
@@ -53,12 +54,11 @@ class AdminDashboardController extends Controller
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('total');
 
-        $poCount = PurchaseRequest::whereBetween('po_generated_at', [$startDate, $endDate])
-            ->whereNotNull('po_generated_at')
+        $poCount = PurchaseOrder::whereBetween('generated_at', [$startDate, $endDate])
             ->count();
-        $poTotal = PurchaseRequest::whereBetween('po_generated_at', [$startDate, $endDate])
-            ->whereNotNull('po_generated_at')
-            ->sum('total');
+        $poTotal = PurchaseOrder::whereBetween('generated_at', [$startDate, $endDate])
+            ->join('purchase_requests', 'purchase_orders.purchase_request_id', '=', 'purchase_requests.id')
+            ->sum('purchase_requests.total');
 
         // Get previous period counts for percentage calculation
         $previousStartDate = $startDate->copy()->subMonth();
@@ -67,8 +67,7 @@ class AdminDashboardController extends Controller
         $previousPrCount = PurchaseRequest::whereIn('status', ['approved', 'po_generated', 'completed'])
             ->whereBetween('created_at', [$previousStartDate, $previousEndDate])
             ->count();
-        $previousPoCount = PurchaseRequest::whereBetween('po_generated_at', [$previousStartDate, $previousEndDate])
-            ->whereNotNull('po_generated_at')
+        $previousPoCount = PurchaseOrder::whereBetween('generated_at', [$previousStartDate, $previousEndDate])
             ->count();
 
         // Calculate percentage changes
@@ -173,6 +172,7 @@ class AdminDashboardController extends Controller
             'approved' => 'bg-green-100 text-green-800',
             'rejected' => 'bg-red-100 text-red-800',
             'po_generated' => 'bg-purple-100 text-purple-800',
+            'completed' => 'bg-indigo-100 text-indigo-800',
             default => 'bg-gray-100 text-gray-800'
         };
     }
@@ -194,9 +194,8 @@ class AdminDashboardController extends Controller
                     ->whereMonth('created_at', $date->month)
                     ->count();
 
-                $poData[] = PurchaseRequest::whereYear('po_generated_at', $date->year)
-                    ->whereMonth('po_generated_at', $date->month)
-                    ->whereNotNull('po_generated_at')
+                $poData[] = PurchaseOrder::whereYear('generated_at', $date->year)
+                    ->whereMonth('generated_at', $date->month)
                     ->count();
             }
         } elseif ($filterType === 'custom') {
@@ -215,9 +214,8 @@ class AdminDashboardController extends Controller
                         ->whereMonth('created_at', $date->month)
                         ->count();
 
-                    $poData[] = PurchaseRequest::whereYear('po_generated_at', $date->year)
-                        ->whereMonth('po_generated_at', $date->month)
-                        ->whereNotNull('po_generated_at')
+                    $poData[] = PurchaseOrder::whereYear('generated_at', $date->year)
+                        ->whereMonth('generated_at', $date->month)
                         ->count();
                 }
             } elseif ($monthsDiff <= 12) {
@@ -233,9 +231,8 @@ class AdminDashboardController extends Controller
                         ->whereMonth('created_at', $currentDate->month)
                         ->count();
 
-                    $poData[] = PurchaseRequest::whereYear('po_generated_at', $currentDate->year)
-                        ->whereMonth('po_generated_at', $currentDate->month)
-                        ->whereNotNull('po_generated_at')
+                    $poData[] = PurchaseOrder::whereYear('generated_at', $currentDate->year)
+                        ->whereMonth('generated_at', $currentDate->month)
                         ->count();
 
                     $currentDate->addMonth();
@@ -259,10 +256,10 @@ class AdminDashboardController extends Controller
                                 min($firstHalfEnd, $endDate)
                             ])->count();
 
-                        $poData[] = PurchaseRequest::whereBetween('po_generated_at', [
+                        $poData[] = PurchaseOrder::whereBetween('generated_at', [
                             max($firstHalfStart, $startDate),
                             min($firstHalfEnd, $endDate)
-                        ])->whereNotNull('po_generated_at')->count();
+                        ])->count();
                     }
 
                     // Second half of the year (Jul-Dec)
@@ -278,10 +275,10 @@ class AdminDashboardController extends Controller
                                 min($secondHalfEnd, $endDate)
                             ])->count();
 
-                        $poData[] = PurchaseRequest::whereBetween('po_generated_at', [
+                        $poData[] = PurchaseOrder::whereBetween('generated_at', [
                             max($secondHalfStart, $startDate),
                             min($secondHalfEnd, $endDate)
-                        ])->whereNotNull('po_generated_at')->count();
+                        ])->count();
                     }
                 }
             }

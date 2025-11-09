@@ -333,14 +333,8 @@
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                             {{ $report->department }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-center">
-                                            @if ($report->type === 'PO')
-                                                <span
-                                                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">PO
-                                                    Generated</span>
-                                            @else
-                                                <span
-                                                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $report->status_color }}">{{ $report->status_display }}</span>
-                                            @endif
+                                            <span
+                                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $report->status_color }}">{{ $report->status_display }}</span>
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                             ₱{{ number_format($report->amount, 2) }}</td>

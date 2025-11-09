@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('purchase_request_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('purchase_request_id')->constrained()->onDelete('cascade');
-            $table->string('unit');
+            $table->string('unit', 20);
             $table->integer('quantity');
             $table->decimal('unit_cost', 12, 2);
             $table->text('item_description');

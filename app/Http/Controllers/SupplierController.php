@@ -62,12 +62,12 @@ class SupplierController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'supplier_name' => 'required|string|max:255',
+            'supplier_name' => 'required|string|max:100',
             'tin' => 'nullable|string|max:255',
             'address' => 'required|string|max:1000',
-            'contact_person' => 'required|string|max:255',
-            'contact_number' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'contact_person' => 'required|string|max:100',
+            'contact_number' => 'required|string|max:20',
+            'email' => 'required|email|max:100',
         ]);
 
         try {
@@ -97,12 +97,12 @@ class SupplierController extends Controller
     public function update(Request $request, Supplier $supplier)
     {
         $request->validate([
-            'supplier_name' => 'required|string|max:255',
+            'supplier_name' => 'required|string|max:100',
             'tin' => 'nullable|string|max:255',
             'address' => 'required|string|max:1000',
-            'contact_person' => 'required|string|max:255',
-            'contact_number' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'contact_person' => 'required|string|max:100',
+            'contact_number' => 'required|string|max:20',
+            'email' => 'required|email|max:100',
         ]);
 
         try {

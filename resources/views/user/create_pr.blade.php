@@ -213,40 +213,7 @@
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">{{ old('purpose') }}</textarea>
                         </div>
 
-                        <!-- Requested By -->
-                        <div class="border-t pt-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Requested By</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="requested_by_name"
-                                        class="block text-sm font-medium text-gray-700">Printed Name <span
-                                            class="text-red-500">*</span></label>
-                                    <input type="text" name="requested_by_name" id="requested_by_name"
-                                        value="{{ old('requested_by_name', auth()->user()->first_name . (auth()->user()->middle_name ? ' ' . auth()->user()->middle_name : '') . ' ' . auth()->user()->last_name) }}"
-                                        required readonly
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-100 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                                </div>
 
-                                <div>
-                                    <label for="requested_by_designation"
-                                        class="block text-sm font-medium text-gray-700">Designation <span
-                                            class="text-red-500">*</span></label>
-                                    <input type="text" name="requested_by_designation"
-                                        id="requested_by_designation"
-                                        value="{{ old('requested_by_designation', auth()->user()->designation) }}"
-                                        required readonly
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-100 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                                </div>
-
-                                {{-- <div>
-                                    <label for="requested_by_signature"
-                                        class="block text-sm font-medium text-gray-700">Signature (Optional)</label>
-                                    <input type="file" name="requested_by_signature" id="requested_by_signature"
-                                        accept="image/*"
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                </div> --}}
-                            </div>
-                        </div>
 
                         <!-- Submit Buttons -->
                         <div class="flex items-center justify-end space-x-3 pt-6">
