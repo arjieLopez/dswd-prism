@@ -55,12 +55,6 @@ class PurchaseOrder extends Model
         return $this->belongsTo(\App\Models\Status::class);
     }
 
-    public function getStatusAttribute()
-    {
-        $statusRelation = $this->getRelationValue('status');
-        return $statusRelation ? $statusRelation->name : null;
-    }
-
     public function getStatusDisplayAttribute()
     {
         $statusRelation = $this->getRelationValue('status');

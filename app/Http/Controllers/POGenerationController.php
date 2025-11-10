@@ -311,6 +311,7 @@ class POGenerationController extends Controller
             }
 
             // Create new PurchaseOrder record
+            $poGeneratedStatus = \App\Models\Status::where('context', 'purchase_order')->where('name', 'generated')->first();
             PurchaseOrder::create([
                 'purchase_request_id' => $purchaseRequest->id,
                 'supplier_id' => $request->supplier_id,
@@ -319,12 +320,14 @@ class POGenerationController extends Controller
                 'delivery_term' => $request->delivery_term,
                 'payment_term' => $request->payment_term,
                 'date_of_delivery' => $request->date_of_delivery,
+                'status_id' => $poGeneratedStatus->id,
                 'generated_at' => now(),
                 'generated_by' => auth()->id(),
             ]);
 
             // Update PR status to po_generated
-            $purchaseRequest->update(['status' => 'po_generated']);
+            $prPoGeneratedStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'po_generated')->first();
+            $purchaseRequest->update(['status_id' => $prPoGeneratedStatus->id]);
 
             // Log the activity
             ActivityService::logPoGenerated($purchaseRequest->pr_number, $request->po_number);
