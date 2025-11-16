@@ -69,13 +69,19 @@ class AuthenticatedSessionController extends Controller
     {
         // Log logout before destroying session
         if (Auth::check()) {
-            ActivityService::logUserLogout(Auth::id(), Auth::user()->name);
+            $user = Auth::user();
+            ActivityService::logUserLogout($user->id, $user->name);
+
+            // Clear user's session_id to allow login from any device
+            $user->session_id = null;
+            $user->save();
         }
 
         Auth::guard('web')->logout();
 
+        // Flush all session data
+        $request->session()->flush();
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');

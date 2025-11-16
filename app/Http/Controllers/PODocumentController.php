@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\PODocument;
 use App\Services\ActivityService;
 use Illuminate\Support\Facades\Storage;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
 
 class PODocumentController extends Controller
 {
@@ -14,7 +16,7 @@ class PODocumentController extends Controller
         $user = auth()->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
 
         return view('staff.upload_po_document', compact('recentActivities'));

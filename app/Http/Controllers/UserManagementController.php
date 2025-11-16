@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\ActivityService;
+use App\Services\ExportService;
+use App\Services\QueryService;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -53,12 +57,12 @@ class UserManagementController extends Controller
             $query->orderBy($sortBy, $sortOrder);
         }
 
-        $users = $query->with(['role', 'designation', 'office'])->paginate(10)->withQueryString();
+        $users = $query->with(['role', 'designation', 'office'])->paginate(PaginationConstants::DEFAULT_PER_PAGE)->withQueryString();
 
         $user = auth()->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
 
         // Get reference data for dropdowns
@@ -230,27 +234,18 @@ class UserManagementController extends Controller
             $query->orderBy($sortBy, $sortOrder);
         }
 
-        $users = $query->get();
+        $users = $query->with(['role', 'designation', 'office'])->get();
 
-        // Create CSV content
-        $csvContent = [];
-        $csvContent[] = [
-            '#',
-            'Name',
-            'Email Address',
-            'Role',
-            'Status',
-            'Designation',
-            'Employee ID',
-            'Office',
-            'Date Created'
-        ];
+        // Prepare headers
+        $headers = ['#', 'Name', 'Email Address', 'Role', 'Status', 'Designation', 'Employee ID', 'Office', 'Date Created'];
 
+        // Prepare rows
+        $rows = [];
         foreach ($users as $index => $user) {
             $fullName = $user->first_name . ($user->middle_name ? ' ' . $user->middle_name : '') . ' ' . $user->last_name;
             $status = $user->email_verified_at ? 'Active' : 'Inactive';
 
-            $csvContent[] = [
+            $rows[] = [
                 $index + 1,
                 $fullName,
                 $user->email,
@@ -263,21 +258,11 @@ class UserManagementController extends Controller
             ];
         }
 
-        // Create CSV file
-        $filename = 'users_' . date('Y-m-d_H-i-s') . '.csv';
-        $handle = fopen('php://temp', 'r+');
+        // Use ExportService
+        $exportService = new ExportService();
+        $filename = $exportService->generateFilename('users', 'csv');
 
-        foreach ($csvContent as $row) {
-            fputcsv($handle, $row);
-        }
-
-        rewind($handle);
-        $csvData = stream_get_contents($handle);
-        fclose($handle);
-
-        return response($csvData)
-            ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        return $exportService->exportToCSV($headers, $rows, $filename);
     }
     public function exportPdf(Request $request)
     {
@@ -315,24 +300,20 @@ class UserManagementController extends Controller
             $query->orderBy($sortBy, $sortOrder);
         }
 
-        $users = $query->get();
+        $users = $query->with(['role', 'designation', 'office'])->get();
 
-        // Prepare filter summary
-        $filterSummary = [];
-        if ($request->filled('search')) {
-            $filterSummary[] = 'Search: "' . $request->search . '"';
-        }
-        if ($request->filled('role') && $request->role !== 'all') {
-            $filterSummary[] = 'Role: ' . ucfirst($request->role);
-        }
-        if ($request->filled('status') && $request->status !== 'all') {
-            $filterSummary[] = 'Status: ' . ucfirst($request->status);
-        }
-        if ($request->filled('sort_by')) {
-            $sortDisplay = ucfirst(str_replace('_', ' ', $request->sort_by));
-            $orderDisplay = $request->get('sort_order', 'desc') === 'desc' ? 'Descending' : 'Ascending';
-            $filterSummary[] = 'Sort: ' . $sortDisplay . ' (' . $orderDisplay . ')';
-        }
+        // Use ExportService for filter summary and PDF generation
+        $exportService = new ExportService();
+
+        $filters = [
+            'search' => $request->search,
+            'role' => $request->role,
+            'status' => $request->status,
+            'sort_by' => $request->sort_by,
+            'sort_order' => $request->get('sort_order', 'desc')
+        ];
+
+        $filterSummary = $exportService->prepareFilterSummary($filters);
 
         $data = [
             'users' => $users,
@@ -341,9 +322,8 @@ class UserManagementController extends Controller
             'exportDate' => now()->format('F j, Y g:i A')
         ];
 
-        $pdf = Pdf::loadView('exports.users_pdf', $data);
-        $pdf->setPaper('a4', 'landscape');
+        $filename = $exportService->generateFilename('users', 'pdf');
 
-        return $pdf->download('users_' . date('Y_m_d_H_i_s') . '.pdf');
+        return $exportService->exportToPDF('exports.users_pdf', $data, $filename, 'landscape');
     }
 }

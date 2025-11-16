@@ -10,35 +10,25 @@ use App\Models\UserActivity;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
+use App\Services\DashboardService;
 
 class AdminDashboardController extends Controller
 {
     public function show(Request $request)
     {
+        $dashboardService = new DashboardService();
+
         // Get filter type and dates
         $filterType = $request->get('filter_type', 'this_month');
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
 
-        // Set date range based on filter type
-        if ($filterType === 'this_month') {
-            $currentMonth = Carbon::now();
-            $startDate = $currentMonth->copy()->startOfMonth();
-            $endDate = $currentMonth->copy()->endOfMonth();
-        } elseif ($filterType === 'previous_month') {
-            $currentMonth = Carbon::now()->subMonth();
-            $startDate = $currentMonth->copy()->startOfMonth();
-            $endDate = $currentMonth->copy()->endOfMonth();
-        } elseif ($filterType === 'custom' && $dateFrom && $dateTo) {
-            $startDate = Carbon::createFromFormat('Y-m-d', $dateFrom)->startOfDay();
-            $endDate = Carbon::createFromFormat('Y-m-d', $dateTo)->endOfDay();
-            $currentMonth = $startDate; // For reference
-        } else {
-            // Default to this month
-            $currentMonth = Carbon::now();
-            $startDate = $currentMonth->copy()->startOfMonth();
-            $endDate = $currentMonth->copy()->endOfMonth();
-        }
+        // Get date range using DashboardService
+        $dateRange = $dashboardService->getDateRange($filterType, $dateFrom, $dateTo);
+        $startDate = $dateRange['start'];
+        $endDate = $dateRange['end'];
 
         // Get current year data for chart - now filtered based on date range
         $chartData = $this->getChartData($filterType, $startDate, $endDate);
@@ -103,7 +93,7 @@ class AdminDashboardController extends Controller
         // Get recent PRs
         $recentPRs = PurchaseRequest::with('user')
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get()
             ->map(function ($pr) {
                 return [
@@ -121,7 +111,7 @@ class AdminDashboardController extends Controller
 
         // Get recent POs
         $recentPOs = PODocument::orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get()
             ->map(function ($po) {
                 return [
@@ -139,7 +129,7 @@ class AdminDashboardController extends Controller
         $user = auth()->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
 
         return view('admin.admin_dashboard', compact(

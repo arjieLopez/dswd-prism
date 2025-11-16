@@ -122,6 +122,7 @@ Route::get('/suppliers/{supplier}', [App\Http\Controllers\SupplierController::cl
 Route::post('/suppliers/{supplier}', [App\Http\Controllers\SupplierController::class, 'update'])->middleware(['auth', 'verified', 'twofactor', 'role:staff'])->name('suppliers.update');
 Route::post('/suppliers/{supplier}/toggle-status', [App\Http\Controllers\SupplierController::class, 'toggleStatus'])->middleware(['auth', 'verified', 'twofactor', 'role:staff'])->name('suppliers.toggle-status');
 Route::delete('/suppliers/{supplier}', [App\Http\Controllers\SupplierController::class, 'destroy'])->middleware(['auth', 'verified', 'twofactor', 'role:staff'])->name('suppliers.destroy');
+Route::post('/staff/suppliers/export/pdf', [App\Http\Controllers\SupplierController::class, 'exportPDF'])->middleware(['auth', 'verified', 'twofactor', 'role:staff'])->name('staff.suppliers.export.pdf');
 
 
 Route::get('/user', [UserDashboardController::class, 'show'])->middleware(['auth', 'verified', 'twofactor', 'role:user'])->name('user');
@@ -160,6 +161,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+// Keep-alive route for session management
+Route::post('/keep-alive', function () {
+    return response()->json(['success' => true, 'message' => 'Session extended']);
+})->middleware(['auth'])->name('keep-alive');
 
 Route::get("verify/show", [TwoFactorCodeController::class, 'show'])->name('verify.show');
 Route::get("verify/resend", [TwoFactorCodeController::class, 'resend'])->name('verify.resend');

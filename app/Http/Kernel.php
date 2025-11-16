@@ -37,6 +37,8 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\CheckUserStatus::class,
+            \App\Http\Middleware\SessionTimeout::class,
+            \App\Http\Middleware\SingleDeviceSession::class,
         ],
 
         'api' => [
@@ -67,5 +69,7 @@ class Kernel extends HttpKernel
         'twofactor' => \App\Http\Middleware\TwoFactorMiddleware::class,
         'user.status' => \App\Http\Middleware\CheckUserStatus::class,
         'role' => \App\Http\Middleware\RoleMiddleware::class,
+        'session.timeout' => \App\Http\Middleware\SessionTimeout::class,
+        'single.device' => \App\Http\Middleware\SingleDeviceSession::class,
     ];
 }

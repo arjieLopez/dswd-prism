@@ -693,8 +693,8 @@
             </div>
             <div>
                 <label class="block text-sm font-bold text-gray-700">Status</label>
-                <span class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${data.status_color}">
-                    ${data.status_display ?? data.status ? data.status.charAt(0).toUpperCase() + data.status.slice(1) : ''}
+                <span class="mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${data.status_color ?? 'bg-gray-100 text-gray-800'}">
+                    ${data.status_display ?? 'Unknown'}
                 </span>
             </div>
             <div class="md:col-span-2">
@@ -781,7 +781,7 @@
 
                     if (uploadBtn && downloadBtn) {
                         // Show upload button for po_generated and completed status
-                        if (data.status === 'po_generated' || data.status === 'completed') {
+                        if (data.status?.name === 'po_generated' || data.status?.name === 'completed') {
                             uploadBtn.classList.remove('hidden');
                             uploadBtn.setAttribute('data-po-number', data.po_number);
                         } else {

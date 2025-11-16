@@ -725,7 +725,7 @@
                     document.getElementById('view-requesting-unit').textContent = data.requesting_unit;
                     document.getElementById('view-entity-name').textContent = data.entity_name;
                     document.getElementById('view-fund-cluster').textContent = data.fund_cluster;
-                    document.getElementById('view-office-section').textContent = data.office_section;
+                    document.getElementById('view-office-section').textContent = data.office_name;
                     document.getElementById('view-delivery-address').textContent = data.delivery_address;
                     document.getElementById('view-purpose').textContent = data.purpose;
                     document.getElementById('view-requested-by').textContent = data.requested_by_name;
@@ -767,23 +767,23 @@
 
                     // Set status
                     const statusElement = document.getElementById('view-status');
-                    statusElement.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                    statusElement.textContent = data.status_display ?? 'Unknown';
                     statusElement.className =
-                        `mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${data.status_color}`;
+                        `mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${data.status_color ?? 'bg-gray-100 text-gray-800'}`;
 
                     // Show/hide approve and reject buttons based on status
                     const approveBtn = document.getElementById('modal-approve-btn');
                     const rejectBtn = document.getElementById('modal-reject-btn');
                     const generatePOBtn = document.getElementById('modal-generate-po-btn');
 
-                    if (data.status === 'pending') {
+                    if (data.status?.name === 'pending') {
                         approveBtn.classList.remove('hidden');
                         rejectBtn.classList.remove('hidden');
                         generatePOBtn.classList.add('hidden');
                         // Store the PR ID for the modal buttons
                         approveBtn.setAttribute('data-pr-id', prId);
                         rejectBtn.setAttribute('data-pr-id', prId);
-                    } else if (data.status === 'approved') {
+                    } else if (data.status?.name === 'approved') {
                         approveBtn.classList.add('hidden');
                         rejectBtn.classList.add('hidden');
                         generatePOBtn.classList.remove('hidden');

@@ -9,6 +9,8 @@ use App\Models\Role;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
 
 class AuditLogsController extends Controller
 {
@@ -55,7 +57,7 @@ class AuditLogsController extends Controller
                 $query->whereDate('created_at', '<=', $request->date_to);
             }
 
-            $auditLogs = $query->orderBy('created_at', 'desc')->paginate(10);
+            $auditLogs = $query->orderBy('created_at', 'desc')->paginate(PaginationConstants::DEFAULT_PER_PAGE);
 
             // Get available actions and roles for filters
             $actions = UserActivity::select('action')->distinct()->pluck('action');
@@ -64,13 +66,13 @@ class AuditLogsController extends Controller
             $user = auth()->user();
             $recentActivities = $user->activities()
                 ->orderBy('created_at', 'desc')
-                ->limit(10)
+                ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
                 ->get();
 
             return view('admin.audit_logs', compact('auditLogs', 'actions', 'roles', 'recentActivities'));
         } catch (\Exception $e) {
             // If there's an error, return empty results using an empty query
-            $auditLogs = UserActivity::whereRaw('1 = 0')->paginate(10); // Empty query that can be paginated
+            $auditLogs = UserActivity::whereRaw('1 = 0')->paginate(PaginationConstants::DEFAULT_PER_PAGE); // Empty query that can be paginated
             $actions = collect([]);
             $roles = collect([]);
             $recentActivities = collect([]);

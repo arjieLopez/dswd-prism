@@ -12,19 +12,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin
-        \App\Models\User::factory()->admin()->create([
-            'password' => bcrypt('12345678'), // Set a known password
+        // Seed lookup tables first (no foreign keys)
+        $this->call([
+            RoleSeeder::class,
+            DesignationSeeder::class,
+            OfficeSeeder::class,
+            StatusSeeder::class,
+            UnitSeeder::class,
+            ProcurementModeSeeder::class,
         ]);
 
-        // Create staff
-        \App\Models\User::factory()->staff()->create([
-            'password' => bcrypt('12345678'),
-        ]);
-
-        // Create user
-        \App\Models\User::factory()->user()->create([
-            'password' => bcrypt('12345678'),
+        // Seed users (depends on roles, designations, offices)
+        $this->call([
+            AdminUserSeeder::class,
         ]);
     }
 }

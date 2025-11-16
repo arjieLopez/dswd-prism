@@ -8,37 +8,27 @@ use App\Models\PurchaseOrder;
 use App\Models\PODocument;
 use App\Models\UserActivity;
 use Carbon\Carbon;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
+use App\Services\DashboardService;
 
 class GSODashboardController extends Controller
 {
     public function show(Request $request)
     {
+        $dashboardService = new DashboardService();
+
         // Get filter type and dates
         $filterType = $request->get('filter_type', 'this_month');
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
 
-        // Set date range based on filter type
-        if ($filterType === 'this_month') {
-            $currentMonth = Carbon::now();
-            $startDate = $currentMonth->copy()->startOfMonth();
-            $endDate = $currentMonth->copy()->endOfMonth();
-        } elseif ($filterType === 'previous_month') {
-            $currentMonth = Carbon::now()->subMonth();
-            $startDate = $currentMonth->copy()->startOfMonth();
-            $endDate = $currentMonth->copy()->endOfMonth();
-        } elseif ($filterType === 'custom' && $dateFrom && $dateTo) {
-            $startDate = Carbon::createFromFormat('Y-m-d', $dateFrom)->startOfDay();
-            $endDate = Carbon::createFromFormat('Y-m-d', $dateTo)->endOfDay();
-            $currentMonth = $startDate; // For reference
-        } else {
-            // Default to this month
-            $currentMonth = Carbon::now();
-            $startDate = $currentMonth->copy()->startOfMonth();
-            $endDate = $currentMonth->copy()->endOfMonth();
-        }
+        // Get date range using DashboardService
+        $dateRange = $dashboardService->getDateRange($filterType, $dateFrom, $dateTo);
+        $startDate = $dateRange['start'];
+        $endDate = $dateRange['end'];
 
-        $lastMonth = $currentMonth->copy()->subMonth();
+        $lastMonth = $startDate->copy()->subMonth();
 
         // Get PR statistics for selected date range
         $pendingPRs = PurchaseRequest::whereHas('status', function ($query) {
@@ -124,7 +114,7 @@ class GSODashboardController extends Controller
         $user = auth()->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
 
         return view('staff.gso_dashboard', compact(

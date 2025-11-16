@@ -7,6 +7,10 @@ use App\Models\PurchaseRequest;
 use App\Models\User;
 use App\Models\UserActivity;
 use App\Services\ActivityService;
+use App\Services\ExportService;
+use App\Services\QueryService;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 
@@ -27,7 +31,9 @@ class PRReviewController extends Controller
                 $q->where('pr_number', 'like', '%' . $searchTerm . '%')
                     ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('office', function ($officeQuery) use ($searchTerm) {
+                        $officeQuery->where('name', 'like', '%' . $searchTerm . '%');
+                    })
                     ->orWhereHas('status', function ($statusQuery) use ($searchTerm) {
                         $statusQuery->where('name', 'like', '%' . $searchTerm . '%')
                             ->orWhere('display_name', 'like', '%' . $searchTerm . '%');
@@ -56,16 +62,16 @@ class PRReviewController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $purchaseRequests = $query->paginate(10)->appends($request->query());
+        $purchaseRequests = $query->paginate(PaginationConstants::DEFAULT_PER_PAGE)->appends($request->query());
 
         $user = auth()->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
 
         // Get available statuses for filtering
-        $statuses = \App\Models\Status::where('context', 'purchase_request')
+        $statuses = \App\Models\Status::where('context', 'procurement')
             ->where('name', '!=', 'draft')
             ->get();
 
@@ -74,13 +80,16 @@ class PRReviewController extends Controller
 
     public function show(PurchaseRequest $purchaseRequest)
     {
+        // Load the status relationship
+        $purchaseRequest->load('status', 'office');
         try {
             $data = [
                 'id' => $purchaseRequest->id,
                 'pr_number' => $purchaseRequest->pr_number,
                 'entity_name' => $purchaseRequest->entity_name,
                 'fund_cluster' => $purchaseRequest->fund_cluster,
-                'office_section' => $purchaseRequest->office_section,
+                'office_id' => $purchaseRequest->office_id,
+                'office_name' => $purchaseRequest->office->name,
                 'date' => $purchaseRequest->date ? $purchaseRequest->date->format('M d, Y') : '',
                 'delivery_address' => $purchaseRequest->delivery_address,
                 'purpose' => $purchaseRequest->purpose,
@@ -89,6 +98,7 @@ class PRReviewController extends Controller
                     ' ' . $purchaseRequest->user->last_name : 'Unknown',
                 'delivery_period' => $purchaseRequest->delivery_period,
                 'status' => $purchaseRequest->status,
+                'status_display' => $purchaseRequest->status_display,
                 'status_color' => $this->getStatusColorClass($purchaseRequest->status),
                 'requesting_unit' => $purchaseRequest->user
                     ? ($purchaseRequest->user->first_name . ($purchaseRequest->user->middle_name ? ' ' . $purchaseRequest->user->middle_name : '') . ' ' . $purchaseRequest->user->last_name)
@@ -116,7 +126,9 @@ class PRReviewController extends Controller
     public function approve(PurchaseRequest $purchaseRequest)
     {
         try {
-            $approvedStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'approved')->first();
+            // Load the status relationship
+            $purchaseRequest->load('status');
+            $approvedStatus = \App\Models\Status::where('context', 'procurement')->where('name', 'approved')->first();
             $purchaseRequest->update(['status_id' => $approvedStatus->id]);
 
             // Log staff Activity:
@@ -147,7 +159,7 @@ class PRReviewController extends Controller
     public function reject(PurchaseRequest $purchaseRequest)
     {
         try {
-            $rejectedStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'rejected')->first();
+            $rejectedStatus = \App\Models\Status::where('context', 'procurement')->where('name', 'rejected')->first();
             $purchaseRequest->update(['status_id' => $rejectedStatus->id]);
 
             // Log staff Activity:
@@ -206,7 +218,9 @@ class PRReviewController extends Controller
                 $q->where('pr_number', 'like', '%' . $searchTerm . '%')
                     ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('office', function ($officeQuery) use ($searchTerm) {
+                        $officeQuery->where('name', 'like', '%' . $searchTerm . '%');
+                    })
                     ->orWhereHas('status', function ($statusQuery) use ($searchTerm) {
                         $statusQuery->where('name', 'like', '%' . $searchTerm . '%');
                     })
@@ -233,11 +247,10 @@ class PRReviewController extends Controller
         }
 
         // Get all filtered results (no pagination)
-        $purchaseRequests = $query->get();
+        $purchaseRequests = $query->with(['status', 'office'])->get();
 
-        // Create CSV content
-        $csvContent = [];
-        $csvContent[] = [
+        // Prepare headers
+        $headers = [
             'Counter',
             'PR Number',
             'Entity Name',
@@ -250,41 +263,33 @@ class PRReviewController extends Controller
             'Date'
         ];
 
+        // Prepare rows
+        $rows = [];
         $counter = 1;
         foreach ($purchaseRequests as $pr) {
             $requestedBy = $pr->user ? $pr->user->first_name .
                 ($pr->user->middle_name ? ' ' . $pr->user->middle_name : '') .
                 ' ' . $pr->user->last_name : 'N/A';
 
-            $csvContent[] = [
+            $rows[] = [
                 $counter++,
                 $pr->pr_number,
                 $pr->entity_name,
                 $pr->fund_cluster,
-                $pr->office_section,
+                $pr->office->name ?? 'N/A',
                 $requestedBy,
                 '₱' . number_format($pr->total, 2),
-                ucfirst(str_replace('_', ' ', $pr->status)),
+                $pr->status ? ucfirst(str_replace('_', ' ', $pr->status->name)) : 'N/A',
                 $pr->created_at->format('M d, Y'),
                 $pr->date ? \Carbon\Carbon::parse($pr->date)->format('M d, Y') : ''
             ];
         }
 
-        // Create CSV file
-        $filename = 'pr_review_' . date('Y-m-d_H-i-s') . '.csv';
-        $handle = fopen('php://temp', 'r+');
+        // Use ExportService
+        $exportService = new ExportService();
+        $filename = $exportService->generateFilename('pr_review', 'csv');
 
-        foreach ($csvContent as $row) {
-            fputcsv($handle, $row);
-        }
-
-        rewind($handle);
-        $csvData = stream_get_contents($handle);
-        fclose($handle);
-
-        return response($csvData)
-            ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        return $exportService->exportToCSV($headers, $rows, $filename);
     }
 
     public function exportPDF(Request $request)
@@ -302,7 +307,9 @@ class PRReviewController extends Controller
                 $q->where('pr_number', 'like', '%' . $searchTerm . '%')
                     ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('office', function ($officeQuery) use ($searchTerm) {
+                        $officeQuery->where('name', 'like', '%' . $searchTerm . '%');
+                    })
                     ->orWhereHas('status', function ($statusQuery) use ($searchTerm) {
                         $statusQuery->where('name', 'like', '%' . $searchTerm . '%');
                     })
@@ -329,11 +336,12 @@ class PRReviewController extends Controller
         }
 
         // Get all filtered results (no pagination)
-        $purchaseRequests = $query->get();
+        $purchaseRequests = $query->with('status')->get();
 
-        $pdf = Pdf::loadView('exports.pr_review_pdf', compact('purchaseRequests'));
-        $filename = 'pr_review_' . date('Y-m-d_H-i-s') . '.pdf';
+        // Use ExportService
+        $exportService = new ExportService();
+        $filename = $exportService->generateFilename('pr_review', 'pdf');
 
-        return $pdf->download($filename);
+        return $exportService->exportToPDF('exports.pr_review_pdf', compact('purchaseRequests'), $filename);
     }
 }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\UserActivity;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
 
 class NotificationController extends Controller
 {
@@ -29,12 +31,12 @@ class NotificationController extends Controller
             ]);
         } // 'all' shows everything
 
-        $allActivities = $query->orderByDesc('created_at')->paginate(10);
+        $allActivities = $query->orderByDesc('created_at')->paginate(PaginationConstants::DEFAULT_PER_PAGE);
 
         // For header bell icon
         $recentActivities = UserActivity::where('user_id', $user->id)
             ->orderByDesc('created_at')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
 
         return view('notifications.all', compact('allActivities', 'recentActivities', 'filterType', 'dateFrom', 'dateTo'));

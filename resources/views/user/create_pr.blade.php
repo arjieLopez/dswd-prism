@@ -55,12 +55,13 @@
                             </div>
 
                             <div>
-                                <label for="office_section"
-                                    class="block text-sm font-medium text-gray-700">Office/Section <span
-                                        class="text-red-500">*</span></label>
-                                <input type="text" name="office_section" id="office_section"
-                                    value="{{ old('office_section', auth()->user()->office) }}" required readonly
+                                <label for="office_id" class="block text-sm font-medium text-gray-700">Office/Section
+                                    <span class="text-red-500">*</span></label>
+                                <input type="text" name="office_name" id="office_name"
+                                    value="{{ old('office_name', auth()->user()->office) }}" required readonly
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-100 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                <input type="hidden" name="office_id" id="office_id"
+                                    value="{{ old('office_id', auth()->user()->office_id) }}">
                             </div>
 
                             <div>

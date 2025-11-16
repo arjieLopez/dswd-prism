@@ -596,21 +596,29 @@
                                 First Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="first_name" id="first_name" required
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                data-validation="text-only"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                oninput="validateInput(this)">
+                            <span class="text-red-500 text-xs italic hidden" id="first_name_error"></span>
                         </div>
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="middle_name">
                                 Middle Name
                             </label>
-                            <input type="text" name="middle_name" id="middle_name"
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <input type="text" name="middle_name" id="middle_name" data-validation="text-only"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                oninput="validateInput(this)">
+                            <span class="text-red-500 text-xs italic hidden" id="middle_name_error"></span>
                         </div>
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="last_name">
                                 Last Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="last_name" id="last_name" required
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                data-validation="text-only"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                oninput="validateInput(this)">
+                            <span class="text-red-500 text-xs italic hidden" id="last_name_error"></span>
                         </div>
                     </div>
 
@@ -618,8 +626,10 @@
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
                             Email <span class="text-red-500">*</span>
                         </label>
-                        <input type="email" name="email" id="email" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="email" name="email" id="email" required data-validation="email"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            oninput="validateInput(this)">
+                        <span class="text-red-500 text-xs italic hidden" id="email_error"></span>
                     </div>
 
                     <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -655,8 +665,10 @@
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="employee_id">
                                 Employee ID
                             </label>
-                            <input type="text" name="employee_id" id="employee_id"
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <input type="text" name="employee_id" id="employee_id" data-validation="alphanumeric"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                oninput="validateInput(this)">
+                            <span class="text-red-500 text-xs italic hidden" id="employee_id_error"></span>
                         </div>
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="office">
@@ -676,16 +688,63 @@
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
                             Password <span class="text-red-500">*</span>
                         </label>
-                        <input type="password" name="password" id="password" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <div class="relative">
+                            <input type="password" name="password" id="password" required
+                                class="shadow appearance-none border rounded w-full py-2 px-3 pr-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <button type="button" onclick="togglePasswordVisibility('password')"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none">
+                                <svg id="password_eye_icon" class="w-5 h-5" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Password Strength Indicator -->
+                        <div id="add-password-strength" class="mt-2 hidden">
+                            <div class="flex items-center gap-2">
+                                <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div id="add-strength-bar" class="h-full transition-all duration-300"
+                                        style="width: 0%"></div>
+                                </div>
+                                <span id="add-strength-text" class="text-xs font-medium"></span>
+                            </div>
+                        </div>
+
+                        <ul id="add-password-requirements"
+                            class="mt-2 text-xs text-gray-500 list-disc list-inside space-y-1">
+                            <li id="add-pw-length" class="transition-colors">At least 12 characters</li>
+                            <li id="add-pw-upper-lower" class="transition-colors">Uppercase &amp; lowercase letters
+                            </li>
+                            <li id="add-pw-number" class="transition-colors">At least one number</li>
+                            <li id="add-pw-special" class="transition-colors">At least one special character
+                                (!@#$%^&amp;*)</li>
+                        </ul>
                     </div>
 
                     <div class="mb-6">
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="password_confirmation">
                             Confirm Password <span class="text-red-500">*</span>
                         </label>
-                        <input type="password" name="password_confirmation" id="password_confirmation" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <div class="relative">
+                            <input type="password" name="password_confirmation" id="password_confirmation" required
+                                class="shadow appearance-none border rounded w-full py-2 px-3 pr-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <button type="button" onclick="togglePasswordVisibility('password_confirmation')"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none">
+                                <svg id="password_confirmation_eye_icon" class="w-5 h-5" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-end space-x-3">
@@ -840,21 +899,30 @@
                                 First Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="first_name" id="edit_first_name" required
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                data-validation="text-only"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                oninput="validateInput(this)">
+                            <span class="text-red-500 text-xs italic hidden" id="edit_first_name_error"></span>
                         </div>
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_middle_name">
                                 Middle Name
                             </label>
                             <input type="text" name="middle_name" id="edit_middle_name"
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                data-validation="text-only"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                oninput="validateInput(this)">
+                            <span class="text-red-500 text-xs italic hidden" id="edit_middle_name_error"></span>
                         </div>
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_last_name">
                                 Last Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="last_name" id="edit_last_name" required
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                data-validation="text-only"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                oninput="validateInput(this)">
+                            <span class="text-red-500 text-xs italic hidden" id="edit_last_name_error"></span>
                         </div>
                     </div>
 
@@ -862,8 +930,10 @@
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_email">
                             Email <span class="text-red-500">*</span>
                         </label>
-                        <input type="email" name="email" id="edit_email" required
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="email" name="email" id="edit_email" required data-validation="email"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            oninput="validateInput(this)">
+                        <span class="text-red-500 text-xs italic hidden" id="edit_email_error"></span>
                     </div>
 
                     <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -900,7 +970,10 @@
                                 Employee ID
                             </label>
                             <input type="text" name="employee_id" id="edit_employee_id"
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                data-validation="alphanumeric"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                oninput="validateInput(this)">
+                            <span class="text-red-500 text-xs italic hidden" id="edit_employee_id_error"></span>
                         </div>
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="edit_office">
@@ -1350,6 +1423,210 @@
                 }
             }, 5000);
         }
+
+        // Password Strength Indicator for Add User Modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('password');
+            const reqLength = document.getElementById('add-pw-length');
+            const reqUpperLower = document.getElementById('add-pw-upper-lower');
+            const reqNumber = document.getElementById('add-pw-number');
+            const reqSpecial = document.getElementById('add-pw-special');
+            const strengthIndicator = document.getElementById('add-password-strength');
+            const strengthBar = document.getElementById('add-strength-bar');
+            const strengthText = document.getElementById('add-strength-text');
+            const submitBtn = document.querySelector('#addUserModal button[type="submit"]');
+
+            function updatePasswordStrength() {
+                const val = passwordInput.value;
+
+                // Show/hide strength indicator
+                if (val.length > 0) {
+                    strengthIndicator.classList.remove('hidden');
+                } else {
+                    strengthIndicator.classList.add('hidden');
+                }
+
+                // Calculate password strength
+                let strength = 0;
+                let strengthLabel = '';
+                let strengthColor = '';
+
+                // Length check (12 characters)
+                const lengthMet = val.length >= 12;
+                if (lengthMet) {
+                    reqLength.classList.add('text-green-600');
+                    reqLength.classList.remove('text-gray-500');
+                    strength += 25;
+                } else {
+                    reqLength.classList.remove('text-green-600');
+                    reqLength.classList.add('text-gray-500');
+                    if (val.length >= 8) strength += 15;
+                }
+
+                // Upper & lower case
+                const upperLowerMet = /[A-Z]/.test(val) && /[a-z]/.test(val);
+                if (upperLowerMet) {
+                    reqUpperLower.classList.add('text-green-600');
+                    reqUpperLower.classList.remove('text-gray-500');
+                    strength += 25;
+                } else {
+                    reqUpperLower.classList.remove('text-green-600');
+                    reqUpperLower.classList.add('text-gray-500');
+                }
+
+                // Number
+                const numberMet = /[0-9]/.test(val);
+                if (numberMet) {
+                    reqNumber.classList.add('text-green-600');
+                    reqNumber.classList.remove('text-gray-500');
+                    strength += 25;
+                } else {
+                    reqNumber.classList.remove('text-green-600');
+                    reqNumber.classList.add('text-gray-500');
+                }
+
+                // Special character
+                const specialMet = /[!@#$%^&*]/.test(val);
+                if (specialMet) {
+                    reqSpecial.classList.add('text-green-600');
+                    reqSpecial.classList.remove('text-gray-500');
+                    strength += 25;
+                } else {
+                    reqSpecial.classList.remove('text-green-600');
+                    reqSpecial.classList.add('text-gray-500');
+                }
+
+                // Set strength level
+                if (strength <= 25) {
+                    strengthLabel = 'Weak';
+                    strengthColor = 'bg-red-500';
+                } else if (strength <= 50) {
+                    strengthLabel = 'Fair';
+                    strengthColor = 'bg-orange-500';
+                } else if (strength <= 75) {
+                    strengthLabel = 'Good';
+                    strengthColor = 'bg-yellow-500';
+                } else {
+                    strengthLabel = 'Strong';
+                    strengthColor = 'bg-green-500';
+                }
+
+                // Update strength bar
+                strengthBar.style.width = strength + '%';
+                strengthBar.className = 'h-full transition-all duration-300 ' + strengthColor;
+                strengthText.textContent = strengthLabel;
+                strengthText.className = 'text-xs font-medium ' + strengthColor.replace('bg-', 'text-');
+
+                // Enable/disable submit button
+                if (lengthMet && upperLowerMet && numberMet && specialMet) {
+                    submitBtn.removeAttribute('disabled');
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    submitBtn.setAttribute('disabled', 'disabled');
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            }
+
+            passwordInput.addEventListener('input', updatePasswordStrength);
+            updatePasswordStrength(); // Initial check
+        });
+
+        // Input Validation Function
+        window.validateInput = function(input) {
+            const validationType = input.getAttribute('data-validation');
+            const errorSpan = document.getElementById(input.id + '_error');
+            const value = input.value;
+            let isValid = true;
+            let errorMessage = '';
+
+            // Remove existing error styling
+            input.classList.remove('border-red-500');
+            if (errorSpan) {
+                errorSpan.classList.add('hidden');
+                errorSpan.textContent = '';
+            }
+
+            if (value.length === 0) {
+                return true; // Empty is okay, required validation handles this
+            }
+
+            switch (validationType) {
+                case 'text-only':
+                    // Only letters, spaces, hyphens, and periods (for names)
+                    const textOnlyRegex = /^[a-zA-Z\s.\-']+$/;
+                    if (!textOnlyRegex.test(value)) {
+                        isValid = false;
+                        errorMessage = 'Only letters, spaces, hyphens, and periods are allowed.';
+                    }
+                    break;
+
+                case 'number-only':
+                    // Only numbers
+                    const numberOnlyRegex = /^[0-9]+$/;
+                    if (!numberOnlyRegex.test(value)) {
+                        isValid = false;
+                        errorMessage = 'Only numbers are allowed.';
+                    }
+                    break;
+
+                case 'alphanumeric':
+                    // Letters and numbers only (no spaces or special chars)
+                    const alphanumericRegex = /^[a-zA-Z0-9\-]+$/;
+                    if (!alphanumericRegex.test(value)) {
+                        isValid = false;
+                        errorMessage = 'Only letters, numbers, and hyphens are allowed.';
+                    }
+                    break;
+
+                case 'email':
+                    // Basic email validation
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(value)) {
+                        isValid = false;
+                        errorMessage = 'Please enter a valid email address.';
+                    }
+                    break;
+
+                case 'decimal':
+                    // Numbers with optional decimal point
+                    const decimalRegex = /^[0-9]+(\.[0-9]+)?$/;
+                    if (!decimalRegex.test(value)) {
+                        isValid = false;
+                        errorMessage = 'Please enter a valid number.';
+                    }
+                    break;
+            }
+
+            // Show error if invalid
+            if (!isValid) {
+                input.classList.add('border-red-500');
+                if (errorSpan) {
+                    errorSpan.textContent = errorMessage;
+                    errorSpan.classList.remove('hidden');
+                }
+            }
+
+            return isValid;
+        };
+
+        // Password visibility toggle function
+        window.togglePasswordVisibility = function(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(inputId + '_eye_icon');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                `;
+            } else {
+                input.type = 'password';
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                `;
+            }
+        };
 
         // // Close modals when clicking outside
         // window.onclick = function(event) {

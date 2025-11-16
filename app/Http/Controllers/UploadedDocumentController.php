@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Models\UploadedDocument;
 use App\Services\ActivityService;
+use App\Services\ExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,10 +13,12 @@ use Illuminate\Support\Facades\Storage;
 // Use PhpSpreadsheet for XLSX export
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
 
 class UploadedDocumentController extends Controller
 {
-    // Export uploaded documents as XLSX using PhpSpreadsheet
+    // Export uploaded documents as CSV
     public function exportXLSX(Request $request)
     {
         $query = UploadedDocument::query()->where('user_id', auth()->id());
@@ -25,37 +28,29 @@ class UploadedDocumentController extends Controller
         }
         $documents = $query->get();
 
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-
-        // Set header
+        // Prepare headers
         $headers = ['#', 'PR Number', 'File Name', 'File Type', 'File Size', 'Upload Date', 'Notes'];
-        $sheet->fromArray($headers, NULL, 'A1');
 
-        // Fill data
-        $row = 2;
+        // Prepare rows
+        $rows = [];
         $index = 1;
         foreach ($documents as $doc) {
-            $sheet->fromArray([
-                $index,
+            $rows[] = [
+                $index++,
                 $doc->pr_number,
                 $doc->original_filename,
                 strtoupper($doc->file_type),
                 $doc->file_size_formatted,
                 $doc->created_at->format('M d, Y'),
                 $doc->notes,
-            ], NULL, 'A' . $row);
-            $row++;
-            $index++;
+            ];
         }
 
-        // Output to browser
-        $filename = 'uploaded_documents.xlsx';
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        $writer = new Xlsx($spreadsheet);
-        $writer->save('php://output');
-        exit;
+        // Use ExportService
+        $exportService = new ExportService();
+        $filename = $exportService->generateFilename('uploaded_documents', 'csv');
+
+        return $exportService->exportToCSV($headers, $rows, $filename);
     }
 
     // Export uploaded documents as PDF
@@ -72,15 +67,18 @@ class UploadedDocumentController extends Controller
             'documents' => $documents
         ];
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.uploaded_documents_pdf', $data);
-        return $pdf->download('uploaded_documents.pdf');
+        // Use ExportService
+        $exportService = new ExportService();
+        $filename = $exportService->generateFilename('uploaded_documents', 'pdf');
+
+        return $exportService->exportToPDF('exports.uploaded_documents_pdf', $data, $filename);
     }
     public function upload(Request $request)
     {
         $user = auth()->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
 
         $prNumber = $request->query('pr_number');

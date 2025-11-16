@@ -3,9 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\SystemSelection;
+use App\Models\Unit;
+use App\Models\Designation;
+use App\Models\Office;
+use App\Models\ProcurementMode;
 use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
 
 class SystemSelectionController extends Controller
 {
@@ -15,10 +21,23 @@ class SystemSelectionController extends Controller
         $user = auth()->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
         // In future: pass all selection types to the view
         return view('admin.system_selections', compact('recentActivities'));
+    }
+
+    // Map types to their corresponding models
+    private function getModelForType($type)
+    {
+        $modelMap = [
+            'metric_units' => Unit::class,
+            'designation' => Designation::class,
+            'office' => Office::class,
+            'mode_of_procurement' => ProcurementMode::class,
+        ];
+
+        return $modelMap[$type] ?? null;
     }
 
     // Get items for a specific selection type
@@ -28,7 +47,17 @@ class SystemSelectionController extends Controller
             $perPage = 10; // Standard pagination size
             $page = $request->get('page', 1);
 
-            $query = SystemSelection::where('type', $type)->orderBy('name');
+            // Check if this type uses a dedicated model
+            $modelClass = $this->getModelForType($type);
+
+            if ($modelClass) {
+                // Use dedicated model table
+                $query = $modelClass::orderBy('name');
+            } else {
+                // Use system_selections table
+                $query = SystemSelection::where('type', $type)->orderBy('name');
+            }
+
             $items = $query->paginate($perPage);
 
             return response()->json([
@@ -55,8 +84,20 @@ class SystemSelectionController extends Controller
     // Store a new value
     public function store(Request $request, $type)
     {
+        $modelClass = $this->getModelForType($type);
+
+        // Determine table name for unique validation
+        $tableName = $modelClass ? (new $modelClass)->getTable() : 'system_selections';
+
+        // Build validation rules
+        if ($modelClass) {
+            $uniqueRule = 'required|string|max:255|unique:' . $tableName . ',name';
+        } else {
+            $uniqueRule = 'required|string|max:255|unique:system_selections,name,NULL,id,type,' . $type;
+        }
+
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:system_selections,name,NULL,id,type,' . $type,
+            'name' => $uniqueRule,
         ]);
 
         if ($validator->fails()) {
@@ -68,10 +109,18 @@ class SystemSelectionController extends Controller
         }
 
         try {
-            $item = SystemSelection::create([
-                'type' => $type,
-                'name' => trim($request->name),
-            ]);
+            if ($modelClass) {
+                // Create in dedicated model table
+                $item = $modelClass::create([
+                    'name' => trim($request->name),
+                ]);
+            } else {
+                // Create in system_selections table
+                $item = SystemSelection::create([
+                    'type' => $type,
+                    'name' => trim($request->name),
+                ]);
+            }
 
             // Log activity
             ActivityService::log(
@@ -101,8 +150,20 @@ class SystemSelectionController extends Controller
     // Update a value
     public function update(Request $request, $type, $id)
     {
+        $modelClass = $this->getModelForType($type);
+
+        // Determine table name for unique validation
+        $tableName = $modelClass ? (new $modelClass)->getTable() : 'system_selections';
+
+        // Build validation rules
+        if ($modelClass) {
+            $uniqueRule = 'required|string|max:255|unique:' . $tableName . ',name,' . $id;
+        } else {
+            $uniqueRule = 'required|string|max:255|unique:system_selections,name,' . $id . ',id,type,' . $type;
+        }
+
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:system_selections,name,' . $id . ',id,type,' . $type,
+            'name' => $uniqueRule,
         ]);
 
         if ($validator->fails()) {
@@ -114,7 +175,14 @@ class SystemSelectionController extends Controller
         }
 
         try {
-            $item = SystemSelection::where('type', $type)->findOrFail($id);
+            if ($modelClass) {
+                // Update in dedicated model table
+                $item = $modelClass::findOrFail($id);
+            } else {
+                // Update in system_selections table
+                $item = SystemSelection::where('type', $type)->findOrFail($id);
+            }
+
             $oldName = $item->name;
 
             $item->update([
@@ -150,7 +218,16 @@ class SystemSelectionController extends Controller
     public function destroy($type, $id)
     {
         try {
-            $item = SystemSelection::where('type', $type)->findOrFail($id);
+            $modelClass = $this->getModelForType($type);
+
+            if ($modelClass) {
+                // Delete from dedicated model table
+                $item = $modelClass::findOrFail($id);
+            } else {
+                // Delete from system_selections table
+                $item = SystemSelection::where('type', $type)->findOrFail($id);
+            }
+
             $itemName = $item->name;
 
             $item->delete();

@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Supplier;
 use App\Services\ActivityService;
+use App\Services\ExportService;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
 
 class SupplierController extends Controller
 {
@@ -49,13 +52,13 @@ class SupplierController extends Controller
         }
 
         $suppliers = $query->with('status')->orderBy('created_at', 'desc')
-            ->paginate(10)
+            ->paginate(PaginationConstants::DEFAULT_PER_PAGE)
             ->appends($request->query());
 
         $user = auth()->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
 
         return view('staff.suppliers', compact('suppliers', 'recentActivities'));
@@ -73,6 +76,11 @@ class SupplierController extends Controller
         ]);
 
         try {
+            // Get inactive status ID
+            $inactiveStatus = \App\Models\Status::where('context', 'supplier')
+                ->where('name', 'inactive')
+                ->first();
+
             $supplier = Supplier::create([
                 'supplier_name' => $request->supplier_name,
                 'tin' => $request->tin,
@@ -80,7 +88,7 @@ class SupplierController extends Controller
                 'contact_person' => $request->contact_person,
                 'contact_number' => $request->contact_number,
                 'email' => $request->email,
-                'status' => 'active'
+                'status_id' => $inactiveStatus ? $inactiveStatus->id : null
             ]);
 
             ActivityService::logSupplierCreated($supplier->supplier_name);
@@ -176,5 +184,46 @@ class SupplierController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error deleting supplier: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function exportPDF(Request $request)
+    {
+        $query = Supplier::query();
+
+        // Apply the same filters as index method
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('supplier_name', 'like', "%{$search}%")
+                    ->orWhere('tin', 'like', "%{$search}%")
+                    ->orWhere('address', 'like', "%{$search}%")
+                    ->orWhere('contact_person', 'like', "%{$search}%")
+                    ->orWhere('contact_number', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status') && in_array($request->input('status'), ['active', 'inactive'])) {
+            $query->whereHas('status', function ($statusQuery) use ($request) {
+                $statusQuery->where('name', $request->input('status'));
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->input('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->input('date_to'));
+        }
+
+        // Get all filtered results (no pagination)
+        $suppliers = $query->with('status')->orderBy('created_at', 'desc')->get();
+
+        // Use ExportService
+        $exportService = new ExportService();
+        $filename = $exportService->generateFilename('suppliers', 'pdf');
+
+        return $exportService->exportToPDF('exports.suppliers_pdf', compact('suppliers'), $filename);
     }
 }

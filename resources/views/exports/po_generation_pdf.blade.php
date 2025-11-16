@@ -201,14 +201,14 @@
             <div class="summary-row">
                 <div class="summary-cell summary-label">Total Records:</div>
                 <div class="summary-cell">{{ $purchaseOrders->count() }}</div>
-                <div class="summary-cell summary-label">Approved PRs:</div>
-                <div class="summary-cell">{{ $purchaseRequests->where('status', 'approved')->count() }}</div>
-            </div>
-            <div class="summary-row">
                 <div class="summary-cell summary-label">Completed POs:</div>
                 <div class="summary-cell">{{ $purchaseOrders->whereNotNull('completed_at')->count() }}</div>
+            </div>
+            <div class="summary-row">
                 <div class="summary-cell summary-label">Pending POs:</div>
                 <div class="summary-cell">{{ $purchaseOrders->whereNull('completed_at')->count() }}</div>
+                <div class="summary-cell summary-label">Export Date:</div>
+                <div class="summary-cell">{{ now()->format('F j, Y g:i A') }}</div>
             </div>
         </div>
     </div>
@@ -233,31 +233,37 @@
                 @foreach ($purchaseOrders as $index => $po)
                     <tr>
                         <td class="text-center">{{ $index + 1 }}</td>
-                        <td class="text-center">{{ $po->pr_number }}</td>
+                        <td class="text-center">{{ $po->purchaseRequest->pr_number ?? 'N/A' }}</td>
                         <td class="wrapped-text">
-                            {{ $po->first_name }}
-                            @if ($po->middle_name)
-                                {{ $po->middle_name }}
+                            @if ($po->purchaseRequest && $po->purchaseRequest->user)
+                                {{ $po->purchaseRequest->user->first_name }}
+                                @if ($po->purchaseRequest->user->middle_name)
+                                    {{ $po->purchaseRequest->user->middle_name }}
+                                @endif
+                                {{ $po->purchaseRequest->user->last_name }}
+                            @else
+                                N/A
                             @endif
-                            {{ $po->last_name }}
                         </td>
-                        <td class="wrapped-text">{{ $po->purpose }}</td>
-                        <td class="text-right">₱{{ number_format($po->total, 2) }}</td>
+                        <td class="wrapped-text">{{ $po->purchaseRequest->purpose ?? 'N/A' }}</td>
+                        <td class="text-right">₱{{ number_format($po->purchaseRequest->total ?? 0, 2) }}</td>
                         <td class="text-center">
-                            <span class="status-badge status-po-generated">
-                                PO Generated
-                            </span>
+                            @if ($po->completed_at)
+                                <span class="status-badge status-completed">Completed</span>
+                            @else
+                                <span class="status-badge status-po-generated">PO Generated</span>
+                            @endif
                         </td>
                         <td class="text-center">
-                            @if ($pr->po_number)
-                                {{ $pr->po_number }}
+                            @if ($po->po_number)
+                                {{ $po->po_number }}
                             @else
                                 <span style="color: #999;">N/A</span>
                             @endif
                         </td>
                         <td class="wrapped-text">
-                            @if ($pr->supplier)
-                                {{ $pr->supplier->supplier_name }}
+                            @if ($po->supplier)
+                                {{ $po->supplier->supplier_name }}
                             @else
                                 <span style="color: #999;">Not Assigned</span>
                             @endif
@@ -269,7 +275,7 @@
                                 <span style="color: #999;">N/A</span>
                             @endif
                         </td>
-                        <td class="text-center">{{ $pr->items->count() }}</td>
+                        <td class="text-center">{{ $po->purchaseRequest->items->count() ?? 0 }}</td>
                     </tr>
                 @endforeach
             </tbody>

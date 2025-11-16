@@ -8,6 +8,7 @@ use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
 use App\Models\PODocument;
 use App\Models\User;
+use App\Models\Office;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -33,6 +34,7 @@ class DemoDataSeeder extends Seeder
 
         $supplierIds = Supplier::pluck('id')->toArray();
         $userId = User::first()->id ?? 1;
+        $officeId = Office::first()->id ?? 1; // Get first office or default to 1
 
         // Helper: Get random date between July 1 and September 30, 2025
         function randomDate()
@@ -53,7 +55,7 @@ class DemoDataSeeder extends Seeder
                     'pr_number' => 'PR-2025-' . $status . '-' . ($i + 1),
                     'entity_name' => 'DSWD',
                     'fund_cluster' => '01',
-                    'office_section' => 'GSO',
+                    'office_id' => $officeId,
                     'responsibility_center_code' => 'RC-' . ($statusIdx + 1) . '-' . ($i + 1),
                     'date' => $dateCreated,
                     'total' => $total,

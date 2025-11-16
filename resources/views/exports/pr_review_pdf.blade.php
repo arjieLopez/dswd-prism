@@ -217,12 +217,12 @@
                             {{ $pr->user->last_name }}
                         </td>
                         <td class="wrapped-text">{{ $pr->entity_name }}</td>
-                        <td class="wrapped-text">{{ $pr->office_section }}</td>
+                        <td class="wrapped-text">{{ $pr->office->name }}</td>
                         <td class="wrapped-text">{{ $pr->purpose }}</td>
                         <td class="text-right">₱{{ number_format($pr->total, 2) }}</td>
                         <td class="text-center">
-                            <span class="status-badge status-{{ str_replace('_', '-', $pr->status) }}">
-                                {{ ucfirst(str_replace('_', ' ', $pr->status)) }}
+                            <span class="status-badge status-{{ str_replace('_', '-', $pr->status->name) }}">
+                                {{ ucfirst(str_replace('_', ' ', $pr->status->name)) }}
                             </span>
                         </td>
                         <td class="text-center">{{ $pr->created_at->format('M j, Y') }}</td>

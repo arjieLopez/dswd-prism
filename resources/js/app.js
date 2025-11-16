@@ -247,6 +247,9 @@ document.getElementById("export-pdf")?.addEventListener("click", function () {
     } else if (currentPath.includes("po-generation")) {
         exportUrl = "/staff/po-generation/export/pdf";
         filenamePrefix = "po_generation";
+    } else if (currentPath.includes("suppliers")) {
+        exportUrl = "/staff/suppliers/export/pdf";
+        filenamePrefix = "suppliers";
     } else if (currentPath.includes("admin/reports")) {
         exportUrl = "/admin/reports/export";
         filenamePrefix = "reports";

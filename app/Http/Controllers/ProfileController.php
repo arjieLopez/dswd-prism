@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
 
 class ProfileController extends Controller
 {
@@ -19,7 +21,7 @@ class ProfileController extends Controller
         $user = $request->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
 
         // Get reference data for dropdowns

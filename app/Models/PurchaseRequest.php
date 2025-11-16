@@ -11,10 +11,10 @@ class PurchaseRequest extends Model
 
     protected $fillable = [
         'user_id',
+        'office_id',
         'pr_number',
         'entity_name',
         'fund_cluster',
-        'office_section',
         'responsibility_center_code',
         'date',
         'submitted_at',
@@ -38,6 +38,11 @@ class PurchaseRequest extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function office()
+    {
+        return $this->belongsTo(Office::class);
     }
 
     public function getStatusColorAttribute()
@@ -66,18 +71,6 @@ class PurchaseRequest extends Model
             return $status ? $status->display_name : 'Unknown';
         }
         return 'Unknown';
-    }
-
-    // Backward-compatible accessor for normalized status column
-    public function getStatusAttribute()
-    {
-        // Only return the name if the relationship is loaded and not null
-        $statusRelation = $this->getRelationValue('status');
-        if ($statusRelation) {
-            return $statusRelation->name;
-        }
-        // Otherwise, return null to allow the relationship to load
-        return null;
     }
 
     public function supplier()

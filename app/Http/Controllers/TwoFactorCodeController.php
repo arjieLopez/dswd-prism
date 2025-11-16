@@ -14,6 +14,11 @@ class TwoFactorCodeController extends Controller
     {
         $user = auth()->user();
 
+        // Check if user is authenticated
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Please login first.');
+        }
+
         // If user doesn't need 2FA verification, redirect to appropriate dashboard
         if (!$user->needsTwoFactorVerification()) {
             // Clear any expired codes
@@ -35,8 +40,15 @@ class TwoFactorCodeController extends Controller
 
     public function resend(Request $request)
     {
-        auth()->user()->regenerateTwoFactorCode();
-        auth()->user()->notify(new TwoFactorCodeNotification());
+        $user = auth()->user();
+
+        // Check if user is authenticated
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Please login first.');
+        }
+
+        $user->regenerateTwoFactorCode();
+        $user->notify(new TwoFactorCodeNotification());
 
         return back()->with('success', 'A new two-factor code has been sent to your email.');
     }
@@ -45,6 +57,13 @@ class TwoFactorCodeController extends Controller
      */
     public function verify(Request $request)
     {
+        $user = auth()->user();
+
+        // Check if user is authenticated
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Please login first.');
+        }
+
         $request->validate(
             [
                 'twofactor_code' => 'required|digits:6',
@@ -54,8 +73,6 @@ class TwoFactorCodeController extends Controller
                 'twofactor_code.digits' => 'The two-factor code must be 6 digits.',
             ]
         );
-
-        $user = auth()->user();
 
         // Check if user has a 2FA code set
         if (!$user->twofactor_code) {
@@ -74,6 +91,12 @@ class TwoFactorCodeController extends Controller
         if ($isValidCode) {
             // Clear the 2FA code after successful verification
             $user->clearTwoFactorCode();
+
+            // Update user's session_id to current session (new device login)
+            // This will automatically kick out the old session
+            $currentSessionId = $request->session()->getId();
+            $user->session_id = $currentSessionId;
+            $user->save();
 
             // Redirect based on user role
             if ($user->role == 'admin') {

@@ -30,6 +30,7 @@ class User extends Authenticatable
         'twofactor_code',
         'twofactor_code_expires_at',
         'email_verified_at',
+        'session_id',
     ];
 
     /**
@@ -40,6 +41,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'session_id',
     ];
 
     /**

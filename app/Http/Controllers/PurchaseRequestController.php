@@ -6,6 +6,10 @@ use App\Models\PurchaseRequest;
 use App\Models\SystemSelection;
 use App\Models\UserActivity;
 use App\Services\ActivityService;
+use App\Services\ExportService;
+use App\Services\QueryService;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -25,7 +29,9 @@ class PurchaseRequestController extends Controller
                 $q->where('pr_number', 'like', '%' . $searchTerm . '%')
                     ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('office', function ($officeQuery) use ($searchTerm) {
+                        $officeQuery->where('name', 'like', '%' . $searchTerm . '%');
+                    })
                     ->orWhereHas('status', function ($statusQuery) use ($searchTerm) {
                         $statusQuery->where('name', 'like', '%' . $searchTerm . '%')
                             ->orWhere('display_name', 'like', '%' . $searchTerm . '%');
@@ -49,21 +55,21 @@ class PurchaseRequestController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $purchaseRequests = $query->with('status')->paginate(10)->appends($request->query());
+        $purchaseRequests = $query->with('status')->paginate(PaginationConstants::DEFAULT_PER_PAGE)->appends($request->query());
 
         $uploadedDocumentsQuery = auth()->user()->uploadedDocuments()->orderBy('created_at', 'desc');
         $fileTypes = auth()->user()->uploadedDocuments()->select('file_type')->distinct()->pluck('file_type');
         if ($request->filled('file_type') && $request->file_type !== 'all') {
             $uploadedDocumentsQuery->where('file_type', $request->file_type);
         }
-        $uploadedDocuments = $uploadedDocumentsQuery->paginate(10);
+        $uploadedDocuments = $uploadedDocumentsQuery->paginate(PaginationConstants::DEFAULT_PER_PAGE);
 
         $user = auth()->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
-        $statuses = \App\Models\Status::where('context', 'purchase_request')->get();
+        $statuses = \App\Models\Status::where('context', 'procurement')->get();
 
         // Get system selections for edit modal
         $entities = SystemSelection::getByType('entity');
@@ -81,7 +87,7 @@ class PurchaseRequestController extends Controller
         $user = auth()->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
 
         // Get units from reference table
@@ -104,7 +110,7 @@ class PurchaseRequestController extends Controller
         $request->validate([
             'entity_name' => 'required|string|max:100',
             'fund_cluster' => 'required|string|max:50',
-            'office_section' => 'required|string|max:100',
+            'office_id' => 'required|exists:offices,id',
             'responsibility_center_code' => 'required|string|max:50',
             'date' => 'required|date',
             'stoc_property_no' => 'nullable|string|max:50',
@@ -147,7 +153,7 @@ class PurchaseRequestController extends Controller
             'pr_number' => $prNumber,
             'entity_name' => $request->entity_name,
             'fund_cluster' => $request->fund_cluster,
-            'office_section' => $request->office_section,
+            'office_id' => $request->office_id,
             'responsibility_center_code' => $request->responsibility_center_code,
             'date' => $request->date,
             'stoc_property_no' => $request->stoc_property_no,
@@ -155,7 +161,7 @@ class PurchaseRequestController extends Controller
             'delivery_period' => $request->delivery_period,
             'delivery_address' => $request->delivery_address,
             'purpose' => $request->purpose,
-            'status_id' => \App\Models\Status::where('context', 'purchase_request')->where('name', 'draft')->first()->id,
+            'status_id' => \App\Models\Status::where('context', 'procurement')->where('name', 'draft')->first()->id,
         ]);
 
         foreach ($request->unit as $i => $unit) {
@@ -188,7 +194,8 @@ class PurchaseRequestController extends Controller
             'pr_number' => $purchaseRequest->pr_number,
             'entity_name' => $purchaseRequest->entity_name,
             'fund_cluster' => $purchaseRequest->fund_cluster,
-            'office_section' => $purchaseRequest->office_section,
+            'office_id' => $purchaseRequest->office_id,
+            'office_name' => $purchaseRequest->office->name,
             'date' => $purchaseRequest->date ? $purchaseRequest->date->format('M d, Y') : '',
             'delivery_address' => $purchaseRequest->delivery_address,
             'purpose' => $purchaseRequest->purpose,
@@ -197,6 +204,7 @@ class PurchaseRequestController extends Controller
                 ' ' . $purchaseRequest->user->last_name : 'Unknown',
             'delivery_period' => $purchaseRequest->delivery_period,
             'status' => $purchaseRequest->status,
+            'status_display' => $purchaseRequest->status_display,
             'status_color' => $purchaseRequest->status_color,
             'items' => $purchaseRequest->items->map(function ($item) {
                 return [
@@ -217,11 +225,14 @@ class PurchaseRequestController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
+        // Load the status relationship
+        $purchaseRequest->load('status');
+
         try {
             $validated = $request->validate([
                 'entity_name' => 'required|string|max:100',
                 'fund_cluster' => 'required|string|max:50',
-                'office_section' => 'required|string|max:100',
+                'office_id' => 'required|exists:offices,id',
                 'date' => 'required|date',
                 'unit' => 'required|array',
                 'unit.*' => 'required|string|max:50',
@@ -246,14 +257,14 @@ class PurchaseRequestController extends Controller
             // Check if PR can be updated (not approved or has PO)
             $hasPO = \App\Models\PurchaseOrder::where('purchase_request_id', $purchaseRequest->id)->exists();
             if ($purchaseRequest->status->name === 'approved' && !$hasPO) {
-                $draftStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'draft')->first();
+                $draftStatus = \App\Models\Status::where('context', 'procurement')->where('name', 'draft')->first();
                 $purchaseRequest->status_id = $draftStatus->id;
             }
 
             $purchaseRequest->update([
                 'entity_name' => $request->entity_name,
                 'fund_cluster' => $request->fund_cluster,
-                'office_section' => $request->office_section,
+                'office_id' => $request->office_id,
                 'date' => $request->date,
                 'total' => $total,
                 'delivery_period' => $request->delivery_period,
@@ -298,12 +309,15 @@ class PurchaseRequestController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
+        // Load the status relationship
+        $purchaseRequest->load('status');
+
         // Only allow submission if status is draft
         if ($purchaseRequest->status->name !== 'draft') {
             return response()->json(['success' => false, 'message' => 'Only draft PRs can be submitted.']);
         }
 
-        $pendingStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'pending')->first();
+        $pendingStatus = \App\Models\Status::where('context', 'procurement')->where('name', 'pending')->first();
         $purchaseRequest->status_id = $pendingStatus->id;
         $purchaseRequest->save();
 
@@ -311,7 +325,9 @@ class PurchaseRequestController extends Controller
         ActivityService::logPrSubmitted($purchaseRequest->pr_number, $purchaseRequest->entity_name);
 
         // Notify all staff users about the new PR submission
-        $staffUsers = \App\Models\User::where('role', 'staff')->get();
+        $staffUsers = \App\Models\User::whereHas('role', function ($query) {
+            $query->where('name', 'staff');
+        })->get();
 
         foreach ($staffUsers as $staffUser) {
             \App\Models\UserActivity::create([
@@ -343,12 +359,15 @@ class PurchaseRequestController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
+        // Load the status relationship
+        $purchaseRequest->load('status');
+
         // Only allow withdrawal if status is pending
         if ($purchaseRequest->status->name !== 'pending') {
             return response()->json(['success' => false, 'message' => 'Only pending PRs can be withdrawn.']);
         }
 
-        $draftStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'draft')->first();
+        $draftStatus = \App\Models\Status::where('context', 'procurement')->where('name', 'draft')->first();
         $purchaseRequest->status_id = $draftStatus->id;
         $purchaseRequest->save();
 
@@ -370,6 +389,11 @@ class PurchaseRequestController extends Controller
     public function complete(PurchaseRequest $purchaseRequest)
     {
         try {
+            // Load the status relationship if not already loaded
+            if (!$purchaseRequest->relationLoaded('status')) {
+                $purchaseRequest->load('status');
+            }
+
             // Ensure only the owner can mark as completed
             if ($purchaseRequest->user_id !== auth()->id()) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
@@ -381,18 +405,15 @@ class PurchaseRequestController extends Controller
                 return response()->json(['success' => false, 'message' => 'PR cannot be marked as completed. Current status: ' . $purchaseRequest->status->display_name], 400);
             }
 
-            $completedStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'completed')->first();
+            $completedStatus = \App\Models\Status::where('context', 'procurement')->where('name', 'completed')->first();
             $purchaseRequest->status_id = $completedStatus->id;
 
             // Update the associated PO's completed_at and status if it exists
             $purchaseOrder = \App\Models\PurchaseOrder::where('purchase_request_id', $purchaseRequest->id)->first();
             if ($purchaseOrder) {
                 $purchaseOrder->completed_at = now();
-                // Also update PO status to completed
-                $poCompletedStatus = \App\Models\Status::where('context', 'purchase_order')->where('name', 'completed')->first();
-                if ($poCompletedStatus) {
-                    $purchaseOrder->status_id = $poCompletedStatus->id;
-                }
+                // Also update PO status to completed (using same procurement context)
+                $purchaseOrder->status_id = $completedStatus->id;
                 $purchaseOrder->save();
             }
 
@@ -433,7 +454,9 @@ class PurchaseRequestController extends Controller
                 $q->where('pr_number', 'like', '%' . $searchTerm . '%')
                     ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('office', function ($officeQuery) use ($searchTerm) {
+                        $officeQuery->where('name', 'like', '%' . $searchTerm . '%');
+                    })
                     ->orWhereHas('status', function ($statusQuery) use ($searchTerm) {
                         $statusQuery->where('name', 'like', '%' . $searchTerm . '%');
                     });
@@ -455,11 +478,10 @@ class PurchaseRequestController extends Controller
         }
 
         // Get all filtered results (no pagination)
-        $purchaseRequests = $query->get();
+        $purchaseRequests = $query->with(['status', 'office'])->get();
 
-        // Create CSV content
-        $csvContent = [];
-        $csvContent[] = [
+        // Prepare headers
+        $headers = [
             'Counter',
             'PR Number',
             'Entity Name',
@@ -471,50 +493,44 @@ class PurchaseRequestController extends Controller
             'Date'
         ];
 
+        // Prepare rows
+        $rows = [];
         $counter = 1;
         foreach ($purchaseRequests as $pr) {
-            $csvContent[] = [
+            $rows[] = [
                 $counter++,
                 $pr->pr_number,
                 $pr->entity_name,
                 $pr->fund_cluster,
-                $pr->office_section,
+                $pr->office->name ?? 'N/A',
                 '₱' . number_format($pr->total, 2),
-                ucfirst(str_replace('_', ' ', $pr->status)),
+                $pr->status ? ucfirst(str_replace('_', ' ', $pr->status->name)) : 'N/A',
                 $pr->created_at->format('M d, Y'),
                 $pr->date ? \Carbon\Carbon::parse($pr->date)->format('M d, Y') : ''
             ];
         }
 
-        // Create CSV file
-        $filename = 'purchase_requests_' . date('Y-m-d_H-i-s') . '.csv';
-        $handle = fopen('php://temp', 'r+');
+        // Use ExportService
+        $exportService = new ExportService();
+        $filename = $exportService->generateFilename('purchase_requests', 'csv');
 
-        foreach ($csvContent as $row) {
-            fputcsv($handle, $row);
-        }
-
-        rewind($handle);
-        $csvData = stream_get_contents($handle);
-        fclose($handle);
-
-        return response($csvData)
-            ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        return $exportService->exportToCSV($headers, $rows, $filename);
     }
 
-    public function exportPDF(Request $request)
+    public function export(Request $request)
     {
         $query = auth()->user()->purchaseRequests()->orderBy('created_at', 'desc');
 
-        // Apply the same filters as index method
+        // Apply same filters as in index
         if ($request->filled('search')) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('pr_number', 'like', '%' . $searchTerm . '%')
                     ->orWhere('entity_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('fund_cluster', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('office_section', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('office', function ($officeQuery) use ($searchTerm) {
+                        $officeQuery->where('name', 'like', '%' . $searchTerm . '%');
+                    })
                     ->orWhereHas('status', function ($statusQuery) use ($searchTerm) {
                         $statusQuery->where('name', 'like', '%' . $searchTerm . '%');
                     });
@@ -536,11 +552,20 @@ class PurchaseRequestController extends Controller
         }
 
         // Get all filtered results (no pagination)
-        $purchaseRequests = $query->get();
+        $purchaseRequests = $query->with(['status', 'office', 'items'])->get();
 
-        $pdf = Pdf::loadView('exports.purchase_requests_pdf', compact('purchaseRequests'));
-        $filename = 'purchase_requests_' . date('Y-m-d_H-i-s') . '.pdf';
+        // Use ExportService
+        $exportService = new ExportService();
+        $filename = $exportService->generateFilename('purchase_requests', 'pdf');
 
-        return $pdf->download($filename);
+        return $exportService->exportToPDF('exports.purchase_requests_pdf', compact('purchaseRequests'), $filename);
+    }
+
+    /**
+     * Export purchase requests to PDF (alias for export method)
+     */
+    public function exportPDF(Request $request)
+    {
+        return $this->export($request);
     }
 }

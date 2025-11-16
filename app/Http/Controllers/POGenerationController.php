@@ -9,6 +9,10 @@ use App\Models\User;
 use App\Models\PODocument;
 use App\Models\Supplier;
 use App\Services\ActivityService;
+use App\Services\ExportService;
+use App\Services\QueryService;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class POGenerationController extends Controller
@@ -70,7 +74,7 @@ class POGenerationController extends Controller
         }
 
         // Get filtered results
-        $generatedPOs = $generatedPOsQuery->orderBy('purchase_orders.generated_at', 'desc')->paginate(10);
+        $generatedPOs = $generatedPOsQuery->orderBy('purchase_orders.generated_at', 'desc')->paginate(PaginationConstants::DEFAULT_PER_PAGE);
 
         // Get all approved purchase requests (not filtered for now, as they're separate section)
         $approvedPRs = PurchaseRequest::with('user')
@@ -78,11 +82,11 @@ class POGenerationController extends Controller
                 $query->where('name', 'approved');
             })
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(PaginationConstants::DEFAULT_PER_PAGE);
 
         // Get PO documents (not filtered for now, as they're separate section)
         $poDocuments = PODocument::orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(PaginationConstants::DEFAULT_PER_PAGE);
 
         $suppliers = \App\Models\Supplier::whereHas('status', function ($query) {
             $query->where('name', 'active');
@@ -96,7 +100,7 @@ class POGenerationController extends Controller
         $user = auth()->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
 
         return view('staff.po_generation', compact('approvedPRs', 'generatedPOs', 'poDocuments', 'suppliers', 'modesOfProcurement', 'deliveryTerms', 'paymentTerms', 'recentActivities'));
@@ -112,7 +116,7 @@ class POGenerationController extends Controller
         }
 
         // Load the items and relationships
-        $purchaseRequest->load(['items', 'user']);
+        $purchaseRequest->load(['items', 'user', 'office']);
         $purchaseOrder->load(['supplier']);
 
         return response()->json([
@@ -120,7 +124,8 @@ class POGenerationController extends Controller
             'pr_number' => $purchaseRequest->pr_number,
             'entity_name' => $purchaseRequest->entity_name,
             'fund_cluster' => $purchaseRequest->fund_cluster,
-            'office_section' => $purchaseRequest->office_section,
+            'office_id' => $purchaseRequest->office_id,
+            'office_name' => $purchaseRequest->office->name,
             'date' => $purchaseRequest->date ? $purchaseRequest->date->toDateString() : '',
             'delivery_address' => $purchaseRequest->delivery_address,
             'purpose' => $purchaseRequest->purpose,
@@ -157,13 +162,17 @@ class POGenerationController extends Controller
                 ];
             }),
             'total' => $purchaseRequest->total,
+            'purchase_request_id' => $purchaseRequest->id,
         ]);
     }
 
     public function generatePO(PurchaseRequest $purchaseRequest)
     {
+        // Load the status relationship
+        $purchaseRequest->load('status');
+
         // Check if PR is approved
-        if ($purchaseRequest->status !== 'approved') {
+        if ($purchaseRequest->status->name !== 'approved') {
             return response()->json(['success' => false, 'message' => 'Only approved PRs can generate POs.'], 403);
         }
 
@@ -254,8 +263,11 @@ class POGenerationController extends Controller
 
     public function showGenerateForm(PurchaseRequest $purchaseRequest)
     {
+        // Load the status relationship
+        $purchaseRequest->load('status');
+
         // Check if PR is approved
-        if ($purchaseRequest->status !== 'approved') {
+        if ($purchaseRequest->status->name !== 'approved') {
             return redirect()->route('staff.po_generation')->with('error', 'Only approved PRs can generate POs.');
         }
 
@@ -267,8 +279,10 @@ class POGenerationController extends Controller
             $query->where('name', 'active');
         })->orderBy('supplier_name')->get();
 
-        // Get system selections
-        $modesOfProcurement = \App\Models\SystemSelection::getByType('mode_of_procurement');
+        // Get procurement modes from ProcurementMode model
+        $modesOfProcurement = \App\Models\ProcurementMode::orderBy('name')->get();
+
+        // Get system selections for delivery and payment terms
         $deliveryTerms = \App\Models\SystemSelection::getByType('delivery_term');
         $paymentTerms = \App\Models\SystemSelection::getByType('payment_term');
 
@@ -278,7 +292,7 @@ class POGenerationController extends Controller
         $user = auth()->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
 
         return view('staff.generate_po', compact('purchaseRequest', 'suppliers', 'modesOfProcurement', 'deliveryTerms', 'paymentTerms', 'autoGeneratedPONumber', 'recentActivities'));
@@ -286,8 +300,11 @@ class POGenerationController extends Controller
 
     public function storeGeneratedPO(Request $request, PurchaseRequest $purchaseRequest)
     {
+        // Load the status relationship
+        $purchaseRequest->load('status');
+
         // Check if PR is approved
-        if ($purchaseRequest->status !== 'approved') {
+        if ($purchaseRequest->status->name !== 'approved') {
             return redirect()->route('staff.po_generation')->with('error', 'Only approved PRs can generate POs.');
         }
 
@@ -310,8 +327,8 @@ class POGenerationController extends Controller
                 return back()->withErrors(['error' => 'A Purchase Order already exists for this PR.']);
             }
 
-            // Create new PurchaseOrder record
-            $poGeneratedStatus = \App\Models\Status::where('context', 'purchase_order')->where('name', 'generated')->first();
+            // Create new PurchaseOrder record - use 'po_generated' status from procurement context
+            $poGeneratedStatus = \App\Models\Status::where('context', 'procurement')->where('name', 'po_generated')->first();
             PurchaseOrder::create([
                 'purchase_request_id' => $purchaseRequest->id,
                 'supplier_id' => $request->supplier_id,
@@ -325,9 +342,8 @@ class POGenerationController extends Controller
                 'generated_by' => auth()->id(),
             ]);
 
-            // Update PR status to po_generated
-            $prPoGeneratedStatus = \App\Models\Status::where('context', 'purchase_request')->where('name', 'po_generated')->first();
-            $purchaseRequest->update(['status_id' => $prPoGeneratedStatus->id]);
+            // Update PR status to po_generated (same status used by both PR and PO)
+            $purchaseRequest->update(['status_id' => $poGeneratedStatus->id]);
 
             // Log the activity
             ActivityService::logPoGenerated($purchaseRequest->pr_number, $request->po_number);
@@ -377,9 +393,8 @@ class POGenerationController extends Controller
         // Get all filtered results (no pagination)
         $generatedPOs = $query->orderBy('purchase_orders.generated_at', 'desc')->get();
 
-        // Create CSV content
-        $csvContent = [];
-        $csvContent[] = [
+        // Prepare headers
+        $headers = [
             'Counter',
             'PO Number',
             'PR Number',
@@ -390,13 +405,15 @@ class POGenerationController extends Controller
             'Status'
         ];
 
+        // Prepare rows
+        $rows = [];
         $counter = 1;
         foreach ($generatedPOs as $po) {
             $requestedBy = $po->purchaseRequest->user ? $po->purchaseRequest->user->first_name .
                 ($po->purchaseRequest->user->middle_name ? ' ' . $po->purchaseRequest->user->middle_name : '') .
                 ' ' . $po->purchaseRequest->user->last_name : 'N/A';
 
-            $csvContent[] = [
+            $rows[] = [
                 $counter++,
                 $po->po_number,
                 $po->pr_number,
@@ -408,35 +425,19 @@ class POGenerationController extends Controller
             ];
         }
 
-        // Create CSV file
-        $filename = 'po_generation_' . date('Y-m-d_H-i-s') . '.csv';
-        $handle = fopen('php://temp', 'r+');
+        // Use ExportService
+        $exportService = new ExportService();
+        $filename = $exportService->generateFilename('po_generation', 'csv');
 
-        foreach ($csvContent as $row) {
-            fputcsv($handle, $row);
-        }
-
-        rewind($handle);
-        $csvData = stream_get_contents($handle);
-        fclose($handle);
-
-        return response($csvData)
-            ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        return $exportService->exportToCSV($headers, $rows, $filename);
     }
 
     public function exportPDF(Request $request)
     {
-        $query = PurchaseOrder::with(['purchaseRequest.user', 'purchaseRequest.items', 'supplier'])
+        $query = PurchaseOrder::with(['purchaseRequest.user', 'purchaseRequest.items', 'purchaseRequest.office', 'supplier'])
             ->join('purchase_requests', 'purchase_orders.purchase_request_id', '=', 'purchase_requests.id')
             ->leftJoin('suppliers', 'purchase_orders.supplier_id', '=', 'suppliers.id')
-            ->select([
-                'purchase_orders.*',
-                'purchase_requests.*',
-                'suppliers.supplier_name',
-                'suppliers.address as supplier_address',
-                'suppliers.tin as supplier_tin'
-            ]);
+            ->select('purchase_orders.*');
 
         // Apply the same filters as index method
         if ($request->filled('search')) {
@@ -465,10 +466,10 @@ class POGenerationController extends Controller
         // Get all filtered results (no pagination)
         $purchaseOrders = $query->orderBy('purchase_orders.generated_at', 'desc')->get();
 
-        // Generate PDF using DomPDF
-        $pdf = Pdf::loadView('exports.po_generation_pdf', compact('purchaseOrders'));
+        // Use ExportService
+        $exportService = new ExportService();
+        $filename = $exportService->generateFilename('po_generation', 'pdf');
 
-        $filename = 'po_generation_' . date('Y-m-d_H-i-s') . '.pdf';
-        return $pdf->download($filename);
+        return $exportService->exportToPDF('exports.po_generation_pdf', compact('purchaseOrders'), $filename);
     }
 }

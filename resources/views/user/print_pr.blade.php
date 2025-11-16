@@ -88,7 +88,7 @@
             </tr>
             <!-- Office/Section / PR No / Responsibility Center Code / Date -->
             <tr>
-                <td colspan="2"><strong>Office/Section:</strong> {{ $purchaseRequest->office_section }}</td>
+                <td colspan="2"><strong>Office/Section:</strong> {{ $purchaseRequest->office->name }}</td>
                 <td colspan="2">
                     <strong>PR No:</strong> {{ $purchaseRequest->pr_number }}<br>
                     <strong>Responsibility Center Code:</strong> ____________________

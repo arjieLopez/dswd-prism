@@ -394,7 +394,7 @@
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
                                             <div class="flex space-x-2 justify-center">
                                                 @php
-                                                    $showEdit = !in_array($pr->status, [
+                                                    $showEdit = !in_array($pr->status->name, [
                                                         'approved',
                                                         'po_generated',
                                                         'pending',
@@ -788,10 +788,11 @@
                             </select>
                         </div>
                         <div>
-                            <label for="edit-office-section" class="block text-sm font-medium text-gray-700">Office
+                            <label for="edit-office-name" class="block text-sm font-medium text-gray-700">Office
                                 Section <span class="text-red-500">*</span></label>
-                            <input type="text" name="office_section" id="edit-office-section"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            <input type="text" name="office_name" id="edit-office-name" readonly
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-100 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            <input type="hidden" name="office_id" id="edit-office-id">
                         </div>
                         <div>
                             <label for="edit-date" class="block text-sm font-medium text-gray-700">Date <span
@@ -1010,7 +1011,7 @@
                         document.getElementById('view-pr-date').textContent = data.date;
                         document.getElementById('view-entity-name').textContent = data.entity_name;
                         document.getElementById('view-fund-cluster').textContent = data.fund_cluster;
-                        document.getElementById('view-office-section').textContent = data.office_section;
+                        document.getElementById('view-office-section').textContent = data.office_name;
                         document.getElementById('view-delivery-address').textContent = data.delivery_address;
                         document.getElementById('view-purpose').textContent = data.purpose;
                         document.getElementById('view-requested-by').textContent = data.requested_by_name;
@@ -1052,24 +1053,14 @@
                         }
 
                         // Set status with color
-                        const statusDisplayMap = {
-                            'draft': 'Draft',
-                            'pending': 'Pending',
-                            'approved': 'Approved',
-                            'rejected': 'Rejected',
-                            'po_generated': 'PO Generated',
-                            'completed': 'Completed',
-                            'failed': 'Failed',
-                        };
                         const statusElement = document.getElementById('view-status');
-                        statusElement.textContent = statusDisplayMap[data.status] || (data.status.charAt(0).toUpperCase() +
-                            data.status.slice(1));
+                        statusElement.textContent = data.status_display ?? 'Unknown';
                         statusElement.className =
-                            `mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${data.status_color}`;
+                            `mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${data.status_color ?? 'bg-gray-100 text-gray-800'}`;
 
                         // Show or hide the submit button
                         const submitBtn = document.getElementById('submit-draft-btn');
-                        if (data.status === 'draft') {
+                        if (data.status?.name === 'draft') {
                             submitBtn.classList.remove('hidden');
                             submitBtn.setAttribute('data-pr-id', prId);
                         } else {
@@ -1079,7 +1070,7 @@
                         // Show or hide the withdraw button
                         const withdrawBtn = document.getElementById('withdraw-draft-btn');
                         if (withdrawBtn) {
-                            if (data.status === 'pending') {
+                            if (data.status?.name === 'pending') {
                                 withdrawBtn.classList.remove('hidden');
                                 withdrawBtn.setAttribute('data-pr-id', prId);
                             } else {
@@ -1090,7 +1081,8 @@
                         // Show or hide the print button
                         const printBtn = document.getElementById('print-btn');
                         if (printBtn) {
-                            if (data.status === 'approved' || data.status === 'po_generated' || data.status ===
+                            if (data.status?.name === 'approved' || data.status?.name === 'po_generated' || data.status
+                                ?.name ===
                                 'completed') {
                                 printBtn.classList.remove('hidden');
                             } else {
@@ -1100,7 +1092,7 @@
                         // Show or hide the complete button
                         const completeBtn = document.getElementById('complete-btn');
                         if (completeBtn) {
-                            if (data.status === 'po_generated') {
+                            if (data.status?.name === 'po_generated') {
                                 completeBtn.classList.remove('hidden');
                                 completeBtn.setAttribute('data-pr-id', prId);
                             } else {
@@ -1112,7 +1104,7 @@
                         const uploadBtn = document.getElementById('upload-btn');
                         const downloadBtn = document.getElementById('download-btn');
                         if (uploadBtn) {
-                            if (['completed', 'po_generated', 'approved'].includes(data.status)) {
+                            if (['completed', 'po_generated', 'approved'].includes(data.status?.name)) {
                                 uploadBtn.classList.remove('hidden');
                                 uploadBtn.setAttribute('data-pr-id', prId);
 
@@ -1289,7 +1281,8 @@
                         // Populate basic form fields
                         document.getElementById('edit-entity-name').value = data.entity_name;
                         document.getElementById('edit-fund-cluster').value = data.fund_cluster;
-                        document.getElementById('edit-office-section').value = data.office_section;
+                        document.getElementById('edit-office-name').value = data.office_name;
+                        document.getElementById('edit-office-id').value = data.office_id;
                         document.getElementById('edit-date').value = data.date;
                         document.getElementById('edit-delivery-period').value = data.delivery_period;
                         document.getElementById('edit-delivery-address').value = data.delivery_address;

@@ -8,6 +8,9 @@ use App\Models\PurchaseOrder;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\ExportService;
+use App\Constants\PaginationConstants;
+use App\Constants\ActivityConstants;
 
 class ReportsController extends Controller
 {
@@ -120,13 +123,13 @@ class ReportsController extends Controller
         $reports->appends($request->query());
 
         // Get all available statuses for filter dropdown
-        $statuses = \App\Models\Status::where('context', 'purchase_request')
+        $statuses = \App\Models\Status::where('context', 'procurement')
             ->pluck('name');
 
         $user = auth()->user();
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
 
         return view('admin.reports', compact('reports', 'statuses', 'recentActivities'));
@@ -245,9 +248,8 @@ class ReportsController extends Controller
 
     private function exportToCsv($reports, Request $request)
     {
-        // Create CSV content
-        $csvContent = [];
-        $csvContent[] = [
+        // Prepare headers
+        $headers = [
             'Counter',
             'Type',
             'Document Number',
@@ -256,33 +258,35 @@ class ReportsController extends Controller
             'Amount'
         ];
 
+        // Prepare rows
+        $rows = [];
         $counter = 1;
         foreach ($reports as $report) {
-            $csvContent[] = [
+            // Get status text based on type
+            $statusText = 'N/A';
+            if ($report->type === 'PO') {
+                $statusText = 'PO Generated';
+            } elseif ($report->status) {
+                $statusText = is_object($report->status)
+                    ? ucfirst(str_replace('_', ' ', $report->status->name))
+                    : ucfirst(str_replace('_', ' ', $report->status));
+            }
+
+            $rows[] = [
                 $counter++,
                 $report->type,
                 $report->document_number,
                 $report->department,
-                $report->type === 'PO' ? 'PO Generated' : ucfirst(str_replace('_', ' ', $report->status)),
+                $statusText,
                 '₱' . number_format($report->amount, 2)
             ];
         }
 
-        // Create CSV file
-        $filename = 'reports_' . date('Y-m-d_H-i-s') . '.csv';
-        $handle = fopen('php://temp', 'r+');
+        // Use ExportService
+        $exportService = new ExportService();
+        $filename = $exportService->generateFilename('reports', 'csv');
 
-        foreach ($csvContent as $row) {
-            fputcsv($handle, $row);
-        }
-
-        rewind($handle);
-        $csvData = stream_get_contents($handle);
-        fclose($handle);
-
-        return response($csvData)
-            ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        return $exportService->exportToCSV($headers, $rows, $filename);
     }
     private function exportToPdf($reports, Request $request)
     {
@@ -297,22 +301,24 @@ class ReportsController extends Controller
             'exported_at' => now()->format('F j, Y g:i A')
         ];
 
-        $pdf = Pdf::loadView('exports.reports_pdf', $data);
-        $filename = 'reports_' . now()->format('Y-m-d_H-i-s') . '.pdf';
+        // Use ExportService
+        $exportService = new ExportService();
+        $filename = $exportService->generateFilename('reports', 'pdf');
 
-        return $pdf->download($filename);
+        return $exportService->exportToPDF('exports.reports_pdf', $data, $filename);
     }
 
     public function getPRData($id)
     {
-        $pr = PurchaseRequest::with(['user', 'items'])->findOrFail($id);
+        $pr = PurchaseRequest::with(['user', 'items', 'office'])->findOrFail($id);
 
         return response()->json([
             'id' => $pr->id,
             'pr_number' => $pr->pr_number,
             'entity_name' => $pr->entity_name,
             'fund_cluster' => $pr->fund_cluster,
-            'office_section' => $pr->office_section,
+            'office_id' => $pr->office_id,
+            'office_name' => $pr->office->name,
             'responsibility_center_code' => $pr->responsibility_center_code,
             'date' => $pr->date ? $pr->date->format('M d, Y') : '',
             'purpose' => $pr->purpose,

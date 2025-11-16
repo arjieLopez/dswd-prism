@@ -25,6 +25,8 @@
                         'mdi:handshake',
                         'mdi:truck-fast',
                         'mdi:credit-card-outline',
+                        'mdi:account-tie',
+                        'mdi:office-building',
                     ];
                     $titles = [
                         'Metric Units',
@@ -36,6 +38,8 @@
                         'Mode of Procurement',
                         'Delivery Term',
                         'Payment Term',
+                        'Designation',
+                        'Office',
                     ];
                     $descs = [
                         'Edit units used in PR/PO items.',
@@ -47,6 +51,8 @@
                         'Edit procurement modes.',
                         'Edit delivery terms.',
                         'Edit payment terms.',
+                        'Edit user designations.',
+                        'Edit office departments.',
                     ];
                     $types = [
                         'metric_units',
@@ -58,6 +64,8 @@
                         'mode_of_procurement',
                         'delivery_term',
                         'payment_term',
+                        'designation',
+                        'office',
                     ];
                 @endphp
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full">

@@ -16,6 +16,8 @@
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="{{ asset('js/form-validation.js') }}"></script>
+    <script src="{{ asset('js/session-timeout.js') }}"></script>
 </head>
 
 <body class="font-sans antialiased h-screen">

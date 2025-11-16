@@ -592,7 +592,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Office Section</label>
-                            <p class="mt-1 text-sm text-gray-900">${data.office_section ?? ''}</p>
+                            <p class="mt-1 text-sm text-gray-900">${data.office_name ?? ''}</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Status</label>
