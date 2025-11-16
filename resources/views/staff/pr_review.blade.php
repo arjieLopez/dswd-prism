@@ -700,8 +700,6 @@
 
     <script>
         function openViewModal(prId) {
-            console.log('Opening modal for PR ID:', prId);
-
             fetch(`/staff/pr-review/${prId}/data`, {
                     method: 'GET',
                     headers: {
@@ -710,14 +708,12 @@
                     },
                 })
                 .then(response => {
-                    console.log('Response status:', response.status);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Received data:', data);
 
                     // Populate basic fields
                     document.getElementById('view-pr-number').textContent = data.pr_number;

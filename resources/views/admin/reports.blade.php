@@ -543,8 +543,6 @@
 
     <script>
         function viewReport(id, type, status) {
-            console.log('Viewing report:', id, 'Type:', type, 'Status:', status);
-
             // Determine which modal to show based on type
             if (type === 'PO') {
                 // Show PO modal

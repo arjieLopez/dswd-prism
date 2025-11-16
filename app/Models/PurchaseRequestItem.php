@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PurchaseRequestItem extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'purchase_request_id',
         'unit_id',

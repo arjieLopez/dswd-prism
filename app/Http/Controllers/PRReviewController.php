@@ -160,7 +160,10 @@ class PRReviewController extends Controller
     {
         try {
             $rejectedStatus = \App\Models\Status::where('context', 'procurement')->where('name', 'rejected')->first();
-            $purchaseRequest->update(['status_id' => $rejectedStatus->id]);
+            $purchaseRequest->update([
+                'status_id' => $rejectedStatus->id,
+                'remarks' => request('remarks') ?? request('reason') // Accept both field names
+            ]);
 
             // Log staff Activity:
             ActivityService::logPrRejected(

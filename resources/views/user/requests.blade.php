@@ -894,8 +894,6 @@
 
         <script>
             function showSuccessAlert(message) {
-                console.log('showSuccessAlert called with:', message);
-
                 const alertDiv = document.createElement('div');
                 alertDiv.style.cssText = `
         position: fixed;
@@ -934,7 +932,6 @@
                 alertDiv.appendChild(closeBtn);
 
                 document.body.appendChild(alertDiv);
-                console.log('Top-centered success alert added to DOM');
 
                 setTimeout(() => {
                     if (alertDiv.parentNode) {
@@ -944,8 +941,6 @@
             }
 
             function showErrorAlert(message) {
-                console.log('showErrorAlert called with:', message);
-
                 const alertDiv = document.createElement('div');
                 alertDiv.style.cssText = `
         position: fixed;
@@ -984,7 +979,6 @@
                 alertDiv.appendChild(closeBtn);
 
                 document.body.appendChild(alertDiv);
-                console.log('Top-centered error alert added to DOM');
 
                 setTimeout(() => {
                     if (alertDiv.parentNode) {
@@ -995,8 +989,6 @@
 
 
             function openViewModal(prId) {
-                console.log('Opening view modal for PR ID:', prId);
-
                 // Fetch purchase request data
                 fetch(`/purchase-requests/${prId}/data`)
                     .then(response => {
@@ -1004,8 +996,6 @@
                         return response.json();
                     })
                     .then(data => {
-                        console.log('Received data:', data);
-
                         // Populate modal fields
                         document.getElementById('view-pr-number').textContent = data.pr_number;
                         document.getElementById('view-pr-date').textContent = data.date;
@@ -1267,8 +1257,6 @@
             }
 
             function openEditModal(prId) {
-                console.log('Opening edit modal for PR ID:', prId);
-
                 // Fetch purchase request data
                 fetch(`/purchase-requests/${prId}/data`)
                     .then(response => {
@@ -1276,8 +1264,6 @@
                         return response.json();
                     })
                     .then(data => {
-                        console.log('Received data for edit:', data);
-
                         // Populate basic form fields
                         document.getElementById('edit-entity-name').value = data.entity_name;
                         document.getElementById('edit-fund-cluster').value = data.fund_cluster;
@@ -1434,16 +1420,13 @@
                             .then(result => {
                                 if (result.success) {
                                     if (result.data.success) {
-                                        console.log('Success! Showing alert...'); // Add this debug line
                                         closeEditModal();
                                         showSuccessAlert('Purchase request updated successfully!');
-                                        console.log('Alert should be visible now'); // Add this debug line
                                         setTimeout(() => {
-                                                console.log('Reloading page...'); // Add this debug line
                                                 window.location.reload();
                                             },
                                             3000
-                                        ); // Increased to 3 seconds to give more time to see the alert
+                                        );
                                     } else {
                                         // Handle validation errors
                                         if (result.data.errors) {

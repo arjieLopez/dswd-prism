@@ -624,7 +624,6 @@
 
     <script>
         function openViewPOModal(poId) {
-            console.log('Opening view modal for PO ID:', poId);
             fetch(`/staff/po-generation/${poId}/data`, {
                     method: 'GET',
                     headers: {
@@ -633,14 +632,12 @@
                     },
                 })
                 .then(response => {
-                    console.log('Response status:', response.status);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Received data:', data);
                     let html = `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -848,7 +845,6 @@
         }
 
         function openEditPOModal(poId) {
-            console.log('Opening edit modal for PO ID:', poId);
             fetch(`/staff/po-generation/${poId}/data`, {
                     method: 'GET',
                     headers: {
@@ -857,14 +853,12 @@
                     },
                 })
                 .then(response => {
-                    console.log('Edit modal response status:', response.status);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Edit modal received data:', data);
                     // Build supplier options
                     let supplierOptions = `<option value="">Select Supplier</option>`;
                     window.suppliers.forEach(s => {
@@ -1074,8 +1068,6 @@
             showModernConfirmation(
                 'Are you sure you want to delete this PO document?',
                 function() {
-                    console.log('Deleting PO document with ID:', documentId);
-
                     fetch(`/po-documents/${documentId}`, {
                             method: 'DELETE',
                             headers: {
@@ -1086,14 +1078,12 @@
                             }
                         })
                         .then(response => {
-                            console.log('Delete response status:', response.status);
                             if (!response.ok) {
                                 throw new Error(`HTTP error! status: ${response.status}`);
                             }
                             return response.json();
                         })
                         .then(data => {
-                            console.log('Delete response data:', data);
                             if (data.success) {
                                 // Show success message
                                 showSuccessAlert('PO Document deleted successfully!');

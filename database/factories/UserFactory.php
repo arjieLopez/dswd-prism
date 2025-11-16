@@ -21,13 +21,13 @@ class UserFactory extends Factory
             'first_name' => fake()->firstName(),
             'middle_name' => fake()->randomElement([fake()->firstName(), null]),
             'last_name' => fake()->lastName(),
-            'designation' => fake()->jobTitle(),
-            'office' => fake()->company(),
+            'designation_id' => null, // Allow tests to set this if needed
+            'office_id' => null, // Allow tests to set this if needed
             'employee_id' => fake()->unique()->numerify('EMP###'),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => bcrypt('password'), // password
-            'role' => 'user',
+            'role_id' => null, // Allow tests to set this if needed
             'remember_token' => Str::random(10),
         ];
     }
@@ -47,7 +47,6 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => 'admin',
             'email' => 'khalid.a.ambobot@gmail.com',
             'first_name' => 'Admin',
             'last_name' => 'User',
@@ -58,7 +57,6 @@ class UserFactory extends Factory
     public function staff(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => 'staff',
             'email' => 'arjiepelimerlopez@gmail.com',
             'first_name' => 'Staff',
             'last_name' => 'User',
@@ -69,7 +67,6 @@ class UserFactory extends Factory
     public function user(): static
     {
         return $this->state(fn(array $attributes) => [
-            'role' => 'user',
             'email' => 'crisostomoarnaldopilipinoleand@gmail.com',
             'first_name' => 'User',
             'last_name' => 'User',

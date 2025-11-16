@@ -21,6 +21,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+            $table->string('session_id')->nullable();
             $table->string('twofactor_code', 6)->nullable();
             $table->timestamp('twofactor_code_expires_at')->nullable();
             $table->foreignId('designation_id')->nullable()->constrained('designations');

@@ -319,6 +319,7 @@ class PurchaseRequestController extends Controller
 
         $pendingStatus = \App\Models\Status::where('context', 'procurement')->where('name', 'pending')->first();
         $purchaseRequest->status_id = $pendingStatus->id;
+        $purchaseRequest->submitted_at = now();
         $purchaseRequest->save();
 
         // Log activity for the submitting user

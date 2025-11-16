@@ -166,15 +166,6 @@ class UserDashboardController extends Controller
         $rejectPR = $chartData['rejectPR'];
         $completedPR = $chartData['completedPR'];
 
-        // Debug info (remove in production)
-        // \Log::info('Chart Data Debug', [
-        //     'filterType' => $filterType,
-        //     'startDate' => $startDate->format('Y-m-d'),
-        //     'endDate' => $endDate->format('Y-m-d'),
-        //     'labels' => $labels,
-        //     'monthsDiff' => $startDate->diffInMonths($endDate)
-        // ]);
-
         // Get recent activities (increase limit for notifications)
         $recentActivities = $user->activities()
             ->orderBy('created_at', 'desc')

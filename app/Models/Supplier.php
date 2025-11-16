@@ -59,4 +59,10 @@ class Supplier extends Model
     {
         return $this->belongsTo(\App\Models\Status::class);
     }
+
+    // One-to-many relationship
+    public function purchaseOrders()
+    {
+        return $this->hasMany(\App\Models\PurchaseOrder::class);
+    }
 }
