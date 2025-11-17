@@ -42,7 +42,7 @@ class PurchaseRequest extends Model
 
     public function office()
     {
-        return $this->belongsTo(Office::class);
+        return $this->belongsTo(Office::class)->withTrashed();
     }
 
     public function getStatusColorAttribute()
@@ -111,6 +111,6 @@ class PurchaseRequest extends Model
 
     public function procurementMode()
     {
-        return $this->belongsTo(\App\Models\ProcurementMode::class);
+        return $this->belongsTo(\App\Models\ProcurementMode::class)->withTrashed();
     }
 }

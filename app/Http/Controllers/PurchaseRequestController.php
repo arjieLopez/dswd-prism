@@ -386,7 +386,7 @@ class PurchaseRequestController extends Controller
         }
 
         // Load the approval with approver information
-        $purchaseRequest->load(['approvals.approver.designation', 'user.office']);
+        $purchaseRequest->load(['approvals.approver.designation', 'user.office', 'user.designation']);
 
         // Get the requestor's office_id
         $userOfficeId = $purchaseRequest->user->office_id;

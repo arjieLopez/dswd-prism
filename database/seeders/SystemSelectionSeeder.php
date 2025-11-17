@@ -48,24 +48,53 @@ class SystemSelectionSeeder extends Seeder
             ['type' => 'metric_units', 'name' => 'sqm'],
 
             // Other system selections (placeholders)
-            ['type' => 'entity', 'name' => 'DSWD'],
-            ['type' => 'fund_cluster', 'name' => '01'],
-            ['type' => 'responsibility_code', 'name' => 'RC-001'],
+
+            // Entity Name
+            ['type' => 'entity', 'name' => 'Department of Social Welfare and Development'],
+            ['type' => 'entity', 'name' => 'DSWD Field Office XI'],
+            ['type' => 'entity', 'name' => 'DSWD Central Office'],
+            ['type' => 'entity', 'name' => 'DSWD Regional Office'],
+
+            // Fund Cluster
+            ['type' => 'fund_cluster', 'name' => '01 - Regular Agency Fund'],
+            ['type' => 'fund_cluster', 'name' => '02 - Continuing Fund'],
+            ['type' => 'fund_cluster', 'name' => '03 - Foreign-Assisted Projects'],
+            ['type' => 'fund_cluster', 'name' => '04 - Special Account in the General Fund'],
+
+            // Responsibility Code
+            ['type' => 'responsibility_code', 'name' => 'Administrative Division'],
+            ['type' => 'responsibility_code', 'name' => 'Finance Division'],
+            ['type' => 'responsibility_code', 'name' => 'Human Resource Management Division'],
+            ['type' => 'responsibility_code', 'name' => 'General Services Office'],
+            ['type' => 'responsibility_code', 'name' => 'Supply Management Unit'],
+
+            // Delivery Period
             ['type' => 'delivery_period', 'name' => '7 days'],
-            ['type' => 'delivery_period', 'name' => '14 days'],
+            ['type' => 'delivery_period', 'name' => '15 days'],
             ['type' => 'delivery_period', 'name' => '30 days'],
-            ['type' => 'delivery_address', 'name' => 'DSWD Main Office'],
-            ['type' => 'mode_of_procurement', 'name' => 'Competitive Bidding'],
-            ['type' => 'mode_of_procurement', 'name' => 'Limited Source Bidding'],
-            ['type' => 'mode_of_procurement', 'name' => 'Negotiated Procurement'],
-            ['type' => 'mode_of_procurement', 'name' => 'Direct Contracting'],
-            ['type' => 'mode_of_procurement', 'name' => 'Repeat Order'],
-            ['type' => 'mode_of_procurement', 'name' => 'Small Value Procurement'],
-            ['type' => 'delivery_term', 'name' => 'FOB'],
-            ['type' => 'delivery_term', 'name' => 'CIF'],
-            ['type' => 'payment_term', 'name' => 'COD'],
-            ['type' => 'payment_term', 'name' => '30 days'],
-            ['type' => 'payment_term', 'name' => '60 days'],
+            ['type' => 'delivery_period', 'name' => '45 days'],
+            ['type' => 'delivery_period', 'name' => '60 days'],
+            ['type' => 'delivery_period', 'name' => '90 days'],
+
+            // Delivery Address
+            ['type' => 'delivery_address', 'name' => 'DSWD Field Office XI, Ramon Magsaysay Ave, D Suazo St, Davao City'],
+            ['type' => 'delivery_address', 'name' => 'DSWD Central Office, IBP Road, Constitution Hills, Batasan Complex, Quezon City'],
+            ['type' => 'delivery_address', 'name' => 'Department of Social Welfare and Development, IBP Road, Batasan Hills, Quezon City'],
+
+            // Delivery Term
+            ['type' => 'delivery_term', 'name' => 'FOB (Free on Board) - Supplier\'s Warehouse'],
+            ['type' => 'delivery_term', 'name' => 'FOB (Free on Board) - Destination'],
+            ['type' => 'delivery_term', 'name' => 'CIF (Cost, Insurance, and Freight)'],
+            ['type' => 'delivery_term', 'name' => 'Ex Works (EXW)'],
+            ['type' => 'delivery_term', 'name' => 'Delivered at Place (DAP)'],
+
+            // Payment Term
+            ['type' => 'payment_term', 'name' => 'Net 30 days'],
+            ['type' => 'payment_term', 'name' => 'Net 45 days'],
+            ['type' => 'payment_term', 'name' => 'Net 60 days'],
+            ['type' => 'payment_term', 'name' => '50% Down Payment, 50% Upon Delivery'],
+            ['type' => 'payment_term', 'name' => 'Full Payment Upon Delivery'],
+            ['type' => 'payment_term', 'name' => 'Payment After Inspection'],
         ];
 
         foreach ($selections as $selection) {

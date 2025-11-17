@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             StatusSeeder::class,
             UnitSeeder::class,
             ProcurementModeSeeder::class,
+            SystemSelectionSeeder::class,
         ]);
 
         // Seed users (depends on roles, designations, offices)

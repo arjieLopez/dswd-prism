@@ -24,7 +24,7 @@ class AdminUserSeeder extends Seeder
             'middle_name' => null,
             'last_name' => 'Administrator',
             'employee_id' => 'ADMIN001',
-            'email' => 'admin@dswd.gov.ph',
+            'email' => 'ademen111725@gmail.com',
             'email_verified_at' => now(),
             'password' => Hash::make('admin123'),
             'designation_id' => $directorDesignationId,

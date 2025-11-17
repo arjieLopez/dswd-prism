@@ -33,6 +33,6 @@ class PurchaseRequestItem extends Model
     // Reference table relationships
     public function unit()
     {
-        return $this->belongsTo(\App\Models\Unit::class);
+        return $this->belongsTo(\App\Models\Unit::class)->withTrashed();
     }
 }

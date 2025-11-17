@@ -20,12 +20,12 @@ class RecommendingApproval extends Model
 
     public function designation()
     {
-        return $this->belongsTo(Designation::class);
+        return $this->belongsTo(Designation::class)->withTrashed();
     }
 
     public function offices()
     {
-        return $this->belongsToMany(Office::class, 'recommending_approval_office');
+        return $this->belongsToMany(Office::class, 'recommending_approval_office')->withTrashed();
     }
 
     public function getFullNameAttribute()

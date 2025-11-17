@@ -141,12 +141,12 @@ class User extends Authenticatable
     // Reference table relationships
     public function designation()
     {
-        return $this->belongsTo(\App\Models\Designation::class);
+        return $this->belongsTo(\App\Models\Designation::class)->withTrashed();
     }
 
     public function office()
     {
-        return $this->belongsTo(\App\Models\Office::class);
+        return $this->belongsTo(\App\Models\Office::class)->withTrashed();
     }
 
     public function role()

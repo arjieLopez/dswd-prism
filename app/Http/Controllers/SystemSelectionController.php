@@ -10,6 +10,8 @@ use App\Models\ProcurementMode;
 use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use App\Constants\PaginationConstants;
 use App\Constants\ActivityConstants;
 
@@ -93,11 +95,23 @@ class SystemSelectionController extends Controller
         // Determine table name for unique validation
         $tableName = $modelClass ? (new $modelClass)->getTable() : 'system_selections';
 
-        // Build validation rules
+        // Build validation rules - ignore soft deleted records
         if ($modelClass) {
-            $uniqueRule = 'required|string|max:255|unique:' . $tableName . ',name';
+            $uniqueRule = [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique($tableName, 'name')->whereNull('deleted_at')
+            ];
         } else {
-            $uniqueRule = 'required|string|max:255|unique:system_selections,name,NULL,id,type,' . $type;
+            $uniqueRule = [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('system_selections', 'name')
+                    ->where('type', $type)
+                    ->whereNull('deleted_at')
+            ];
         }
 
         $validator = Validator::make($request->all(), [
@@ -107,7 +121,7 @@ class SystemSelectionController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed.',
+                'message' => 'Validation failed: ' . $validator->errors()->first('name'),
                 'errors' => $validator->errors()
             ], 422);
         }
@@ -144,9 +158,15 @@ class SystemSelectionController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error('SystemSelection store error: ' . $e->getMessage(), [
+                'type' => $type,
+                'name' => $request->name,
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to add item.'
+                'message' => 'Failed to add item: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -159,11 +179,26 @@ class SystemSelectionController extends Controller
         // Determine table name for unique validation
         $tableName = $modelClass ? (new $modelClass)->getTable() : 'system_selections';
 
-        // Build validation rules
+        // Build validation rules - ignore soft deleted records and current record
         if ($modelClass) {
-            $uniqueRule = 'required|string|max:255|unique:' . $tableName . ',name,' . $id;
+            $uniqueRule = [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique($tableName, 'name')
+                    ->ignore($id)
+                    ->whereNull('deleted_at')
+            ];
         } else {
-            $uniqueRule = 'required|string|max:255|unique:system_selections,name,' . $id . ',id,type,' . $type;
+            $uniqueRule = [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('system_selections', 'name')
+                    ->ignore($id)
+                    ->where('type', $type)
+                    ->whereNull('deleted_at')
+            ];
         }
 
         $validator = Validator::make($request->all(), [

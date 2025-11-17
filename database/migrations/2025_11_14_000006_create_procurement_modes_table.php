@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('procurement_modes', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 50)->unique();
+            $table->string('name', 50);
             $table->text('description')->nullable();
             $table->timestamps();
             $table->softDeletes();
