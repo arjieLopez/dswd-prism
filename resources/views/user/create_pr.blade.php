@@ -83,8 +83,8 @@
                                 <label for="date" class="block text-sm font-medium text-gray-700">Date <span
                                         class="text-red-500">*</span></label>
                                 <input type="date" name="date" id="date"
-                                    value="{{ old('date', date('Y-m-d')) }}" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                    value="{{ old('date', date('Y-m-d')) }}" required readonly
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 bg-gray-100 cursor-not-allowed">
                             </div>
 
                             <div>

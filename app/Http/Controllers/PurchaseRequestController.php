@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PurchaseRequest;
+use App\Models\RecommendingApproval;
 use App\Models\SystemSelection;
 use App\Models\UserActivity;
 use App\Services\ActivityService;
@@ -384,7 +385,33 @@ class PurchaseRequestController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        return view('user.print_pr', compact('purchaseRequest'));
+        // Load the approval with approver information
+        $purchaseRequest->load(['approvals.approver.designation', 'user.office']);
+
+        // Get the requestor's office_id
+        $userOfficeId = $purchaseRequest->user->office_id;
+
+        // Load recommending approvals (primary and secondary) filtered by user's office
+        $primaryApprover = null;
+        $secondaryApprover = null;
+
+        if ($userOfficeId) {
+            $primaryApprover = RecommendingApproval::with(['designation', 'offices'])
+                ->where('type', 'primary')
+                ->whereHas('offices', function ($query) use ($userOfficeId) {
+                    $query->where('offices.id', $userOfficeId);
+                })
+                ->first();
+
+            $secondaryApprover = RecommendingApproval::with(['designation', 'offices'])
+                ->where('type', 'secondary')
+                ->whereHas('offices', function ($query) use ($userOfficeId) {
+                    $query->where('offices.id', $userOfficeId);
+                })
+                ->first();
+        }
+
+        return view('user.print_pr', compact('purchaseRequest', 'primaryApprover', 'secondaryApprover'));
     }
 
     public function complete(PurchaseRequest $purchaseRequest)

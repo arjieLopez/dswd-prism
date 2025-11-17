@@ -62,7 +62,7 @@
         }
 
         .signature-label {
-            font-size: 0.9rem;
+            font-size: 12px;
         }
 
         .signature-line {
@@ -91,7 +91,7 @@
                 <td colspan="2"><strong>Office/Section:</strong> {{ $purchaseRequest->office->name }}</td>
                 <td colspan="2">
                     <strong>PR No:</strong> {{ $purchaseRequest->pr_number }}<br>
-                    <strong>Responsibility Center Code:</strong> ____________________
+                    <strong>Responsibility Center Code:</strong> {{ $purchaseRequest->responsibility_center_code }}
                 </td>
                 <td colspan="2"><strong>Date:</strong>
                     {{ \Carbon\Carbon::parse($purchaseRequest->date)->format('F d, Y') }}</td>
@@ -136,10 +136,50 @@
             <tr>
                 <td colspan="3" style="vertical-align: top; text-align: left;"><strong>Purpose:</strong>
                     {{ $purchaseRequest->purpose }}</td>
-                <td colspan="3" style="vertical-align: top;"> This is to certify that items/supplies indicated in the
+                <td colspan="3" style="vertical-align: top; padding: 8px; font-size: 12px;">
+                    This is to certify that items/supplies indicated in the
                     PR are included in the
                     PPMP/APP and the Technical Specifications/ Terms of Reference and Scope of Works are reviewed and
-                    approved by the Procurement section Head. <br><br><br><br></td>
+                    approved by the Procurement section Head.
+
+                    @if ($primaryApprover || $secondaryApprover)
+                        <div style="margin-top: 20px; display: flex; justify-content: space-between; gap: 30px;">
+                            @if ($primaryApprover)
+                                <!-- Primary Approver -->
+                                <div style="flex: 1; text-align: center;">
+                                    <div style="padding-top: 2rem;"></div>
+                                    <div style="margin-bottom: 0.25rem;">
+                                        {{ $primaryApprover->first_name }}
+                                        @if ($primaryApprover->middle_name)
+                                            {{ strtoupper(substr($primaryApprover->middle_name, 0, 1)) }}.
+                                        @endif
+                                        {{ $primaryApprover->last_name }}
+                                    </div>
+                                    <div style="font-size: 0.75rem;">
+                                        {{ $primaryApprover->designation ? $primaryApprover->designation->name : '' }}
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if ($secondaryApprover)
+                                <!-- Secondary Approver -->
+                                <div style="flex: 1; text-align: center;">
+                                    <div style="padding-top: 2rem;"></div>
+                                    <div style="margin-bottom: 0.25rem;">
+                                        {{ $secondaryApprover->first_name }}
+                                        @if ($secondaryApprover->middle_name)
+                                            {{ strtoupper(substr($secondaryApprover->middle_name, 0, 1)) }}.
+                                        @endif
+                                        {{ $secondaryApprover->last_name }}
+                                    </div>
+                                    <div style="font-size: 0.75rem;">
+                                        {{ $secondaryApprover->designation ? $secondaryApprover->designation->name : '' }}
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                </td>
             </tr>
             <!-- Signature Row -->
             <tr>
@@ -152,19 +192,47 @@
                     </div>
                 </td>
                 <td style="text-align: center;">
+                    <div class="signature-label">Requested by:</div>
                     <div style="padding-top: 2rem;"></div>
-                    <div style="text-align: center; margin-bottom: 0.5rem;">
-                        {{ $purchaseRequest->user ? $purchaseRequest->user->first_name . ($purchaseRequest->user->middle_name ? ' ' . $purchaseRequest->user->middle_name : '') . ' ' . $purchaseRequest->user->last_name : '_____________________' }}
+                    <div
+                        style="text-align: center; margin-bottom: 0.5rem; border-bottom: 1px solid #000; width: 80%; margin: 0 auto;">
+                        @if ($purchaseRequest->user)
+                            {{ $purchaseRequest->user->first_name }}
+                            @if ($purchaseRequest->user->middle_name)
+                                {{ strtoupper(substr($purchaseRequest->user->middle_name, 0, 1)) }}.
+                            @endif
+                            {{ $purchaseRequest->user->last_name }}
+                        @else
+                            _____________________
+                        @endif
                     </div>
-                    <div class="signature-line"></div>
-                    <div class="signature-label">Requested
-                        by:<br>{{ $purchaseRequest->user ? $purchaseRequest->user->designation : '_____________________' }}
+                    <div class="signature-label">
+                        {{ $purchaseRequest->user ? $purchaseRequest->user->designation : '_____________________' }}
                     </div>
                 </td>
                 <td colspan="3" style="text-align: center;">
-                    <div style="padding-top: 3rem;"></div>
-                    <div class="signature-line"></div>
-                    <div class="signature-label">Approved by:<br>_______________________</div>
+                    <div class="signature-label">Approved by:</div>
+                    <div style="padding-top: 2rem;"></div>
+                    <div
+                        style="text-align: center; margin-bottom: 0.5rem; border-bottom: 1px solid #000; width: 80%; margin: 0 auto;">
+                        @php
+                            $approvedStatus = \App\Models\Status::where('name', 'approved')->first();
+                            $approval = $purchaseRequest->approvals->where('status_id', $approvedStatus?->id)->first();
+                            $approver = $approval?->approver;
+                        @endphp
+                        @if ($approver)
+                            {{ $approver->first_name }}
+                            @if ($approver->middle_name)
+                                {{ strtoupper(substr($approver->middle_name, 0, 1)) }}.
+                            @endif
+                            {{ $approver->last_name }}
+                        @else
+                            _____________________
+                        @endif
+                    </div>
+                    <div class="signature-label">
+                        {{ $approver?->designation ?? '_____________________' }}
+                    </div>
                 </td>
             </tr>
         </table>

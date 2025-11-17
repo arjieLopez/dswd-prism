@@ -797,8 +797,8 @@
                         <div>
                             <label for="edit-date" class="block text-sm font-medium text-gray-700">Date <span
                                     class="text-red-500">*</span></label>
-                            <input type="date" name="date" id="edit-date"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            <input type="date" name="date" id="edit-date" readonly
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 bg-gray-100 cursor-not-allowed">
                         </div>
                         <div>
                             <label for="edit-delivery-period" class="block text-sm font-medium text-gray-700">Delivery

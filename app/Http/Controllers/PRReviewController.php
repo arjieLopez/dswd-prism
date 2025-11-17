@@ -131,6 +131,15 @@ class PRReviewController extends Controller
             $approvedStatus = \App\Models\Status::where('context', 'procurement')->where('name', 'approved')->first();
             $purchaseRequest->update(['status_id' => $approvedStatus->id]);
 
+            // Create approval record
+            \App\Models\Approval::create([
+                'purchase_request_id' => $purchaseRequest->id,
+                'approver_id' => auth()->id(),
+                'status_id' => $approvedStatus->id,
+                'approved_at' => now(),
+                'remarks' => 'Approved'
+            ]);
+
             // Log staff Activity:
             ActivityService::logPrApproved(
                 $purchaseRequest->pr_number,
@@ -194,7 +203,9 @@ class PRReviewController extends Controller
 
     private function getStatusColorClass($status)
     {
-        return match ($status) {
+        $statusName = is_object($status) ? $status->name : $status;
+
+        return match ($statusName) {
             'draft' => 'bg-gray-100 text-gray-800',
             'pending' => 'bg-yellow-100 text-yellow-800',
             'approved' => 'bg-green-100 text-green-800',

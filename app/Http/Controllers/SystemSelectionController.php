@@ -23,8 +23,12 @@ class SystemSelectionController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(ActivityConstants::RECENT_ACTIVITY_LIMIT)
             ->get();
-        // In future: pass all selection types to the view
-        return view('admin.system_selections', compact('recentActivities'));
+
+        // Get designations and offices for recommending approval dropdowns
+        $designations = Designation::orderBy('name')->get();
+        $offices = Office::orderBy('name')->get();
+
+        return view('admin.system_selections', compact('recentActivities', 'designations', 'offices'));
     }
 
     // Map types to their corresponding models

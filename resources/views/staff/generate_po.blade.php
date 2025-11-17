@@ -138,6 +138,7 @@
                                 <label for="date_of_delivery" class="block text-sm font-medium text-gray-700">Date of
                                     Delivery <span class="text-red-500">*</span></label>
                                 <input type="date" name="date_of_delivery" id="date_of_delivery" required
+                                    min="{{ date('Y-m-d', strtotime('+1 day')) }}"
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             </div>
                         </div>

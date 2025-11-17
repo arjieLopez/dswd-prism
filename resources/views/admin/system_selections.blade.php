@@ -538,6 +538,594 @@
                             </div>
                         </div>
                     @endfor
+
+                    {{-- Recommending Approval Cards --}}
+                    @php
+                        $approvalTypes = ['primary', 'secondary'];
+                        $approvalTitles = ['Primary Approver', 'Secondary Approver'];
+                        $approvalDescs = ['Manage primary approver.', 'Manage secondary approver.'];
+                    @endphp
+
+                    @for ($j = 0; $j < count($approvalTypes); $j++)
+                        <div x-data="{
+                            modalOpen: false,
+                            addModalOpen: false,
+                            editModalOpen: false,
+                            items: [],
+                            type: '{{ $approvalTypes[$j] }}',
+                            newFirstName: '',
+                            newMiddleName: '',
+                            newLastName: '',
+                            newDesignationId: '',
+                            newOfficeIds: [],
+                            editId: null,
+                            editFirstName: '',
+                            editMiddleName: '',
+                            editLastName: '',
+                            editDesignationId: '',
+                            editOfficeIds: [],
+                            isLoading: false,
+                            isLoadingItems: false,
+                            currentPage: 1,
+                            lastPage: 1,
+                            total: 0,
+                            perPage: 10,
+                            hasMorePages: false,
+                            nextPageUrl: null,
+                            prevPageUrl: null,
+                            openModal() {
+                                this.modalOpen = true;
+                                this.loadItems();
+                            },
+                            closeModal() {
+                                this.modalOpen = false;
+                                this.items = [];
+                            },
+                            loadItems(page = 1) {
+                                this.isLoadingItems = true;
+                                this.currentPage = page;
+                                fetch(`/admin/recommending-approvals/${this.type}/items?page=${page}`, {
+                                        method: 'GET',
+                                        headers: {
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
+                                            'Accept': 'application/json',
+                                        }
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        this.isLoadingItems = false;
+                                        if (data.success) {
+                                            this.items = data.items;
+                                            this.currentPage = parseInt(data.pagination.current_page);
+                                            this.lastPage = parseInt(data.pagination.last_page);
+                                            this.total = parseInt(data.pagination.total);
+                                            this.perPage = parseInt(data.pagination.per_page);
+                                            this.hasMorePages = data.pagination.has_more_pages;
+                                            this.nextPageUrl = data.pagination.next_page_url;
+                                            this.prevPageUrl = data.pagination.prev_page_url;
+                                        } else {
+                                            showErrorAlert('Failed to load items.');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        this.isLoadingItems = false;
+                                        showErrorAlert('Failed to load items.');
+                                    });
+                            },
+                            openAddModal() {
+                                this.newFirstName = '';
+                                this.newMiddleName = '';
+                                this.newLastName = '';
+                                this.newDesignationId = '';
+                                this.newOfficeIds = [];
+                                this.addModalOpen = true;
+                            },
+                            closeAddModal() {
+                                this.addModalOpen = false;
+                                this.newFirstName = '';
+                                this.newMiddleName = '';
+                                this.newLastName = '';
+                                this.newDesignationId = '';
+                                this.newOfficeIds = [];
+                            },
+                            addItem() {
+                                if (!this.newFirstName.trim() || !this.newLastName.trim() || !this.newDesignationId || this.newOfficeIds.length === 0) return;
+                                this.isLoading = true;
+                                fetch(`/admin/recommending-approvals/${this.type}/items`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
+                                            'Content-Type': 'application/json',
+                                            'Accept': 'application/json',
+                                        },
+                                        body: JSON.stringify({
+                                            first_name: this.newFirstName.trim(),
+                                            middle_name: this.newMiddleName.trim(),
+                                            last_name: this.newLastName.trim(),
+                                            designation_id: this.newDesignationId,
+                                            office_ids: this.newOfficeIds
+                                        })
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        this.isLoading = false;
+                                        if (data.success) {
+                                            this.loadItems(this.currentPage);
+                                            this.closeAddModal();
+                                            showSuccessAlert(data.message);
+                                        } else {
+                                            showErrorAlert(data.message || 'Failed to add item.');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        this.isLoading = false;
+                                        showErrorAlert('Failed to add item.');
+                                    });
+                            },
+                            openEditModal(id) {
+                                const item = this.items.find(x => x.id === id);
+                                if (item) {
+                                    this.editId = id;
+                                    this.editFirstName = item.first_name;
+                                    this.editMiddleName = item.middle_name || '';
+                                    this.editLastName = item.last_name;
+                                    this.editDesignationId = item.designation_id;
+                                    this.editOfficeIds = item.offices ? item.offices.map(o => o.id) : [];
+                                    this.editModalOpen = true;
+                                }
+                            },
+                            closeEditModal() {
+                                this.editModalOpen = false;
+                                this.editId = null;
+                                this.editFirstName = '';
+                                this.editMiddleName = '';
+                                this.editLastName = '';
+                                this.editDesignationId = '';
+                                this.editOfficeIds = [];
+                            },
+                            saveEdit() {
+                                if (!this.editFirstName.trim() || !this.editLastName.trim() || !this.editDesignationId || this.editOfficeIds.length === 0) return;
+                                this.isLoading = true;
+                                fetch(`/admin/recommending-approvals/${this.type}/items/${this.editId}`, {
+                                        method: 'PUT',
+                                        headers: {
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
+                                            'Content-Type': 'application/json',
+                                            'Accept': 'application/json',
+                                        },
+                                        body: JSON.stringify({
+                                            first_name: this.editFirstName.trim(),
+                                            middle_name: this.editMiddleName.trim(),
+                                            last_name: this.editLastName.trim(),
+                                            designation_id: this.editDesignationId,
+                                            office_ids: this.editOfficeIds
+                                        })
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        this.isLoading = false;
+                                        if (data.success) {
+                                            this.loadItems(this.currentPage);
+                                            this.closeEditModal();
+                                            showSuccessAlert(data.message);
+                                        } else {
+                                            showErrorAlert(data.message || 'Failed to update item.');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        this.isLoading = false;
+                                        showErrorAlert('Failed to update item.');
+                                    });
+                            },
+                            deleteItem(id) {
+                                showConfirmationModal('Are you sure you want to delete this approver?', () => {
+                                    fetch(`/admin/recommending-approvals/${this.type}/items/${id}`, {
+                                            method: 'DELETE',
+                                            headers: {
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
+                                                'Accept': 'application/json',
+                                            }
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                this.loadItems(this.currentPage);
+                                                showSuccessAlert(data.message);
+                                            } else {
+                                                showErrorAlert(data.message || 'Failed to delete item.');
+                                            }
+                                        })
+                                        .catch(error => {
+                                            showErrorAlert('Failed to delete item.');
+                                        });
+                                });
+                            }
+                        }" class="relative">
+                            <button type="button" @click="openModal()"
+                                class="block relative px-6 py-4 border border-gray-300 rounded-lg text-gray-700 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400
+                                    hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:border-gray-400 hover:shadow-lg hover:scale-105
+                                    active:from-gray-100 active:to-gray-200 active:scale-95 active:shadow-inner
+                                    transition-all duration-200 ease-in-out transform overflow-hidden w-full">
+                                <span
+                                    class="absolute right-4 bottom-2 text-7xl text-gray-300 opacity-20 pointer-events-none select-none">
+                                    <i class="iconify" data-icon="mdi:account-check"></i>
+                                </span>
+                                <div class="font-semibold text-lg mb-2">{{ $approvalTitles[$j] }}</div>
+                                <div class="text-gray-500 text-sm">{{ $approvalDescs[$j] }}</div>
+                            </button>
+
+                            {{-- Main Modal --}}
+                            <div x-show="modalOpen" style="display: none;"
+                                class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm">
+                                <div
+                                    class="bg-white rounded-xl shadow-xl w-full max-w-6xl mx-4 max-h-[90vh] flex flex-col">
+                                    {{-- Modal Header --}}
+                                    <div
+                                        class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+                                        <div class="flex items-center space-x-3">
+                                            <div
+                                                class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                <i class="iconify text-blue-600 text-xl"
+                                                    data-icon="mdi:account-check"></i>
+                                            </div>
+                                            <div>
+                                                <h3 class="text-xl font-semibold text-gray-900">
+                                                    {{ $approvalTitles[$j] }}
+                                                </h3>
+                                                <p class="text-sm text-gray-500">{{ $approvalDescs[$j] }}</p>
+                                            </div>
+                                        </div>
+                                        <button @click="closeModal()"
+                                            class="text-gray-400 hover:text-gray-600 transition-colors">
+                                            <i class="iconify text-2xl" data-icon="mdi:close"></i>
+                                        </button>
+                                    </div>
+
+                                    {{-- Modal Content --}}
+                                    <div class="p-6 flex-1 overflow-y-auto">
+                                        {{-- Header with Add Button --}}
+                                        <div class="flex items-center justify-between mb-6">
+                                            <div class="flex items-center space-x-2">
+                                                <i class="iconify text-gray-500"
+                                                    data-icon="mdi:format-list-bulleted"></i>
+                                                <span class="text-lg font-medium text-gray-900">Approvers (<span
+                                                        x-text="total"></span>)</span>
+                                            </div>
+                                            <button @click="openAddModal()"
+                                                class="relative flex items-center bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-xs font-medium hover:from-green-600 hover:to-green-700 hover:shadow-lg hover:scale-105 active:from-green-700 active:to-green-800 active:scale-95 active:shadow-inner transition-all duration-200 ease-in-out transform before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                                                <i class="iconify align-middle mr-1.5 text-xs"
+                                                    data-icon="mdi:plus"></i>
+                                                <span class="align-middle">Add Approver</span>
+                                            </button>
+                                        </div>
+
+                                        {{-- Table --}}
+                                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                            <div class="overflow-y-auto max-h-96">
+                                                <table class="min-w-full divide-y divide-gray-200">
+                                                    <thead class="bg-gray-50 sticky top-0 z-10">
+                                                        <tr>
+                                                            <th
+                                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                #</th>
+                                                            <th
+                                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                Name</th>
+                                                            <th
+                                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                Designation</th>
+                                                            <th
+                                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                Office</th>
+                                                            <th
+                                                                class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                Actions</th>
+                                                        </tr>
+                                                    </thead>
+
+                                                    {{-- Items List --}}
+                                                    <tbody class="bg-white divide-y divide-gray-200"
+                                                        x-show="!isLoadingItems && items.length > 0">
+                                                        <template x-for="(item, idx) in items" :key="item.id">
+                                                            <tr
+                                                                class="hover:bg-gray-50 transition-colors duration-150">
+                                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                                                                    x-text="(currentPage - 1) * perPage + (idx + 1)">
+                                                                </td>
+                                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                                    <div class="text-sm font-medium text-gray-900">
+                                                                        <span x-text="item.first_name"></span>
+                                                                        <span x-text="item.middle_name"></span>
+                                                                        <span x-text="item.last_name"></span>
+                                                                    </div>
+                                                                </td>
+                                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                                    <div class="text-sm text-gray-900"
+                                                                        x-text="item.designation ? item.designation.name : 'N/A'">
+                                                                    </div>
+                                                                </td>
+                                                                <td class="px-6 py-4">
+                                                                    <div class="text-sm text-gray-900">
+                                                                        <span
+                                                                            x-text="item.offices && item.offices.length > 0 ? item.offices.map(o => o.name).join(', ') : 'N/A'"></span>
+                                                                    </div>
+                                                                </td>
+                                                                <td
+                                                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                                    <div
+                                                                        class="flex items-center justify-center space-x-2">
+                                                                        <button @click="openEditModal(item.id)"
+                                                                            class="relative flex items-center bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-lg text-xs font-medium hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:scale-105 active:from-blue-800 active:to-blue-900 active:scale-95 active:shadow-inner transition-all duration-200 ease-in-out transform before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                                                                            <i class="iconify align-middle mr-1.5 text-xs"
+                                                                                data-icon="mdi:pencil"></i>
+                                                                            Edit
+                                                                        </button>
+                                                                        <button @click="deleteItem(item.id)"
+                                                                            class="relative flex items-center bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-lg text-xs font-medium hover:from-red-700 hover:to-red-800 hover:shadow-lg hover:scale-105 active:from-red-800 active:to-red-900 active:scale-95 active:shadow-inner transition-all duration-200 ease-in-out transform before:absolute before:inset-0 before:bg-white before:opacity-0 before:rounded-lg hover:before:opacity-10 active:before:opacity-20 before:transition-opacity before:duration-200">
+                                                                            <i class="iconify align-middle mr-1.5 text-xs"
+                                                                                data-icon="mdi:delete"></i>
+                                                                            Delete
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        </template>
+                                                    </tbody>
+
+                                                    {{-- Empty State --}}
+                                                    <tbody class="bg-white divide-y divide-gray-200"
+                                                        x-show="!isLoadingItems && items.length === 0">
+                                                        <tr>
+                                                            <td colspan="5" class="px-6 py-12 text-center">
+                                                                <div class="flex flex-col items-center">
+                                                                    <i class="iconify text-gray-400 text-4xl mb-3"
+                                                                        data-icon="mdi:database-off"></i>
+                                                                    <p class="text-gray-500 text-sm">No approvers found
+                                                                    </p>
+                                                                    <button @click="openAddModal()"
+                                                                        class="mt-3 text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                                                        Add your first approver
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+
+                                                    {{-- Loading State --}}
+                                                    <tbody class="bg-white divide-y divide-gray-200"
+                                                        x-show="isLoadingItems">
+                                                        <tr>
+                                                            <td colspan="5" class="px-6 py-12 text-center">
+                                                                <div class="flex flex-col items-center">
+                                                                    <i class="iconify text-blue-500 text-4xl mb-3 animate-spin"
+                                                                        data-icon="mdi:loading"></i>
+                                                                    <p class="text-gray-500 text-sm">Loading items...
+                                                                    </p>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            {{-- Pagination --}}
+                                            <div x-show="lastPage > 1"
+                                                class="flex items-center justify-between px-6 py-3 bg-gray-50 border-t border-gray-200">
+                                                <div class="flex items-center space-x-2">
+                                                    <span class="text-sm text-gray-700">
+                                                        Showing <span class="font-medium"
+                                                            x-text="((currentPage - 1) * perPage) + 1"></span>
+                                                        to <span class="font-medium"
+                                                            x-text="Math.min(currentPage * perPage, total)"></span>
+                                                        of <span class="font-medium" x-text="total"></span> results
+                                                    </span>
+                                                </div>
+                                                <div class="flex space-x-2">
+                                                    <button @click="loadItems(currentPage - 1)"
+                                                        :disabled="currentPage === 1"
+                                                        :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' :
+                                                            'hover:bg-gray-300'"
+                                                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg transition-colors duration-150">
+                                                        <i class="iconify mr-1" data-icon="mdi:chevron-left"></i>
+                                                        Previous
+                                                    </button>
+                                                    <button @click="loadItems(currentPage + 1)"
+                                                        :disabled="currentPage === lastPage"
+                                                        :class="currentPage === lastPage ? 'opacity-50 cursor-not-allowed' :
+                                                            'hover:bg-gray-300'"
+                                                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg transition-colors duration-150">
+                                                        Next
+                                                        <i class="iconify ml-1" data-icon="mdi:chevron-right"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Add Modal --}}
+                            <div x-show="addModalOpen" style="display: none;"
+                                class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm">
+                                <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl mx-4">
+                                    <div class="p-6 border-b border-gray-200">
+                                        <h3 class="text-lg font-semibold text-gray-900">Add New Approver</h3>
+                                        <p class="text-sm text-gray-500 mt-1">Fill in the required information below
+                                        </p>
+                                    </div>
+                                    <div class="p-6 space-y-5">
+                                        <div class="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">First Name
+                                                    <span class="text-red-500">*</span></label>
+                                                <input type="text" x-model="newFirstName"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-500"
+                                                    placeholder="Enter first name" maxlength="25">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Middle
+                                                    Name</label>
+                                                <input type="text" x-model="newMiddleName"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-500"
+                                                    placeholder="Enter middle name" maxlength="25">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name
+                                                    <span class="text-red-500">*</span></label>
+                                                <input type="text" x-model="newLastName"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-500"
+                                                    placeholder="Enter last name" maxlength="25">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Designation
+                                                <span class="text-red-500">*</span></label>
+                                            <select x-model="newDesignationId"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                <option value="">Select designation</option>
+                                                @foreach ($designations as $designation)
+                                                    <option value="{{ $designation->id }}">{{ $designation->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Offices <span
+                                                    class="text-red-500">*</span></label>
+                                            <div
+                                                class="border border-gray-300 rounded-lg p-3 bg-gray-50 max-h-48 overflow-y-auto">
+                                                <div class="space-y-2">
+                                                    @foreach ($offices as $office)
+                                                        <label
+                                                            class="flex items-center space-x-3 p-2 hover:bg-white rounded cursor-pointer transition-colors">
+                                                            <input type="checkbox" :value="{{ $office->id }}"
+                                                                x-model="newOfficeIds"
+                                                                class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                                                            <span
+                                                                class="text-sm text-gray-700">{{ $office->name }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-2 flex items-center">
+                                                <i class="iconify mr-1" data-icon="mdi:information-outline"></i>
+                                                Select one or more offices
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                                        <button @click="closeAddModal()"
+                                            class="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors">
+                                            Cancel
+                                        </button>
+                                        <button @click="addItem()"
+                                            :disabled="!newFirstName.trim() || !newLastName.trim() || !newDesignationId ||
+                                                newOfficeIds.length === 0"
+                                            :class="!newFirstName.trim() || !newLastName.trim() || !newDesignationId ||
+                                                newOfficeIds.length === 0 ?
+                                                'opacity-50 cursor-not-allowed bg-green-400' :
+                                                'hover:bg-green-700 bg-green-600'"
+                                            class="px-5 py-2.5 text-white rounded-lg font-medium transition-all">
+                                            <span class="flex items-center">
+                                                <i class="iconify mr-1.5" data-icon="mdi:plus"></i>
+                                                Add Approver
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Edit Modal --}}
+                            <div x-show="editModalOpen" style="display: none;"
+                                class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm">
+                                <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl mx-4">
+                                    <div class="p-6 border-b border-gray-200">
+                                        <h3 class="text-lg font-semibold text-gray-900">Edit Approver</h3>
+                                        <p class="text-sm text-gray-500 mt-1">Update the approver information below</p>
+                                    </div>
+                                    <div class="p-6 space-y-5">
+                                        <div class="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">First Name
+                                                    <span class="text-red-500">*</span></label>
+                                                <input type="text" x-model="editFirstName"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-500"
+                                                    placeholder="Enter first name" maxlength="25">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Middle
+                                                    Name</label>
+                                                <input type="text" x-model="editMiddleName"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-500"
+                                                    placeholder="Enter middle name" maxlength="25">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name
+                                                    <span class="text-red-500">*</span></label>
+                                                <input type="text" x-model="editLastName"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-500"
+                                                    placeholder="Enter last name" maxlength="25">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Designation
+                                                <span class="text-red-500">*</span></label>
+                                            <select x-model="editDesignationId"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                <option value="">Select designation</option>
+                                                @foreach ($designations as $designation)
+                                                    <option value="{{ $designation->id }}">{{ $designation->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Offices <span
+                                                    class="text-red-500">*</span></label>
+                                            <div
+                                                class="border border-gray-300 rounded-lg p-3 bg-gray-50 max-h-48 overflow-y-auto">
+                                                <div class="space-y-2">
+                                                    @foreach ($offices as $office)
+                                                        <label
+                                                            class="flex items-center space-x-3 p-2 hover:bg-white rounded cursor-pointer transition-colors">
+                                                            <input type="checkbox" :value="{{ $office->id }}"
+                                                                x-model="editOfficeIds"
+                                                                class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                                                            <span
+                                                                class="text-sm text-gray-700">{{ $office->name }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-2 flex items-center">
+                                                <i class="iconify mr-1" data-icon="mdi:information-outline"></i>
+                                                Select one or more offices
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                                        <button @click="closeEditModal()"
+                                            class="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors">
+                                            Cancel
+                                        </button>
+                                        <button @click="saveEdit()"
+                                            :disabled="!editFirstName.trim() || !editLastName.trim() || !editDesignationId ||
+                                                editOfficeIds.length === 0"
+                                            :class="!editFirstName.trim() || !editLastName.trim() || !editDesignationId ||
+                                                editOfficeIds.length === 0 ?
+                                                'opacity-50 cursor-not-allowed bg-blue-400' :
+                                                'hover:bg-blue-700 bg-blue-600'"
+                                            class="px-5 py-2.5 text-white rounded-lg font-medium transition-all">
+                                            <span class="flex items-center">
+                                                <i class="iconify mr-1.5" data-icon="mdi:content-save"></i>
+                                                Save Changes
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endfor
                 </div>
             </div>
         </div>

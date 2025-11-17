@@ -73,6 +73,15 @@ Route::prefix('admin/system-selections')->middleware(['auth', 'verified', 'twofa
     Route::put('/{type}/items/{id}', [App\Http\Controllers\SystemSelectionController::class, 'update'])->name('admin.system_selections.update');
     Route::delete('/{type}/items/{id}', [App\Http\Controllers\SystemSelectionController::class, 'destroy'])->name('admin.system_selections.destroy');
 });
+
+// Recommending Approval API Routes
+Route::prefix('admin/recommending-approvals')->middleware(['auth', 'verified', 'twofactor', 'role:admin'])->group(function () {
+    Route::get('/{type}/items', [App\Http\Controllers\RecommendingApprovalController::class, 'index'])->name('admin.recommending_approvals.list');
+    Route::post('/{type}/items', [App\Http\Controllers\RecommendingApprovalController::class, 'store'])->name('admin.recommending_approvals.store');
+    Route::put('/{type}/items/{id}', [App\Http\Controllers\RecommendingApprovalController::class, 'update'])->name('admin.recommending_approvals.update');
+    Route::delete('/{type}/items/{id}', [App\Http\Controllers\RecommendingApprovalController::class, 'destroy'])->name('admin.recommending_approvals.destroy');
+});
+
 Route::post('/admin/user-management', [App\Http\Controllers\UserManagementController::class, 'store'])->middleware(['auth', 'verified', 'twofactor', 'role:admin'])->name('admin.user_management.store');
 Route::put('/admin/user-management/{user}', [App\Http\Controllers\UserManagementController::class, 'update'])->middleware(['auth', 'verified', 'twofactor', 'role:admin'])->name('admin.user_management.update');
 Route::delete('/admin/user-management/{user}', [App\Http\Controllers\UserManagementController::class, 'destroy'])->middleware(['auth', 'verified', 'twofactor', 'role:admin'])->name('admin.user_management.destroy');
