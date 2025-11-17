@@ -1,71 +1,258 @@
-<<<<<<< HEAD
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# DSWD-PRISM
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Procurement Request Information System and Management**
 
-## About Laravel
+A comprehensive procurement management system for the Department of Social Welfare and Development (DSWD), built with Laravel 10.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Overview
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+DSWD-PRISM streamlines the procurement process by managing Purchase Requests (PRs) and Purchase Orders (POs) through a structured workflow system with role-based access control. The system supports three user roles: Admin, Staff/GSO, and User/Requestor.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Key Features
 
-## Learning Laravel
+-   **Purchase Request Management**: Create, submit, review, and track PRs through their lifecycle
+-   **Purchase Order Generation**: Convert approved PRs into POs with supplier assignment
+-   **Workflow System**: Status-driven workflow from draft → pending → approved/rejected → PO generated → completed
+-   **Role-Based Access Control**: Distinct interfaces and permissions for Admin, Staff, and Users
+-   **Supplier Management**: Maintain supplier database with status tracking
+-   **Real-time Notifications**: Activity logging and notifications for workflow events
+-   **Dashboard Analytics**: Statistics and insights with date filtering (monthly, custom range)
+-   **Export Functionality**: Generate Excel (XLSX) and PDF reports
+-   **Two-Factor Authentication**: Enhanced security with 2FA
+-   **Audit Trail**: Complete activity logging via UserActivity system
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Technology Stack
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+-   **Framework**: Laravel 10.x
+-   **PHP**: 8.1+
+-   **Database**: MySQL
+-   **Frontend**: Blade Templates, Alpine.js, Tailwind CSS
+-   **Build Tool**: Vite
+-   **PDF Generation**: barryvdh/laravel-dompdf
+-   **Excel Export**: phpoffice/phpspreadsheet
+-   **Charts**: Chart.js
+-   **Authentication**: Laravel Sanctum
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Prerequisites
 
-## Laravel Sponsors
+-   PHP 8.1 or higher
+-   Composer
+-   Node.js & npm
+-   MySQL 5.7+
+-   Laragon (recommended) or similar local development environment
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+## Installation
 
-### Premium Partners
+1. **Clone the repository**
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+    ```bash
+    git clone https://github.com/arjieLopez/dswd-prism.git
+    cd dswd-prism
+    ```
 
-## Contributing
+2. **Install PHP dependencies**
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+    ```bash
+    composer install
+    ```
 
-## Code of Conduct
+3. **Install Node dependencies**
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+    ```bash
+    npm install
+    ```
 
-## Security Vulnerabilities
+4. **Environment setup**
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+    ```bash
+    cp .env.example .env
+    php artisan key:generate
+    ```
+
+5. **Configure database** (edit `.env`)
+
+    ```env
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=dswd_prism
+    DB_USERNAME=root
+    DB_PASSWORD=
+    ```
+
+6. **Run migrations and seeders**
+
+    ```bash
+    php artisan migrate
+    php artisan db:seed
+    ```
+
+7. **Build assets**
+
+    ```bash
+    npm run dev
+    # or for production
+    npm run build
+    ```
+
+8. **Start development server**
+
+    ```bash
+    php artisan serve
+    ```
+
+9. **Access the application**
+    - URL: `http://localhost:8000`
+    - Default Admin: Check your seeder for credentials
+
+## Project Structure
+
+```
+app/
+├── Constants/           # Application constants (Status, Role, Validation)
+├── Http/Controllers/    # Application controllers
+├── Models/             # Eloquent models
+├── Services/           # Business logic (ActivityService)
+└── Notifications/      # Email notifications (2FA)
+
+resources/
+├── views/
+│   ├── admin/          # Admin interface views
+│   ├── staff/          # Staff/GSO interface views
+│   ├── user/           # User/Requestor interface views
+│   └── layouts/        # Layout templates
+└── js/
+    └── app.js          # Global JS (alerts, exports, modals)
+
+routes/
+└── web.php             # Application routes
+```
+
+## Core Workflow
+
+### Purchase Request Status Flow
+
+```
+draft → pending → approved/rejected → po_generated → completed
+```
+
+### User Actions
+
+-   **Requestor**: Create draft PRs, submit for review, withdraw pending PRs, mark as completed
+-   **Staff/GSO**: Review pending PRs, approve/reject, generate POs, manage suppliers
+-   **Admin**: Full system access, user management, system configurations
+
+### Notification Flow
+
+1. User submits PR → All staff members receive notifications
+2. Staff reviews PR → User receives approval/rejection notification
+3. PO generated → User receives confirmation notification
+
+## UI/UX Standards
+
+-   **Alert System**: Custom styled alerts (`showSuccessAlert()`, `showErrorAlert()`)
+-   **Confirmation Modals**: Gradient-styled modals with animations
+-   **Status Colors**: Consistent color coding across the system
+    -   Pending: Yellow (`bg-yellow-100 text-yellow-800`)
+    -   Approved: Green (`bg-green-100 text-green-800`)
+    -   Rejected: Red (`bg-red-100 text-red-800`)
+    -   Draft: Gray (`bg-gray-100 text-gray-800`)
+-   **Date Format**: `F j, Y` for display, `Y-m-d` for forms
+-   **Responsive Design**: Mobile-first approach with Tailwind CSS
+
+## Security Features
+
+-   Two-factor authentication with email verification
+-   Role-based middleware protection
+-   CSRF protection on all forms and AJAX requests
+-   Secure password hashing
+-   Activity audit logging
+
+## Key Controllers
+
+-   `PurchaseRequestController`: PR CRUD, submission, completion
+-   `PRReviewController`: Staff approval/rejection, export
+-   `POGenerationController`: PO creation, editing, printing
+-   `SupplierController`: Supplier management
+-   `GSODashboardController`: Analytics and statistics
+-   `ActivityService`: Centralized activity logging and notifications
+
+## Testing
+
+```bash
+# Run all tests
+php artisan test
+
+# Run specific test suite
+php artisan test --testsuite=Feature
+```
+
+## Deployment
+
+1. **Optimize for production**
+
+    ```bash
+    composer install --optimize-autoloader --no-dev
+    php artisan config:cache
+    php artisan route:cache
+    php artisan view:cache
+    npm run build
+    ```
+
+2. **Set environment to production**
+
+    ```env
+    APP_ENV=production
+    APP_DEBUG=false
+    ```
+
+3. **Set proper permissions**
+    ```bash
+    chmod -R 755 storage bootstrap/cache
+    ```
+
+## Development Guidelines
+
+-   Follow PSR-12 coding standards
+-   Use repository pattern for complex queries
+-   Maintain consistent UI/UX patterns
+-   Always use the custom alert system (never basic `alert()`)
+-   Log all significant actions via `ActivityService`
+-   Include CSRF tokens in all AJAX requests
+-   Validate syntax before committing (`php -l filename.php`)
+-   Clear cache after configuration changes
+
+## Common Commands
+
+```bash
+# Development
+php artisan serve                    # Start dev server
+npm run dev                         # Watch assets
+
+# Database
+php artisan migrate                 # Run migrations
+php artisan migrate:fresh --seed    # Fresh migration with seeds
+php artisan db:seed                 # Run seeders only
+
+# Cache Management
+php artisan config:clear            # Clear config cache
+php artisan route:clear             # Clear route cache
+php artisan view:clear              # Clear compiled views
+php artisan cache:clear             # Clear application cache
+
+# Code Quality
+php -l resources/views/file.blade.php  # Check PHP syntax
+php artisan view:cache              # Compile blade templates
+```
+
+## Support
+
+For questions or issues, please contact the development team or create an issue in the repository.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-=======
-# dswd-prism
-DSWD Project System
->>>>>>> 2becc706c09783bc280bf58b892e81538b443eff
+This project is proprietary software developed for the Department of Social Welfare and Development.
+
+---
+
+**Built with Laravel 10** | **Developed for DSWD** | **© 2024-2025**
