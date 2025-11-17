@@ -29,16 +29,17 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request, RecaptchaService $recaptcha): RedirectResponse
     {
         // 1. Validate login fields (LoginRequest already does this)
-        $request->validate([
-            'recaptcha_token' => 'required',
-        ]);
+        // Temporarily commented out recaptcha
+        // $request->validate([
+        //     'recaptcha_token' => 'required',
+        // ]);
 
-        // 2. reCAPTCHA check
-        if (!$recaptcha->verify($request->recaptcha_token, 'login')) {
-            // Log failed login attempt
-            ActivityService::logLoginFailed($request->email);
-            return back()->withErrors(['recaptcha' => 'reCAPTCHA verification failed.']);
-        }
+        // 2. reCAPTCHA check - Temporarily commented out
+        // if (!$recaptcha->verify($request->recaptcha_token, 'login')) {
+        //     // Log failed login attempt
+        //     ActivityService::logLoginFailed($request->email);
+        //     return back()->withErrors(['recaptcha' => 'reCAPTCHA verification failed.']);
+        // }
 
         // 3. Authenticate user
         $request->authenticate();
