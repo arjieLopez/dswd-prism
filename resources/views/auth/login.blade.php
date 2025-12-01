@@ -54,7 +54,7 @@
                             {{ __('Forgot your password?') }}
                         </a>
                     @endif
-
+                    {{-- 
                     <input type="hidden" name="recaptcha_token" id="recaptcha_token">
                     <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.key') }}"></script>
                     <script>
@@ -72,7 +72,7 @@
                                 });
                             });
                         });
-                    </script>
+                    </script> --}}
 
                     <form id="myForm" method="POST">
                         <x-primary-button class="ms-3 ">
